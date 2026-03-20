@@ -114,8 +114,6 @@ defineExpose({});
   margin: 0;
   padding: 0 24px;
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px var(--spotlight-shadow);
   background-color: var(--spotlight-bg);
   transition: background-color 0.2s;
 }
