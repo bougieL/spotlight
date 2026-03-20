@@ -13,7 +13,7 @@
 
 ### 2. Build & Execution Restrictions
 
-- **NEVER automatically run** `npm run dev`, `npm run build`, `npm run electron:dev`, or `npm run electron:build`
+- **NEVER automatically run** `npm run dev`, `npm run build`, `npm run tauri dev`, or `npm run tauri build`
 - Only run build commands when explicitly requested by the user
 - **Default dev server is already running** and supports hot reload
 - **NEVER kill ports or restart the dev server** - Vite's HMR will automatically apply changes
@@ -36,16 +36,16 @@
 - Use cross-platform compatible commands and paths (e.g., handle both `/` and `\` separators)
 - Example: `const isWindows = process.platform === 'win32'`
 
-### 7. Electron IPC Mock Updates (Mandatory)
+### 7. Tauri IPC Updates (Mandatory)
 
-- **MUST update mock implementations** in `electron/__mock__/` when adding or modifying Electron IPC functions
+- **MUST update mock implementations** in `src/__mocks__/` when adding or modifying Tauri IPC functions
 - Keep mock implementations synchronized with actual API changes
 - Ensure mock functions match the signature and behavior of real IPC handlers
-- Example: When adding `readConfigFile` to `fileApi.ts`, also add it to `electron/__mock__/fileApi.ts`
+- Example: When adding `readConfigFile` to `fileApi.ts`, also add it to `src/__mocks__/fileApi.ts`
 
-### 8. AGENTS.md Updates (Mandatory)
+### 8. CLAUDE.md Updates (Mandatory)
 
-- **MUST use agents-md-updater skill** when adding or modifying rules in AGENTS.md
+- **MUST use agents-md-updater skill** when adding or modifying rules in CLAUDE.md
 - Use the `Skill` tool with `agents-md-updater` to ensure consistent formatting and structure
 - Follow the existing rule format when adding new rules
 - Example: Use `Skill` tool with `skill: "agents-md-updater"` before making any changes
@@ -59,16 +59,16 @@
 
 ### 10. Frontend Verification (Mandatory)
 
-- **MUST run TypeScript type checking and browser testing after modifying frontend files**
-- First run `npm run typecheck` to check for type errors
-- Then use Playwright MCP tools to verify the changes work correctly in browser
+- **MUST run browser testing after modifying frontend files**
+- Use Playwright MCP tools to verify the changes work correctly in browser
 - This applies to .html/.css/.js/.jsx/.ts/.tsx/.vue/.svelte files
-- Use `playwright_browser_navigate` to access http://localhost:5173 for testing
+- Use `playwright_browser_navigate` to access http://localhost:1420 for testing
 
 ### 11. Architecture Analysis Before Coding (Mandatory)
 
 - **MUST analyze project architecture before writing any code**
 - Review existing code structure and identify reusable logic
+- **Check for existing code that can be reused BEFORE writing new code**
 - Consider refactoring opportunities before implementing new features
 - Check for similar patterns or utilities that can be leveraged
 - Example: Before creating a new utility function, search for existing helpers in `src/utils/` or similar directories
@@ -78,11 +78,13 @@
 - **MUST reflect on whether the code is reasonable after writing**
 - Check if the implementation follows best practices and project conventions
 - Verify if there are simpler or more elegant solutions
+- **Check for duplicate code that can be extracted for reuse**
 - Ensure the code is maintainable and readable
 - Consider if the changes could introduce bugs or edge cases
 
 ## Project Info
 
 - **Frontend**: TypeScript + Vite
-- **Backend**: Electron
+- **Backend**: Tauri (Rust)
 - **Platform**: Cross-platform desktop (Windows, macOS, Linux)
+- **Dev Server Port**: 1420
