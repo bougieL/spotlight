@@ -83,6 +83,34 @@
 - Ensure the code is maintainable and readable
 - Consider if the changes could introduce bugs or edge cases
 
+### 13. Light/Dark Theme Adaptation (Mandatory)
+
+- **ALL colors MUST adapt to light and dark themes**
+- Use CSS variables to define colors and their theme variants
+- Define `:root` variables for light theme as defaults
+- Use `prefers-color-scheme` to override for dark theme within `:root`
+- Example:
+  ```css
+  :root {
+    --bg-primary: rgba(255, 255, 255, 0.95);
+    --text-primary: #1a1a1a;
+    --icon-color: #666;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: rgba(60, 60, 60, 0.95);
+      --text-primary: #fff;
+      --icon-color: #888;
+    }
+  }
+
+  .component {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+  ```
+
 ## Project Info
 
 - **Frontend**: TypeScript + Vite

@@ -19,7 +19,7 @@
         "transparent": true,
         "center": false,
         "resizable": false,
-        "shadow": false
+        "shadow": true
       }
     ],
     "security": {

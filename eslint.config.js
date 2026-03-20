@@ -16,6 +16,17 @@ export default [
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        parser: tsParser,
+      },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        ClipboardEvent: 'readonly',
+        FileReader: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        KeyboardEvent: 'readonly',
       },
     },
     rules: {
