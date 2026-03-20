@@ -13,8 +13,13 @@
     "windows": [
       {
         "title": "spotlight",
-        "width": 800,
-        "height": 600
+        "width": 600,
+        "height": 64,
+        "decorations": false,
+        "transparent": true,
+        "center": false,
+        "resizable": false,
+        "shadow": false
       }
     ],
     "security": {
