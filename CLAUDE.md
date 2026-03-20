@@ -53,9 +53,10 @@
 ### 9. Node.js Static Checking (Mandatory)
 
 - **MUST run static analysis after modifying Node.js files in src/**
-- Use `npm run lint` to verify code quality
+- Use `npm run lint` to verify code quality (ESLint)
+- Use `npm run typecheck` to verify TypeScript types (vue-tsc)
 - Fix all warnings and errors before marking a task as complete
-- Example: `npm run lint`
+- Example: `npm run lint && npm run typecheck`
 
 ### 10. Frontend Verification (Mandatory)
 
