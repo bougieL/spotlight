@@ -5,12 +5,14 @@ import { SearchList } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
 import { samplePlugin } from "@spotlight/sample-plugin";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
+import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem } from "@spotlight/core";
 
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
+pluginRegistry.register(calculatorPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

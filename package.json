@@ -17,6 +17,7 @@
   "dependencies": {
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
+    "@spotlight/calculator-plugin": "*",
     "@spotlight/core": "*",
     "@spotlight/sample-plugin": "*",
     "@tauri-apps/api": "^2",

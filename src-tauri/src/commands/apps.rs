@@ -1,4 +1,4 @@
-use crate::utils::icon::{extract_icon_base64, generate_letter_icon};
+use crate::utils::icon::extract_icon_base64;
 
 #[derive(serde::Serialize)]
 pub struct AppInfo {

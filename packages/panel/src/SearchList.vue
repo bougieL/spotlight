@@ -157,7 +157,8 @@ onUnmounted(() => {
 .spotlight-result-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  height: 56px;
+  padding: 0 20px;
   cursor: pointer;
   transition: background-color 0.15s;
 }
