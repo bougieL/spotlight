@@ -196,10 +196,6 @@ const handlePaste = async (event: ClipboardEvent) => {
   border-top: 1px solid var(--spotlight-border);
 }
 
-.files-container::-webkit-scrollbar {
-  display: none;
-}
-
 .file-item {
   position: relative;
   display: inline-flex;

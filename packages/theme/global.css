@@ -1,0 +1,29 @@
+/* Global scrollbar styles - overlay scrollbar (doesn't take up space) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--spotlight-scrollbar-thumb) var(--spotlight-scrollbar-bg);
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: var(--spotlight-scrollbar-bg);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--spotlight-scrollbar-bg);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--spotlight-scrollbar-thumb);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--spotlight-scrollbar-thumb-hover);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}

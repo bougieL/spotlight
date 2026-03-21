@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FileText, Image } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { FileItem, SearchResultItem } from '@spotlight/core';
 
 interface Props {
@@ -28,6 +28,34 @@ watch(
 const selectItem = (item: SearchResultItem) => {
   emit('select', item);
 };
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (props.searchResults.length === 0) return;
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    selectedIndex.value = (selectedIndex.value + 1) % props.searchResults.length;
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    selectedIndex.value = selectedIndex.value === 0
+      ? props.searchResults.length - 1
+      : selectedIndex.value - 1;
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    const selectedItem = props.searchResults[selectedIndex.value];
+    if (selectedItem) {
+      selectItem(selectedItem);
+    }
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>

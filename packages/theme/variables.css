@@ -8,6 +8,9 @@
   --spotlight-item-hover: rgba(0, 0, 0, 0.05);
   --spotlight-tag-bg: rgba(100, 120, 255, 0.15);
   --spotlight-tag-text: #3b5998;
+  --spotlight-scrollbar-bg: transparent;
+  --spotlight-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --spotlight-scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,5 +24,8 @@
     --spotlight-item-hover: rgba(255, 255, 255, 0.1);
     --spotlight-tag-bg: rgba(120, 150, 255, 0.2);
     --spotlight-tag-text: #8ba4e8;
+    --spotlight-scrollbar-bg: transparent;
+    --spotlight-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --spotlight-scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
   }
 }
