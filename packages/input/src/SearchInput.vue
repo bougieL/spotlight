@@ -29,6 +29,16 @@ const handleInput = (event: InputEvent) => {
   emit('search', target.value, props.files);
 };
 
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    if (inputRef.value) {
+      inputRef.value.value = '';
+      emit('update:modelValue', '');
+      emit('search', '', props.files);
+    }
+  }
+};
+
 const removeFile = (id: string) => {
   emit('update:files', props.files.filter((f) => f.id !== id));
 };
@@ -120,6 +130,7 @@ const handlePaste = async (event: ClipboardEvent) => {
         placeholder="Search..."
         @input="handleInput"
         @paste="handlePaste"
+        @keydown="handleKeydown"
       />
     </div>
     <div v-if="props.files.length > 0" class="files-container">
