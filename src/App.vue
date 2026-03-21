@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import SearchInput from "./components/SearchInput.vue";
-import SearchList from "./components/SearchList.vue";
-import { pluginRegistry, samplePlugin, appSearchPlugin } from "./plugins";
+import { SearchInput } from "@spotlight/input";
+import { SearchList } from "@spotlight/panel";
+import { pluginRegistry } from "@spotlight/plugin-registry";
+import { samplePlugin } from "@spotlight/sample-plugin";
+import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { tauriApi } from "@spotlight/api";
-import type { FileItem, SearchResultItem } from "@spotlight/core";
+import type { FileItem } from "@spotlight/input";
+import type { SearchResultItem } from "@spotlight/core";
 
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
@@ -54,8 +57,17 @@ onUnmounted(() => {
 
 <template>
   <main class="spotlight-container">
-    <SearchInput v-model="query" v-model:files="files" @search="handleSearch" />
-    <SearchList :query="query" :files="files" :search-results="searchResults" @select="handleSelect" />
+    <SearchInput
+      v-model="query"
+      v-model:files="files"
+      @search="handleSearch"
+    />
+    <SearchList
+      :query="query"
+      :files="files"
+      :search-results="searchResults"
+      @select="handleSelect"
+    />
   </main>
 </template>
 

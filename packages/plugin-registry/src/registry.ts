@@ -1,6 +1,6 @@
 import type { BasePlugin, SearchResultItem, SearchParams } from '@spotlight/core';
 
-class PluginRegistry {
+export class PluginRegistry {
   private plugins: BasePlugin[] = [];
 
   register(plugin: BasePlugin): void {
