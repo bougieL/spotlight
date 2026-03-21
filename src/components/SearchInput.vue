@@ -3,7 +3,6 @@ import { Search, X, FileText } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { pluginRegistry } from '../plugins';
-import { samplePlugin } from '../plugins/builtins/samplePlugin';
 import type { SearchResultItem } from '../plugins/types';
 
 interface FileItem {
@@ -43,18 +42,18 @@ watch([() => files.value.length, showResults, () => searchResults.value.length],
   resizeTimer = setTimeout(resizeWindow, 100);
 }, { flush: 'post' });
 
-const performSearch = async (searchQuery: string) => {
-  if (!searchQuery.trim()) {
-    searchResults.value = [];
-    showResults.value = false;
-    return;
-  }
+  const performSearch = async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      searchResults.value = [];
+      showResults.value = false;
+      return;
+    }
 
-  const results = await pluginRegistry.search(searchQuery);
-  searchResults.value = results;
-  showResults.value = results.length > 0;
-  selectedIndex.value = 0;
-};
+    const results = await pluginRegistry.search({ query: searchQuery });
+    searchResults.value = results;
+    showResults.value = results.length > 0;
+    selectedIndex.value = 0;
+  };
 
 const handleInput = (event: InputEvent) => {
   const target = event.target as HTMLInputElement;
@@ -192,12 +191,10 @@ const handleClickOutside = (event: globalThis.MouseEvent) => {
 };
 
 onMounted(() => {
-  pluginRegistry.register(samplePlugin);
   document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
-  pluginRegistry.unregister('sample');
   document.removeEventListener('click', handleClickOutside);
 });
 </script>

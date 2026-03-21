@@ -1,5 +1,7 @@
 import { FileText, Calculator, Globe } from 'lucide-vue-next';
-import type { SearchPlugin, SearchResultItem } from '../types';
+import type { Component } from 'vue';
+import type { SearchResultItem, SearchParams, RenderParams } from '../../base';
+import { BasePlugin } from '../../base';
 
 interface SampleItem {
   icon: typeof FileText;
@@ -35,10 +37,14 @@ const sampleItems: SampleItem[] = [
   },
 ];
 
-export const samplePlugin: SearchPlugin = {
-  name: 'sample',
-  async search(query: string): Promise<SearchResultItem[]> {
-    const lowerQuery = query.toLowerCase();
+export class SamplePlugin extends BasePlugin {
+  name = 'sample';
+  version = '1.0.0';
+  description = 'Sample plugin with built-in search items';
+  author = 'Spotlight Team';
+
+  async search(params: SearchParams): Promise<SearchResultItem[]> {
+    const lowerQuery = params.query.toLowerCase();
     return sampleItems
       .filter(
         (item) =>
@@ -51,5 +57,11 @@ export const samplePlugin: SearchPlugin = {
         desc: item.desc,
         action: item.action,
       }));
-  },
-};
+  }
+
+  async render(_params: RenderParams): Promise<Component | null> {
+    return null;
+  }
+}
+
+export const samplePlugin = new SamplePlugin();

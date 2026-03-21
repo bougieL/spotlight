@@ -1,27 +1,27 @@
-import type { SearchPlugin, SearchResultItem } from './types';
+import type { BasePlugin, SearchResultItem, SearchParams } from './base';
 
 class PluginRegistry {
-  private plugins: SearchPlugin[] = [];
+  private plugins: BasePlugin[] = [];
 
-  register(plugin: SearchPlugin): void {
+  register(plugin: BasePlugin): void {
     this.plugins.push(plugin);
   }
 
   unregister(name: string): void {
-    this.plugins = this.plugins.filter((p) => p.name !== name);
+    this.plugins = this.plugins.filter((p) => p.name === name);
   }
 
-  async search(query: string): Promise<SearchResultItem[]> {
-    if (!query.trim()) {
+  async search(params: SearchParams): Promise<SearchResultItem[]> {
+    if (!params.query.trim()) {
       return [];
     }
 
-    const results = await Promise.all(this.plugins.map((plugin) => plugin.search(query)));
+    const results = await Promise.all(this.plugins.map((plugin) => plugin.search(params)));
 
     return results.flat();
   }
 
-  getPlugins(): SearchPlugin[] {
+  getPlugins(): BasePlugin[] {
     return [...this.plugins];
   }
 }

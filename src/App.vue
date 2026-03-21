@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import SearchInput from "./components/SearchInput.vue";
+import { pluginRegistry, samplePlugin } from "./plugins";
+
+pluginRegistry.register(samplePlugin);
 </script>
 
 <template>

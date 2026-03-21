@@ -1,2 +1,4 @@
+export * from './base';
 export * from './types';
 export * from './registry';
+export * from './builtins/sample-plugin';
