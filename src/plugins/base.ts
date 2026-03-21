@@ -1,7 +1,8 @@
 import type { Component } from 'vue';
 
 export interface SearchResultItem {
-  icon: Component;
+  icon?: Component;
+  iconUrl?: string;
   title: string;
   desc?: string;
   action: () => void;

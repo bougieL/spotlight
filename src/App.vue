@@ -2,11 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import SearchInput from "./components/SearchInput.vue";
 import SearchList from "./components/SearchList.vue";
-import { pluginRegistry, samplePlugin } from "./plugins";
+import { pluginRegistry, samplePlugin, appSearchPlugin } from "./plugins";
 import { tauriApi } from "./api";
 import type { FileItem, SearchResultItem } from "./plugins/base";
 
 pluginRegistry.register(samplePlugin);
+pluginRegistry.register(appSearchPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

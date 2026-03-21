@@ -48,7 +48,18 @@ const selectItem = (item: SearchResultItem) => {
         @click="selectItem(item)"
         @mouseenter="selectedIndex = index"
       >
-        <component :is="item.icon" class="result-icon" :size="20" />
+        <component
+          v-if="item.icon"
+          :is="item.icon"
+          class="result-icon"
+          :size="20"
+        />
+        <img
+          v-else-if="item.iconUrl"
+          :src="item.iconUrl"
+          class="result-icon-img"
+        />
+        <div v-else class="result-icon-placeholder" />
         <div class="result-content">
           <div class="result-title">{{ item.title }}</div>
           <div class="result-desc">{{ item.desc }}</div>
@@ -119,6 +130,23 @@ const selectItem = (item: SearchResultItem) => {
   color: var(--spotlight-icon);
   flex-shrink: 0;
   margin-right: 12px;
+}
+
+.result-icon-img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-right: 12px;
+  object-fit: contain;
+}
+
+.result-icon-placeholder {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-right: 12px;
+  background-color: var(--spotlight-icon);
+  border-radius: 4px;
 }
 
 .result-content {
