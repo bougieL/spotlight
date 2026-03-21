@@ -6,6 +6,8 @@
   --spotlight-shadow: rgba(0, 0, 0, 0.15);
   --spotlight-image-bg: rgba(200, 200, 200, 0.6);
   --spotlight-item-hover: rgba(0, 0, 0, 0.05);
+  --spotlight-tag-bg: rgba(100, 120, 255, 0.15);
+  --spotlight-tag-text: #3b5998;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,5 +19,7 @@
     --spotlight-shadow: rgba(0, 0, 0, 0.4);
     --spotlight-image-bg: rgba(80, 80, 80, 0.6);
     --spotlight-item-hover: rgba(255, 255, 255, 0.1);
+    --spotlight-tag-bg: rgba(120, 150, 255, 0.2);
+    --spotlight-tag-text: #8ba4e8;
   }
 }

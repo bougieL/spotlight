@@ -1,48 +1,65 @@
 <script setup lang="ts">
-import { Search } from 'lucide-vue-next';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { Search, X, FileText } from 'lucide-vue-next';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import { pluginRegistry } from '../plugins';
 import { samplePlugin } from '../plugins/builtins/samplePlugin';
 import type { SearchResultItem } from '../plugins/types';
 
-const editableRef = ref<HTMLDivElement | null>(null);
+interface FileItem {
+  id: string;
+  name: string;
+  src: string;
+  type: 'image' | 'file';
+}
+
+const inputRef = ref<HTMLInputElement | null>(null);
+const wrapperRef = ref<HTMLElement | null>(null);
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
 const showResults = ref(false);
+const query = ref('');
+const files = ref<FileItem[]>([]);
 
-let debounceTimer: number | null = null;
+const resizeWindow = async () => {
+  try {
+    const wrapper = wrapperRef.value;
+    if (!wrapper) return;
+    const height = wrapper.scrollHeight;
+    await invoke('resize_window', { height });
+  } catch {
+    // ignore
+  }
+};
 
-onMounted(() => {
-  pluginRegistry.register(samplePlugin);
-});
+let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+let isInitialized = false;
+watch([() => files.value.length, showResults, () => searchResults.value.length], () => {
+  if (!isInitialized) {
+    isInitialized = true;
+    return;
+  }
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resizeWindow, 100);
+}, { flush: 'post' });
 
-onUnmounted(() => {
-  pluginRegistry.unregister('sample');
-});
-
-const performSearch = async (query: string) => {
-  if (!query.trim()) {
+const performSearch = async (searchQuery: string) => {
+  if (!searchQuery.trim()) {
     searchResults.value = [];
     showResults.value = false;
     return;
   }
 
-  const results = await pluginRegistry.search(query);
+  const results = await pluginRegistry.search(searchQuery);
   searchResults.value = results;
   showResults.value = results.length > 0;
   selectedIndex.value = 0;
 };
 
-const handleInput = () => {
-  const query = editableRef.value?.textContent || '';
-
-  if (debounceTimer) {
-    clearTimeout(debounceTimer);
-  }
-
-  debounceTimer = setTimeout(() => {
-    performSearch(query);
-  }, 150);
+const handleInput = (event: InputEvent) => {
+  const target = event.target as HTMLInputElement;
+  query.value = target.value;
+  performSearch(query.value);
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -79,81 +96,91 @@ const handleKeydown = (event: KeyboardEvent) => {
 const selectItem = (item: SearchResultItem) => {
   item.action();
   showResults.value = false;
-  if (editableRef.value) {
-    editableRef.value.textContent = '';
-  }
+  query.value = '';
   searchResults.value = [];
+  if (inputRef.value) {
+    inputRef.value.value = '';
+  }
 };
 
-const handlePaste = (event: ClipboardEvent) => {
+const removeFile = (id: string) => {
+  files.value = files.value.filter((f) => f.id !== id);
+  resizeWindow();
+};
+
+const handlePaste = async (event: ClipboardEvent) => {
   event.preventDefault();
   const items = event.clipboardData?.items;
   if (!items) return;
 
   const imageItems = Array.from(items).filter((item) => item.type.startsWith('image/'));
+  const fileItems = Array.from(items).filter((item) => !item.type.startsWith('image/') && item.kind === 'file');
 
-  if (imageItems.length > 0) {
-    let imageIndex = 0;
+  const newFiles: FileItem[] = [];
+
+  for (const item of imageItems) {
+    const file = item.getAsFile();
+    if (!file) continue;
+
     const reader = new FileReader();
+    const imgPromise = new Promise<string>((resolve) => {
+      reader.onload = (e) => resolve(e.target?.result as string);
+    });
+    reader.readAsDataURL(file);
+    const dataUrl = await imgPromise;
 
-    const readNextImage = () => {
-      if (imageIndex >= imageItems.length) return;
+    let imageSrc = dataUrl;
+    try {
+      const { invoke, convertFileSrc } = await import('@tauri-apps/api/core');
+      const localPath = await invoke<string>('save_temp_image', { dataUrl });
+      imageSrc = convertFileSrc(localPath);
+    } catch {
+      // fallback to data url
+    }
 
-      const item = imageItems[imageIndex];
-      const file = item.getAsFile();
-      if (!file) {
-        imageIndex++;
-        readNextImage();
-        return;
-      }
+    newFiles.push({
+      id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name || 'pasted-image',
+      src: imageSrc,
+      type: 'image',
+    });
+  }
 
-      reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
+  if (fileItems.length > 0) {
+    let paths: string[] = [];
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      paths = await invoke<string[]>('get_clipboard_file_paths');
+    } catch {
+      // fallback to filename
+    }
 
-        // Save image to temp file and get accessible URL
-        let imageSrc = dataUrl;
-        try {
-          const { invoke, convertFileSrc } = await import('@tauri-apps/api/core');
-          const filePath = await invoke<string>('save_temp_image', { dataUrl });
-          // Use asset protocol to access local file
-          imageSrc = convertFileSrc(filePath);
-        } catch (err) {
-          console.warn('Failed to save image to temp file, using data URL:', err);
-        }
+    for (let i = 0; i < fileItems.length; i++) {
+      const filePath = paths[i];
+      const fileName = filePath ? filePath.split(/[\\/]/).pop() ?? 'file' : fileItems[i].getAsFile()?.name ?? 'file';
 
-        const img = document.createElement('img');
-        img.src = imageSrc;
-        img.alt = file.name || 'pasted-image';
-        img.className = 'pasted-image';
+      newFiles.push({
+        id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: fileName,
+        src: filePath || '',
+        type: 'file',
+      });
+    }
+  }
 
-        const editable = editableRef.value;
-        if (!editable) return;
+  files.value = [...files.value, ...newFiles];
 
-        const selection = window.getSelection();
-        const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-
-        if (range) {
-          range.deleteContents();
-          range.insertNode(img);
-          // Move cursor after the inserted image
-          range.collapse(false);
-        } else {
-          editable.appendChild(img);
-        }
-
-        editable.focus();
-
-        imageIndex++;
-        readNextImage();
-      };
-
-      reader.readAsDataURL(file);
-    };
-
-    readNextImage();
-  } else {
+  if (imageItems.length === 0 && fileItems.length === 0) {
     const text = event.clipboardData?.getData('text/plain') || '';
-    document.execCommand('insertText', false, text);
+    if (text && inputRef.value) {
+      const start = inputRef.value.selectionStart ?? 0;
+      const end = inputRef.value.selectionEnd ?? 0;
+      const currentValue = inputRef.value.value;
+      inputRef.value.value = currentValue.substring(0, start) + text + currentValue.substring(end);
+      inputRef.value.selectionStart = inputRef.value.selectionEnd = start + text.length;
+      query.value = inputRef.value.value;
+      performSearch(query.value);
+    }
   }
 };
 
@@ -165,27 +192,42 @@ const handleClickOutside = (event: globalThis.MouseEvent) => {
 };
 
 onMounted(() => {
+  pluginRegistry.register(samplePlugin);
   document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
+  pluginRegistry.unregister('sample');
   document.removeEventListener('click', handleClickOutside);
 });
-
 </script>
 
 <template>
-  <div class="spotlight-input-wrapper">
-    <Search class="search-icon" :size="24" />
-    <div
-      ref="editableRef"
-      contenteditable="true"
-      class="spotlight-contenteditable"
-      data-placeholder="Search..."
-      @input="handleInput"
-      @keydown="handleKeydown"
-      @paste="handlePaste"
-    ></div>
+  <div ref="wrapperRef" class="spotlight-input-wrapper">
+    <div class="spotlight-input-row">
+      <Search class="search-icon" :size="24" />
+      <input
+        ref="inputRef"
+        type="text"
+        class="spotlight-input"
+        placeholder="Search..."
+        @input="handleInput"
+        @keydown="handleKeydown"
+        @paste="handlePaste"
+      />
+    </div>
+    <div v-if="files.length > 0" class="files-container">
+      <div v-for="file in files" :key="file.id" class="file-item">
+        <img v-if="file.type === 'image'" :src="file.src" :alt="file.name" class="file-image" />
+        <template v-else>
+          <FileText class="file-icon" :size="20" />
+          <span class="file-name">{{ file.name }}</span>
+        </template>
+        <button class="remove-btn" @click="removeFile(file.id)" aria-label="Remove">
+          <X :size="14" />
+        </button>
+      </div>
+    </div>
     <div v-if="showResults" class="spotlight-results-dropdown">
       <div
         v-for="(item, index) in searchResults"
@@ -208,16 +250,18 @@ onUnmounted(() => {
 <style scoped>
 .spotlight-input-wrapper {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   width: 100%;
   max-width: 600px;
-  height: 64px;
-  margin: 0;
-  padding: 0 24px;
-  border: none;
-  background-color: var(--spotlight-bg);
-  transition: background-color 0.2s;
   position: relative;
+}
+
+.spotlight-input-row {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  background-color: var(--spotlight-bg);
 }
 
 .search-icon {
@@ -226,44 +270,87 @@ onUnmounted(() => {
   margin-right: 12px;
 }
 
-.spotlight-contenteditable {
+.spotlight-input {
   flex: 1;
   height: 64px;
   line-height: 64px;
-  display: flex;
-  align-items: center;
   background: transparent;
   border: none;
   outline: none;
   font-size: 18px;
   color: var(--spotlight-text);
   caret-color: var(--spotlight-text);
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
 }
 
-.spotlight-contenteditable::-webkit-scrollbar {
+.spotlight-input::placeholder {
+  color: var(--spotlight-placeholder);
+}
+
+.files-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  padding: 0 24px 12px;
+  overflow-x: auto;
+  background-color: var(--spotlight-bg);
+  border-top: 1px solid var(--spotlight-border);
+}
+
+.files-container::-webkit-scrollbar {
   display: none;
 }
 
-.spotlight-contenteditable:empty::before {
-  content: attr(data-placeholder);
-  color: var(--spotlight-placeholder);
-  pointer-events: none;
+.file-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: var(--spotlight-tag-bg);
+  color: var(--spotlight-tag-text);
+  font-size: 13px;
+  font-weight: 500;
 }
 
-:deep(.pasted-image) {
-  flex-shrink: 0;
+.file-image {
   width: 40px;
   height: 40px;
   border-radius: 6px;
   object-fit: cover;
-  margin-left: 4px;
-  margin-right: 4px;
-  vertical-align: middle;
   background-color: var(--spotlight-image-bg);
-  box-shadow: 0 2px 8px var(--spotlight-shadow);
+}
+
+.file-icon {
+  flex-shrink: 0;
+}
+
+.file-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: 2px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.remove-btn:hover {
+  opacity: 1;
 }
 
 .spotlight-results-dropdown {
@@ -271,7 +358,6 @@ onUnmounted(() => {
   top: 100%;
   left: 0;
   right: 0;
-  max-width: 600px;
   margin: 4px 0 0 0;
   padding: 8px 0;
   background-color: var(--spotlight-bg);
