@@ -3,9 +3,11 @@ import pluginVue from 'eslint-plugin-vue';
 import parserVue from 'vue-eslint-parser';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
+  ...pluginVue.configs['flat/recommended'],
   {
     files: ['**/*.vue'],
     plugins: {
@@ -19,30 +21,15 @@ export default [
         parser: tsParser,
       },
       globals: {
-        btoa: 'readonly',
-        Uint8Array: 'readonly',
-        window: 'readonly',
-        document: 'readonly',
-        navigator: 'readonly',
-        ClipboardEvent: 'readonly',
-        FileReader: 'readonly',
-        HTMLInputElement: 'readonly',
-        HTMLDivElement: 'readonly',
-        HTMLElement: 'readonly',
-        KeyboardEvent: 'readonly',
-        MouseEvent: 'readonly',
-        InputEvent: 'readonly',
-        Node: 'readonly',
-        Text: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        console: 'readonly',
+        ...globals.browser,
+        ...globals.builtin,
       },
     },
     rules: {
+      ...pluginVue.configs['flat/recommended'].rules,
+      'vue/multi-word-component-names': 'off',
       'no-console': 'warn',
       'no-debugger': 'warn',
-      'vue/multi-word-component-names': 'off',
     },
   },
   {
@@ -57,16 +44,16 @@ export default [
         sourceType: 'module',
       },
       globals: {
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        console: 'readonly',
+        ...globals.browser,
+        ...globals.builtin,
       },
     },
     rules: {
+      ...tseslint.configs.recommended.rules,
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': 'warn',
       'no-debugger': 'warn',
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
   {

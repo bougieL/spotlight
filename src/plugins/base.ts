@@ -9,7 +9,15 @@ export interface SearchResultItem {
 
 export interface SearchParams {
   query: string;
+  files?: FileItem[];
   limit?: number;
+}
+
+export interface FileItem {
+  id: string;
+  name: string;
+  src: string;
+  type: 'image' | 'file';
 }
 
 export interface RenderParams {
