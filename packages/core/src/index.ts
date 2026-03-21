@@ -1,11 +1,15 @@
 import type { Component } from 'vue';
 
+export interface SearchResultItemContext {
+  setPanel: (component: Component, pluginName?: string) => void;
+}
+
 export interface SearchResultItem {
   icon?: Component;
   iconUrl?: string;
   title: string;
   desc?: string;
-  action: () => void | Promise<void>;
+  action: (ctx: SearchResultItemContext) => void | Promise<void>;
 }
 
 export interface SearchParams {

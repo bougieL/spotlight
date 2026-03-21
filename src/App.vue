@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { SearchInput } from "@spotlight/input";
-import { SearchList } from "@spotlight/panel";
+import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
 import { samplePlugin } from "@spotlight/sample-plugin";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
-import type { SearchResultItem } from "@spotlight/core";
+import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
+import type { Component } from 'vue';
 
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
@@ -17,15 +18,34 @@ pluginRegistry.register(calculatorPlugin);
 const query = ref('');
 const files = ref<FileItem[]>([]);
 const searchResults = ref<SearchResultItem[]>([]);
+const activePanelComponent = ref<Component | null>(null);
+const activePluginName = ref<string | null>(null);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
   const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
   searchResults.value = results;
 };
 
-const handleSelect = (item: SearchResultItem) => {
-  item.action();
-  query.value = '';
+const handleSelect = async (item: SearchResultItem) => {
+  let panelEntered = false;
+  const ctx: SearchResultItemContext = {
+    setPanel: (component: Component, pluginName?: string) => {
+      activePanelComponent.value = component;
+      activePluginName.value = pluginName ?? null;
+      panelEntered = true;
+    },
+  };
+
+  await item.action(ctx);
+
+  if (!panelEntered) {
+    query.value = '';
+  }
+};
+
+const handleClosePanel = () => {
+  activePanelComponent.value = null;
+  activePluginName.value = null;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -61,13 +81,23 @@ onUnmounted(() => {
     <SearchInput
       v-model="query"
       v-model:files="files"
+      :is-panel-mode="!!activePanelComponent"
+      :plugin-name="activePluginName"
       @search="handleSearch"
+      @back="handleClosePanel"
     />
     <SearchList
+      v-if="!activePanelComponent"
       :query="query"
       :files="files"
       :search-results="searchResults"
       @select="handleSelect"
+    />
+    <PluginPanel
+      v-else
+      :component="activePanelComponent"
+      :query="query"
+      @close="handleClosePanel"
     />
   </main>
 </template>

@@ -1,6 +1,7 @@
 import { Calculator } from 'lucide-vue-next';
+import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 
 export class CalculatorPlugin extends BasePlugin {
@@ -90,7 +91,7 @@ export class CalculatorPlugin extends BasePlugin {
       {
         icon: Calculator,
         title: `${displayExpression} = ${formattedResult}`,
-        action: async () => {
+        action: async (ctx: SearchResultItemContext) => {
           // Copy result to clipboard
           try {
             await navigator.clipboard.writeText(formattedResult);
@@ -98,13 +99,18 @@ export class CalculatorPlugin extends BasePlugin {
           } catch (error) {
             console.error('Failed to copy to clipboard:', error);
           }
+          // Enter panel mode
+          const component = await this.render({ query: params.query });
+          if (component) {
+            ctx.setPanel(component, this.name);
+          }
         },
       },
     ];
   }
 
   async render(_params: RenderParams): Promise<Component | null> {
-    return null;
+    return defineAsyncComponent(() => import('./components/CalculatorPanel.vue'));
   }
 }
 

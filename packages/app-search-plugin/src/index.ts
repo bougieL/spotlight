@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from './pinyin';
@@ -135,7 +135,7 @@ export class AppSearchPlugin extends BasePlugin {
         iconUrl: app.info.icon_data ?? undefined,
         title: app.info.name,
         desc: app.info.path,
-        action: async () => this.launchApp(app.info),
+        action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
       }));
   }
 

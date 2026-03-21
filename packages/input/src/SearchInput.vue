@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search, X, FileText } from 'lucide-vue-next';
+import { Search, X, FileText, ArrowLeft } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import type { FileItem } from '@spotlight/core';
@@ -9,6 +9,8 @@ export type { FileItem };
 interface Props {
   modelValue: string;
   files: FileItem[];
+  isPanelMode?: boolean;
+  pluginName?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -19,6 +21,8 @@ const emit = defineEmits<{
   (e: 'update:files', value: FileItem[]): void;
   // eslint-disable-next-line no-unused-vars
   (e: 'search', query: string, files: FileItem[]): void;
+  // eslint-disable-next-line no-unused-vars
+  (e: 'back'): void;
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -31,12 +35,18 @@ const handleInput = (event: InputEvent) => {
 
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    if (inputRef.value) {
+    if (props.isPanelMode) {
+      emit('back');
+    } else if (inputRef.value) {
       inputRef.value.value = '';
       emit('update:modelValue', '');
       emit('search', '', props.files);
     }
   }
+};
+
+const handleBack = () => {
+  emit('back');
 };
 
 const removeFile = (id: string) => {
@@ -122,7 +132,11 @@ const handlePaste = async (event: ClipboardEvent) => {
 <template>
   <div class="spotlight-input-wrapper">
     <div class="spotlight-input-row">
-      <Search class="search-icon" :size="24" />
+      <button v-if="props.isPanelMode" class="back-button" @click="handleBack" aria-label="Back">
+        <ArrowLeft class="back-icon" :size="24" />
+      </button>
+      <Search v-else class="search-icon" :size="24" />
+      <span v-if="props.isPanelMode && props.pluginName" class="plugin-name">{{ props.pluginName }}</span>
       <input
         ref="inputRef"
         type="text"
@@ -168,6 +182,43 @@ const handlePaste = async (event: ClipboardEvent) => {
   color: var(--spotlight-icon);
   flex-shrink: 0;
   margin-right: 12px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin-right: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--spotlight-icon);
+  flex-shrink: 0;
+}
+
+.back-button:hover {
+  color: var(--spotlight-text);
+}
+
+.back-icon {
+  flex-shrink: 0;
+}
+
+.plugin-name {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  margin-right: 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: var(--spotlight-tag-bg);
+  color: var(--spotlight-tag-text);
+  flex-shrink: 0;
 }
 
 .spotlight-input {

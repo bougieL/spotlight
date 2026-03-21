@@ -1,13 +1,13 @@
 import { FileText, Calculator, Globe } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 
 interface SampleItem {
   icon: typeof FileText;
   title: string;
   desc: string;
-  action: () => void;
+  action: (ctx: SearchResultItemContext) => void | Promise<void>;
 }
 
 const sampleItems: SampleItem[] = [

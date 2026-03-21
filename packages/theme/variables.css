@@ -3,6 +3,7 @@
   --spotlight-text: #1a1a1a;
   --spotlight-placeholder: #888;
   --spotlight-icon: #666;
+  --spotlight-plugin-name: #666;
   --spotlight-shadow: rgba(0, 0, 0, 0.15);
   --spotlight-image-bg: rgba(200, 200, 200, 0.6);
   --spotlight-item-hover: rgba(0, 0, 0, 0.05);
@@ -22,6 +23,7 @@
     --spotlight-text: #fff;
     --spotlight-placeholder: #888;
     --spotlight-icon: #888;
+    --spotlight-plugin-name: #888;
     --spotlight-shadow: rgba(0, 0, 0, 0.4);
     --spotlight-image-bg: rgba(80, 80, 80, 0.6);
     --spotlight-item-hover: rgba(255, 255, 255, 0.1);
