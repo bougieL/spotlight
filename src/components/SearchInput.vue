@@ -9,7 +9,6 @@ const editableRef = ref<HTMLDivElement | null>(null);
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
 const showResults = ref(false);
-const searchQuery = ref('');
 
 let debounceTimer: number | null = null;
 
@@ -36,7 +35,6 @@ const performSearch = async (query: string) => {
 
 const handleInput = () => {
   const query = editableRef.value?.textContent || '';
-  searchQuery.value = query;
 
   if (debounceTimer) {
     clearTimeout(debounceTimer);
@@ -45,69 +43,6 @@ const handleInput = () => {
   debounceTimer = setTimeout(() => {
     performSearch(query);
   }, 150);
-};
-
-const handleBeforeInput = (event: InputEvent) => {
-  if (event.inputType !== 'insertText' || !event.data) return;
-
-  // Check if selection contains an image (don't wrap images in spans)
-  const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
-
-  const range = selection.getRangeAt(0);
-  const container = range.startContainer;
-
-  // If selection contains an image, let browser handle it normally
-  if (range.cloneContents().querySelector?.('img')) return;
-
-  event.preventDefault();
-
-  // Check if cursor is inside a text-node
-  if (container.nodeType === Node.TEXT_NODE && container.parentElement?.classList.contains('text-node')) {
-    const textNode = container as Text;
-    const cursorPos = range.startOffset;
-    const existingText = textNode.textContent || '';
-    const before = existingText.substring(0, cursorPos);
-    const after = existingText.substring(cursorPos);
-    textNode.textContent = before + event.data + after;
-    range.setStart(textNode, cursorPos + event.data.length);
-    range.collapse(true);
-    return;
-  }
-
-  // Check if cursor is right after a text-node
-  if (container.previousSibling?.nodeType === Node.ELEMENT_NODE && (container.previousSibling as HTMLElement).classList.contains('text-node')) {
-    const textNode = container.previousSibling as HTMLElement;
-    textNode.textContent = (textNode.textContent || '') + event.data;
-    range.setStartAfter(textNode);
-    range.collapse(true);
-    return;
-  }
-
-  // Check if cursor is at the end and last child is a text-node
-  const editable = editableRef.value;
-  if (editable && range.startOffset === editable.childNodes.length) {
-    const lastChild = editable.lastChild;
-    if (lastChild?.nodeType === Node.ELEMENT_NODE && (lastChild as HTMLElement).classList.contains('text-node')) {
-      const textNode = lastChild as HTMLElement;
-      textNode.textContent = (textNode.textContent || '') + event.data;
-      range.setStartAfter(textNode);
-      range.collapse(true);
-      return;
-    }
-  }
-
-  // Create new text-node
-  const span = document.createElement('span');
-  span.className = 'text-node';
-  span.textContent = event.data;
-  range.deleteContents();
-  range.insertNode(span);
-  const newRange = document.createRange();
-  newRange.setStartAfter(span);
-  newRange.collapse(true);
-  selection.removeAllRanges();
-  selection.addRange(newRange);
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -139,26 +74,6 @@ const handleKeydown = (event: KeyboardEvent) => {
     showResults.value = false;
     return;
   }
-
-  if (event.key === 'Backspace') {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    const container = editableRef.value;
-
-    if (!container) return;
-
-    const isAtStart =
-      range.startOffset === 0 && range.startContainer === container && container.childNodes.length === 0;
-
-    if (isAtStart || (range.collapsed && range.startContainer === container && range.startOffset === 0)) {
-      event.preventDefault();
-      if (container.childNodes.length > 0) {
-        container.removeChild(container.lastChild!);
-      }
-    }
-  }
 };
 
 const selectItem = (item: SearchResultItem) => {
@@ -167,7 +82,6 @@ const selectItem = (item: SearchResultItem) => {
   if (editableRef.value) {
     editableRef.value.textContent = '';
   }
-  searchQuery.value = '';
   searchResults.value = [];
 };
 
@@ -193,25 +107,41 @@ const handlePaste = (event: ClipboardEvent) => {
         return;
       }
 
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
-        const img = document.createElement('img');
-        img.src = dataUrl;
-        img.alt = file.name || 'pasted-image';
-        img.className = 'pasted-image';
-        img.dataset.id = `img-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          range.insertNode(img);
-          range.collapse(false);
-        } else {
-          editableRef.value?.appendChild(img);
+        // Save image to temp file and get accessible URL
+        let imageSrc = dataUrl;
+        try {
+          const { invoke, convertFileSrc } = await import('@tauri-apps/api/core');
+          const filePath = await invoke<string>('save_temp_image', { dataUrl });
+          // Use asset protocol to access local file
+          imageSrc = convertFileSrc(filePath);
+        } catch (err) {
+          console.warn('Failed to save image to temp file, using data URL:', err);
         }
 
-        editableRef.value?.focus();
+        const img = document.createElement('img');
+        img.src = imageSrc;
+        img.alt = file.name || 'pasted-image';
+        img.className = 'pasted-image';
+
+        const editable = editableRef.value;
+        if (!editable) return;
+
+        const selection = window.getSelection();
+        const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+
+        if (range) {
+          range.deleteContents();
+          range.insertNode(img);
+          // Move cursor after the inserted image
+          range.collapse(false);
+        } else {
+          editable.appendChild(img);
+        }
+
+        editable.focus();
 
         imageIndex++;
         readNextImage();
@@ -242,7 +172,6 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-defineExpose({});
 </script>
 
 <template>
@@ -253,7 +182,6 @@ defineExpose({});
       contenteditable="true"
       class="spotlight-contenteditable"
       data-placeholder="Search..."
-      @beforeinput="handleBeforeInput"
       @input="handleInput"
       @keydown="handleKeydown"
       @paste="handlePaste"
@@ -333,13 +261,9 @@ defineExpose({});
   object-fit: cover;
   margin-left: 4px;
   margin-right: 4px;
+  vertical-align: middle;
   background-color: var(--spotlight-image-bg);
   box-shadow: 0 2px 8px var(--spotlight-shadow);
-}
-
-:deep(.text-node) {
-  display: inline-block;
-  white-space: nowrap;
 }
 
 .spotlight-results-dropdown {

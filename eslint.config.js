@@ -19,6 +19,8 @@ export default [
         parser: tsParser,
       },
       globals: {
+        btoa: 'readonly',
+        Uint8Array: 'readonly',
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
@@ -34,6 +36,7 @@ export default [
         Text: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
+        console: 'readonly',
       },
     },
     rules: {

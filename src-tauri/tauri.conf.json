@@ -23,7 +23,11 @@
       }
     ],
     "security": {
-      "csp": null
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$TEMP/**"]
+      },
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' asset://localhost data:; font-src 'self' asset://localhost data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'"
     }
   },
   "bundle": {
