@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Search, X, FileText } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { tauriApi } from '../api';
-import type { FileItem } from '../plugins/base';
+import { tauriApi } from '@spotlight/api';
+import type { FileItem } from '@spotlight/core';
 
 export type { FileItem };
 

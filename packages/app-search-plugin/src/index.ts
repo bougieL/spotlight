@@ -1,9 +1,12 @@
-import type { SearchResultItem, SearchParams, RenderParams } from '../../base';
-import { BasePlugin } from '../../base';
-import { tauriApi, type AppInfo } from '../../../api/tauri';
+import type { Component } from 'vue';
+import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import { BasePlugin } from '@spotlight/core';
+import { tauriApi, type AppInfo } from '@spotlight/api';
+import { toPinyin, toPinyinInitials, normalizeForSearch } from './pinyin';
 
 interface CachedApp {
   info: AppInfo;
+  normalizedName: string;
 }
 
 export class AppSearchPlugin extends BasePlugin {
@@ -22,7 +25,10 @@ export class AppSearchPlugin extends BasePlugin {
 
     try {
       const apps = await tauriApi.getInstalledApplications();
-      this.cachedApps = apps.map((info) => ({ info }));
+      this.cachedApps = apps.map((info) => ({
+        info,
+        normalizedName: normalizeForSearch(info.name),
+      }));
       this.cacheLoaded = true;
     } catch {
       this.cachedApps = [];
@@ -43,9 +49,28 @@ export class AppSearchPlugin extends BasePlugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const apps = await this.loadApps();
     const lowerQuery = params.query.toLowerCase();
+    const queryPinyin = toPinyin(params.query).toLowerCase();
+    const queryInitials = toPinyinInitials(params.query).toLowerCase();
 
     return apps
-      .filter((app) => app.info.name.toLowerCase().includes(lowerQuery))
+      .filter((app) => {
+        const name = app.info.name.toLowerCase();
+        const normalized = app.normalizedName;
+
+        // Direct match
+        if (name.includes(lowerQuery)) return true;
+
+        // Pinyin full match (e.g., "weixin" matches "微信")
+        if (normalized.includes(queryPinyin)) return true;
+
+        // Pinyin initials match (e.g., "wx" matches "微信")
+        const nameInitials = toPinyinInitials(app.info.name).toLowerCase();
+        if (nameInitials.includes(queryInitials) || queryInitials.length >= 2 && nameInitials.startsWith(queryInitials)) {
+          return true;
+        }
+
+        return false;
+      })
       .slice(0, params.limit ?? 10)
       .map((app) => ({
         iconUrl: app.info.icon_data ?? undefined,
@@ -55,7 +80,7 @@ export class AppSearchPlugin extends BasePlugin {
       }));
   }
 
-  async render(_params: RenderParams): Promise<ReturnType<typeof import('vue')['defineComponent']> | null> {
+  async render(_params: RenderParams): Promise<Component | null> {
     return null;
   }
 }

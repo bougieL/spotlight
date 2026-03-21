@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FileText, Image } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import type { FileItem, SearchResultItem } from '../plugins/base';
+import type { FileItem, SearchResultItem } from '@spotlight/core';
 
 interface Props {
   query: string;

@@ -1,4 +1,4 @@
-import type { BasePlugin, SearchResultItem, SearchParams } from './base';
+import type { BasePlugin, SearchResultItem, SearchParams } from '@spotlight/core';
 
 class PluginRegistry {
   private plugins: BasePlugin[] = [];
@@ -8,7 +8,7 @@ class PluginRegistry {
   }
 
   unregister(name: string): void {
-    this.plugins = this.plugins.filter((p) => p.name === name);
+    this.plugins = this.plugins.filter((p) => p.name !== name);
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {

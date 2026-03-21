@@ -1,5 +1,5 @@
-export * from './base';
-export * from './types';
-export * from './registry';
-export * from './builtins/sample-plugin';
-export * from './builtins/app-search-plugin';
+export * from '@spotlight/core';
+export { BasePlugin } from '@spotlight/core';
+export { pluginRegistry } from './registry';
+export { samplePlugin } from '@spotlight/sample-plugin';
+export { appSearchPlugin } from '@spotlight/app-search-plugin';

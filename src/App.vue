@@ -3,8 +3,8 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import SearchInput from "./components/SearchInput.vue";
 import SearchList from "./components/SearchList.vue";
 import { pluginRegistry, samplePlugin, appSearchPlugin } from "./plugins";
-import { tauriApi } from "./api";
-import type { FileItem, SearchResultItem } from "./plugins/base";
+import { tauriApi } from "@spotlight/api";
+import type { FileItem, SearchResultItem } from "@spotlight/core";
 
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);

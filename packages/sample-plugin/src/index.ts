@@ -1,7 +1,7 @@
 import { FileText, Calculator, Globe } from 'lucide-vue-next';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '../../base';
-import { BasePlugin } from '../../base';
+import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import { BasePlugin } from '@spotlight/core';
 
 interface SampleItem {
   icon: typeof FileText;
