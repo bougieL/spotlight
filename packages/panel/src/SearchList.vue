@@ -32,6 +32,16 @@ const selectItem = (item: SearchResultItem) => {
 const handleKeydown = (event: KeyboardEvent) => {
   if (props.searchResults.length === 0) return;
 
+  // Handle Ctrl+1-9 shortcuts
+  if (event.ctrlKey && event.key >= '1' && event.key <= '9') {
+    const index = parseInt(event.key) - 1;
+    if (index < props.searchResults.length) {
+      event.preventDefault();
+      selectItem(props.searchResults[index]);
+    }
+    return;
+  }
+
   if (event.key === 'ArrowDown') {
     event.preventDefault();
     selectedIndex.value = (selectedIndex.value + 1) % props.searchResults.length;
@@ -91,6 +101,9 @@ onUnmounted(() => {
         <div class="result-content">
           <div class="result-title">{{ item.title }}</div>
           <div class="result-desc">{{ item.desc }}</div>
+        </div>
+        <div v-if="index < 9" class="shortcut-hint">
+          Ctrl + {{ index + 1 }}
         </div>
       </div>
     </div>
@@ -189,5 +202,19 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 2px;
+}
+
+.shortcut-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  margin-left: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--spotlight-shortcut-border);
+  font-size: 11px;
+  background-color: var(--spotlight-shortcut-bg);
+  color: var(--spotlight-shortcut-text);
+  flex-shrink: 0;
 }
 </style>
