@@ -58,14 +58,7 @@
 - Fix all warnings and errors before marking a task as complete
 - Example: `npm run lint && npm run typecheck`
 
-### 10. Frontend Verification (Mandatory)
-
-- **MUST run browser testing after modifying frontend files**
-- Use Playwright MCP tools to verify the changes work correctly in browser
-- This applies to .html/.css/.js/.jsx/.ts/.tsx/.vue/.svelte files
-- Use `playwright_browser_navigate` to access http://localhost:1420 for testing
-
-### 11. Architecture Analysis Before Coding (Mandatory)
+### 10. Architecture Analysis Before Coding (Mandatory)
 
 - **MUST analyze project architecture before writing any code**
 - Review existing code structure and identify reusable logic
@@ -74,7 +67,7 @@
 - Check for similar patterns or utilities that can be leveraged
 - Example: Before creating a new utility function, search for existing helpers in `src/utils/` or similar directories
 
-### 12. Code Review After Writing (Mandatory)
+### 11. Code Review After Writing (Mandatory)
 
 - **MUST reflect on whether the code is reasonable after writing**
 - Check if the implementation follows best practices and project conventions
@@ -83,7 +76,7 @@
 - Ensure the code is maintainable and readable
 - Consider if the changes could introduce bugs or edge cases
 
-### 13. Light/Dark Theme Adaptation (Mandatory)
+### 12. Light/Dark Theme Adaptation (Mandatory)
 
 - **ALL colors MUST adapt to light and dark themes**
 - Use CSS variables to define colors and their theme variants

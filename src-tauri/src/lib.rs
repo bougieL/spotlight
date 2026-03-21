@@ -2,8 +2,8 @@ pub mod commands;
 pub mod utils;
 
 use commands::{
-    get_clipboard_file_paths, get_installed_applications, launch_app, resize_window, save_pasted_file,
-    save_temp_image,
+    get_clipboard_file_paths, get_installed_applications, get_plugin_storage_dir, launch_app,
+    resize_window, save_pasted_file, save_temp_image,
 };
 use tauri::Manager;
 
@@ -19,7 +19,8 @@ pub fn run() {
             get_clipboard_file_paths,
             resize_window,
             get_installed_applications,
-            launch_app
+            launch_app,
+            get_plugin_storage_dir
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

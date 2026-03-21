@@ -26,6 +26,11 @@ export async function getInstalledApplications(): Promise<AppInfo[]> {
   ];
 }
 
+export async function getPluginStorageDir(pluginName: string): Promise<string> {
+  // In mock mode, return a mock storage path
+  return `mock_storage/${pluginName}`;
+}
+
 export async function invokeCommand(command: string, args?: Record<string, unknown>) {
   switch (command) {
     case 'save_temp_image':
@@ -37,6 +42,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'launch_app':
       console.log('Mock launch_app:', args?.path);
       return Promise.resolve();
+    case 'get_plugin_storage_dir':
+      return getPluginStorageDir(args?.plugin_name as string);
     default:
       return invoke(command, args);
   }
