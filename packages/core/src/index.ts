@@ -5,7 +5,7 @@ export interface SearchResultItem {
   iconUrl?: string;
   title: string;
   desc?: string;
-  action: () => void;
+  action: () => void | Promise<void>;
 }
 
 export interface SearchParams {

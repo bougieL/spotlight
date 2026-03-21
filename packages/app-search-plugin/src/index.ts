@@ -38,12 +38,16 @@ export class AppSearchPlugin extends BasePlugin {
     return this.cachedApps;
   }
 
-  private launchApp(info: AppInfo): void {
+  private async launchApp(info: AppInfo): Promise<void> {
     if (!info.path) return;
 
-    import('@tauri-apps/plugin-opener').then(({ openPath }) => {
-      openPath(info.path).catch(() => {});
-    }).catch(() => {});
+    console.log('Launching app:', info.name, 'at path:', info.path);
+
+    try {
+      await tauriApi.launchApp(info.path);
+    } catch (error) {
+      console.error('Failed to launch app:', error);
+    }
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -76,7 +80,7 @@ export class AppSearchPlugin extends BasePlugin {
         iconUrl: app.info.icon_data ?? undefined,
         title: app.info.name,
         desc: app.info.path,
-        action: () => this.launchApp(app.info),
+        action: async () => this.launchApp(app.info),
       }));
   }
 

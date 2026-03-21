@@ -51,7 +51,7 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                 {
                     let mut index: u32 = 0;
                     let mut name_buf: [u16; 256] = [0; 256];
-                    let mut name_len: u32 = name_buf.len() as u32;
+                    let mut name_len: u32;
                     let null_pwstr = PWSTR::null();
 
                     loop {
@@ -107,19 +107,83 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                                 );
 
                             if let Some(name) = display_name {
-                                let path = install_location
+                                if let Some(ref icon_str) = display_icon {
+                                    println!("Rust: DisplayIcon for '{}': {}", name, icon_str);
+                                }
+                                // Try to use DisplayIcon which contains the exe path
+                                // Various formats:
+                                // - "C:\Path\to\app.exe"
+                                // - "D:\Path\to\app.exe,0"
+                                // - "D:\Path\to\Weixin"\微信.exe (directory in quotes, exe after)
+                                let path = display_icon
+                                    .as_ref()
+                                    .and_then(|icon_str| {
+                                        let clean_str = icon_str.trim();
+
+                                        // Remove any parameters after comma (e.g., "app.exe,0" -> "app.exe")
+                                        let without_params = clean_str.split(',').next().unwrap_or(clean_str);
+
+                                        // Handle paths with quotes
+                                        if without_params.contains('"') {
+                                            // For format: "D:\Path\to\Dir"\exe.exe
+                                            // Extract the quoted directory and append the exe filename
+                                            let parts: Vec<&str> = without_params.split('"').collect();
+                                            if parts.len() >= 3 {
+                                                // parts[0] = empty or prefix
+                                                // parts[1] = directory path
+                                                // parts[2] = backslash + exe filename
+                                                let dir = parts[1].trim_end_matches('\\');
+                                                let exe_part = parts.get(2).unwrap_or(&"").trim_start_matches('\\');
+
+                                                // Only construct path with backslash if exe_part is not empty
+                                                if exe_part.is_empty() {
+                                                    Some(dir.to_string())
+                                                } else {
+                                                    Some(format!(r"{}\{}", dir, exe_part))
+                                                }
+                                            } else {
+                                                // For simple format: "C:\Path\to\app.exe"
+                                                Some(without_params.replace('"', ""))
+                                            }
+                                        } else {
+                                            Some(without_params.to_string())
+                                        }
+                                    })
                                     .unwrap_or_else(|| {
-                                        format!(r"C:\Program Files\{}", name)
+                                        // Fallback: only if DisplayIcon is completely missing
+                                        let clean_name = name.replace('"', "").trim().to_string();
+                                        if let Some(install_loc) = install_location {
+                                            format!(r"{}\{}.exe", install_loc.trim_end_matches('\\'), clean_name)
+                                        } else {
+                                            format!(r"C:\Program Files\{}.exe", clean_name)
+                                        }
                                     });
+
+                                // Final cleanup: remove any remaining quotes and trim trailing backslashes
+                                let clean_path = path.replace('"', "").trim_end_matches('\\').trim().to_string();
+
+                                // Simple validation: check if path has valid extension
+                                let has_valid_ext = clean_path.to_lowercase().ends_with(".exe")
+                                    || clean_path.to_lowercase().ends_with(".lnk")
+                                    || clean_path.to_lowercase().ends_with(".ico")
+                                    || clean_path.to_lowercase().ends_with(".app");
+
+                                if !has_valid_ext {
+                                    println!("Rust: Skipping '{}' - invalid path: {}", name, clean_path);
+                                    continue;
+                                }
+
                                 let icon_data = display_icon
+                                    .as_ref()
                                     .and_then(|icon_str| {
                                         extract_icon_base64(&icon_str)
-                                    })
-                                    .or_else(|| generate_letter_icon(&name));
+                                    });
+
+                                println!("Rust: Processed path for '{}': {}", name, clean_path);
 
                                 apps.push(AppInfo {
                                     name,
-                                    path,
+                                    path: clean_path,
                                     icon_data,
                                 });
                             }

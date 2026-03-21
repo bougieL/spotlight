@@ -34,6 +34,9 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return getClipboardFilePaths();
     case 'get_installed_applications':
       return getInstalledApplications();
+    case 'launch_app':
+      console.log('Mock launch_app:', args?.path);
+      return Promise.resolve();
     default:
       return invoke(command, args);
   }

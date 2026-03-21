@@ -24,7 +24,6 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 const handleSelect = (item: SearchResultItem) => {
   item.action();
   query.value = '';
-  searchResults.value = [];
 };
 
 let resizeObserver: ResizeObserver | null = null;

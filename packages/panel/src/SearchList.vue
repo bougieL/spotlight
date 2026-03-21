@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileText, Image } from 'lucide-vue-next';
+import { FileText, Image, Package } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { FileItem, SearchResultItem } from '@spotlight/core';
 
@@ -87,7 +87,7 @@ onUnmounted(() => {
           :src="item.iconUrl"
           class="result-icon-img"
         />
-        <div v-else class="result-icon-placeholder" />
+        <Package v-else class="result-icon" :size="20" />
         <div class="result-content">
           <div class="result-title">{{ item.title }}</div>
           <div class="result-desc">{{ item.desc }}</div>
@@ -166,15 +166,6 @@ onUnmounted(() => {
   flex-shrink: 0;
   margin-right: 12px;
   object-fit: contain;
-}
-
-.result-icon-placeholder {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  margin-right: 12px;
-  background-color: var(--spotlight-icon);
-  border-radius: 4px;
 }
 
 .result-content {
