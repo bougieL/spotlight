@@ -12,14 +12,15 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "eslint src --ext .vue,.ts,.tsx",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
+    "@spotlight/calculator-plugin": "*",
     "@spotlight/calendar-plugin": "*",
     "@spotlight/chrome-bookmarks-plugin": "*",
-    "@spotlight/calculator-plugin": "*",
     "@spotlight/clipboard-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",
@@ -46,6 +47,7 @@
     "globals": "^17.4.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.3",
+    "vitest": "^4.1.0",
     "vue-tsc": "^3.2.6"
   },
   "optionalDependencies": {

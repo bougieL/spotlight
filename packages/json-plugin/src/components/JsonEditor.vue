@@ -44,6 +44,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton } from '@spotlight/components';
+import { parseJson } from '../utils/parseJson';
 
 const { t } = useI18n();
 
@@ -202,27 +203,6 @@ function validateJson() {
     error.value = null;
   } catch (e) {
     error.value = (e as Error).message;
-  }
-}
-
-function parseJson(text: string): unknown {
-  try {
-    const parsed: unknown = JSON.parse(text);
-    if (typeof parsed === 'string') {
-      try {
-        return JSON.parse(parsed);
-      } catch {
-        return parsed;
-      }
-    }
-    return parsed;
-  } catch {
-    // Try to extract JSON from mixed text
-    const match = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
-    if (match) {
-      return JSON.parse(match[0]);
-    }
-    throw new Error('No valid JSON found');
   }
 }
 
