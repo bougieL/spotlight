@@ -6,6 +6,8 @@
   "clipboard.copied": "已复制！",
   "clipboard.clear": "清空",
   "clipboard.confirmClear": "确定清空所有剪贴板历史？",
+  "clipboard.all": "全部",
+  "clipboard.favorites": "收藏",
   "clipboard.text": "文本",
   "clipboard.image": "图片",
   "clipboard.files": "文件"

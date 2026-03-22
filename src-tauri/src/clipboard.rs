@@ -319,14 +319,11 @@ pub fn set_clipboard_image(data_url: String) -> Result<(), String> {
         use base64::Engine;
         use windows::Win32::Foundation::HWND;
         use windows::Win32::Graphics::Gdi::{
-            CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, SelectObject,
-            SetDIBits, BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS, HBITMAP,
+            CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, SetDIBits,
+            BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS,
         };
         use windows::Win32::System::DataExchange::{
             CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
-        };
-        use windows::Win32::System::Memory::{
-            GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE,
         };
 
         const CF_BITMAP: u32 = 2;

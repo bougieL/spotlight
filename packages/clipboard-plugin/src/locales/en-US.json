@@ -6,6 +6,8 @@
   "clipboard.copied": "Copied!",
   "clipboard.clear": "Clear",
   "clipboard.confirmClear": "Clear all clipboard history?",
+  "clipboard.all": "All",
+  "clipboard.favorites": "Favorites",
   "clipboard.text": "Text",
   "clipboard.image": "Image",
   "clipboard.files": "Files"

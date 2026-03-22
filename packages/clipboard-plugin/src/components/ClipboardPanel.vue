@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Clipboard, FileText, Image, Copy, Check } from 'lucide-vue-next';
+import { Clipboard, FileText, Image, Copy, Check, LayoutGrid } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 import { on, type UnlistenFn } from '@spotlight/api';
@@ -19,16 +19,31 @@ const { t } = useI18n();
 
 const items = ref<ClipboardItem[]>([]);
 const copiedId = ref<string | null>(null);
+const selectedType = ref<'all' | ClipboardItemType>('all');
 let unlistenClipboard: UnlistenFn | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const filteredItems = computed(() => {
-  if (!props.query.trim()) {
-    return items.value;
+  let result = items.value;
+  
+  if (selectedType.value !== 'all') {
+    result = result.filter(item => item.type === selectedType.value);
   }
-  const query = props.query.toLowerCase();
-  return items.value.filter(item => item.content.toLowerCase().includes(query));
+  
+  if (props.query.trim()) {
+    const query = props.query.toLowerCase();
+    result = result.filter(item => item.content.toLowerCase().includes(query));
+  }
+  
+  return result;
 });
+
+const filterTabs = computed(() => [
+  { key: 'all' as const, icon: LayoutGrid, label: t('clipboard.all') },
+  { key: 'text' as const, icon: FileText, label: t('clipboard.text') },
+  { key: 'image' as const, icon: Image, label: t('clipboard.image') },
+  { key: 'files' as const, icon: FileText, label: t('clipboard.files') },
+]);
 
 function getTypeIcon(type: ClipboardItemType) {
   switch (type) {
@@ -162,6 +177,18 @@ async function handleItemClick(item: ClipboardItem) {
 
 <template>
   <div class="clipboard-panel" tabindex="0" @keydown="handleKeydown">
+    <div class="clipboard-tabs">
+      <button
+        v-for="tab in filterTabs"
+        :key="tab.key"
+        class="tab-item"
+        :class="{ active: selectedType === tab.key }"
+        @click="selectedType = tab.key"
+      >
+        <component :is="tab.icon" :size="14" />
+        <span>{{ tab.label }}</span>
+      </button>
+    </div>
     <div class="clipboard-list">
       <div v-if="filteredItems.length === 0" class="empty-state">
         <Clipboard :size="48" class="empty-icon" />
@@ -211,6 +238,37 @@ async function handleItemClick(item: ClipboardItem) {
   height: 400px;
   background-color: var(--spotlight-bg);
   outline: none;
+}
+
+.clipboard-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--spotlight-placeholder);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab-item:hover {
+  background-color: var(--spotlight-item-hover);
+  color: var(--spotlight-text);
+}
+
+.tab-item.active {
+  background-color: var(--spotlight-tag-bg);
+  color: var(--spotlight-text);
 }
 
 .clipboard-list {

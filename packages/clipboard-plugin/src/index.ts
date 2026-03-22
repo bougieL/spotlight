@@ -27,10 +27,12 @@ export interface ClipboardItem {
   type: ClipboardItemType;
   content: string;
   timestamp: number;
+  favorite?: boolean;
 }
 
 export interface ClipboardData {
   items: ClipboardItem[];
+  favorites: ClipboardItem[];
 }
 
 function generateId(): string {
@@ -66,7 +68,7 @@ export class ClipboardPlugin extends BasePlugin {
   }
 
   async getData(): Promise<ClipboardData> {
-    const data = await this.storage.get<ClipboardData>(STORAGE_KEY, { items: [] });
+    const data = await this.storage.get<ClipboardData>(STORAGE_KEY, { items: [], favorites: [] });
     return data;
   }
 
@@ -99,7 +101,26 @@ export class ClipboardPlugin extends BasePlugin {
   }
 
   async clearItems(): Promise<void> {
-    await this.saveData({ items: [] });
+    const data = await this.getData();
+    await this.saveData({ items: [], favorites: data.favorites });
+  }
+
+  async toggleFavorite(item: ClipboardItem): Promise<void> {
+    const data = await this.getData();
+    const existingIndex = data.favorites.findIndex(f => f.content === item.content);
+    
+    if (existingIndex !== -1) {
+      data.favorites.splice(existingIndex, 1);
+    } else {
+      data.favorites.unshift({ ...item, favorite: true, timestamp: Date.now() });
+    }
+    
+    await this.saveData(data);
+  }
+
+  async isFavorite(content: string): Promise<boolean> {
+    const data = await this.getData();
+    return data.favorites.some(f => f.content === content);
   }
 
   async startMonitoring(): Promise<void> {
