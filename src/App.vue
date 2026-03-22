@@ -5,6 +5,7 @@ import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
 import { provideI18n, setLocale } from "@spotlight/i18n";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
+import { chromeBookmarksPlugin } from "@spotlight/chrome-bookmarks-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { notesPlugin } from "@spotlight/notes-plugin";
 import { calendarPlugin } from "@spotlight/calendar-plugin";
@@ -20,6 +21,7 @@ import logger from '@spotlight/logger';
 provideI18n();
 
 pluginRegistry.register(appSearchPlugin);
+pluginRegistry.register(chromeBookmarksPlugin);
 pluginRegistry.register(calculatorPlugin);
 pluginRegistry.register(notesPlugin);
 pluginRegistry.register(calendarPlugin);

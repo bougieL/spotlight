@@ -6,6 +6,14 @@ export interface AppInfo {
   icon_data: string | null;
 }
 
+export interface ChromeBookmark {
+  id: string;
+  name: string;
+  url: string;
+  profile: string;
+  folder_path: string[];
+}
+
 export async function saveTempImage(dataUrl: string): Promise<string> {
   // In mock mode, just return the data URL as-is for testing
   return dataUrl;
@@ -40,6 +48,16 @@ export async function getInstalledApplications(): Promise<AppInfo[]> {
   ];
 }
 
+export async function getChromeBookmarks(): Promise<ChromeBookmark[]> {
+  // In mock mode, return sample bookmarks for testing
+  return [
+    { id: '1', name: 'Google', url: 'https://www.google.com', profile: 'Default', folder_path: ['Bookmarks Bar'] },
+    { id: '2', name: 'GitHub', url: 'https://github.com', profile: 'Default', folder_path: ['Bookmarks Bar'] },
+    { id: '3', name: 'Vue.js', url: 'https://vuejs.org', profile: 'Default', folder_path: ['Bookmarks Bar', 'JavaScript'] },
+    { id: '4', name: 'Rust Programming Language', url: 'https://rust-lang.org', profile: 'Default', folder_path: ['Bookmarks Bar', 'Programming'] },
+  ];
+}
+
 const MOCK_SETTINGS_PREFIX = 'mock_plugin_settings_';
 
 export async function invokeCommand(command: string, args?: Record<string, unknown>) {
@@ -59,6 +77,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'launch_app':
       console.log('Mock launch_app:', args?.path);
       return Promise.resolve();
+    case 'get_chrome_bookmarks':
+      return getChromeBookmarks();
     case 'read_plugin_settings':
       return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`) || '';
     case 'write_plugin_settings':

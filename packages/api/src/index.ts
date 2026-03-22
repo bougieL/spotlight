@@ -9,6 +9,14 @@ export interface AppInfo {
   icon_data: string | null;
 }
 
+export interface ChromeBookmark {
+  id: string;
+  name: string;
+  url: string;
+  profile: string;
+  folder_path: string[];
+}
+
 export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
@@ -25,6 +33,7 @@ export interface TauriApi {
   launchApp: (path: string) => Promise<void>;
   registerGlobalShortcut: (shortcut: string) => Promise<void>;
   getGlobalShortcut: () => Promise<string>;
+  getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   convertFileSrc: typeof convertFileSrc;
 }
 
@@ -58,6 +67,8 @@ export const tauriApi: TauriApi = {
   registerGlobalShortcut: (shortcut: string) => invoke('register_global_shortcut', { shortcut }),
 
   getGlobalShortcut: () => invoke<string>('get_global_shortcut'),
+
+  getChromeBookmarks: () => invoke<ChromeBookmark[]>('get_chrome_bookmarks'),
 
   convertFileSrc,
 };

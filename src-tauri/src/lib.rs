@@ -3,11 +3,12 @@ pub mod commands;
 pub mod utils;
 
 use commands::{
-    get_app_icon, get_clipboard_file_paths, get_clipboard_image, get_clipboard_text,
-    get_global_shortcut, get_installed_applications, get_plugin_storage_dir, launch_app,
-    read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
-    save_temp_image, set_clipboard_files, set_clipboard_image, set_clipboard_text,
-    start_clipboard_monitor, stop_clipboard_monitor, write_log, write_plugin_settings,
+    get_app_icon, get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image,
+    get_clipboard_text, get_global_shortcut, get_installed_applications,
+    get_plugin_storage_dir, launch_app, read_plugin_settings, register_global_shortcut,
+    resize_window, save_pasted_file, save_temp_image, set_clipboard_files, set_clipboard_image,
+    set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
+    write_plugin_settings,
 };
 use tauri::{
     menu::{Menu, MenuItem},
@@ -34,6 +35,7 @@ pub fn run() {
             start_clipboard_monitor,
             stop_clipboard_monitor,
             resize_window,
+            get_chrome_bookmarks,
             get_installed_applications,
             get_app_icon,
             launch_app,

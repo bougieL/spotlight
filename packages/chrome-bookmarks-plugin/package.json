@@ -1,0 +1,19 @@
+{
+  "name": "@spotlight/chrome-bookmarks-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@spotlight/api": "*",
+    "@spotlight/core": "*",
+    "@spotlight/utils": "*",
+    "@spotlight/plugin-registry": "*",
+    "@spotlight/i18n": "*",
+    "@spotlight/logger": "*"
+  }
+}

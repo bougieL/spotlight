@@ -18,6 +18,7 @@
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calendar-plugin": "*",
+    "@spotlight/chrome-bookmarks-plugin": "*",
     "@spotlight/calculator-plugin": "*",
     "@spotlight/clipboard-plugin": "*",
     "@spotlight/components": "*",
