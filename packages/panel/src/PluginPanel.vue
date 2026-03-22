@@ -5,6 +5,7 @@ import type { Component } from 'vue';
 interface Props {
   component: Component;
   query: string;
+  onReady?: () => void;
 }
 
 const props = defineProps<Props>();
@@ -26,7 +27,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 
 <template>
   <div class="plugin-panel">
-    <component :is="component" :query="query" @close="emit('close')" />
+    <component :is="component" :query="query" :on-ready="onReady" @close="emit('close')" />
   </div>
 </template>
 

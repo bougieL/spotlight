@@ -30,6 +30,7 @@ const files = ref<FileItem[]>([]);
 const searchResults = ref<SearchResultItem[]>([]);
 const activePanelComponent = ref<Component | null>(null);
 const activePluginNameKey = ref<string | null>(null);
+const activePanelOnReady = ref<(() => void) | undefined>(undefined);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
@@ -43,6 +44,9 @@ const handleSelect = async (item: SearchResultItem) => {
     setPanel: (component: Component, pluginNameKey?: string) => {
       activePanelComponent.value = component;
       activePluginNameKey.value = pluginNameKey ?? null;
+      activePanelOnReady.value = () => {
+        query.value = '';
+      };
       panelEntered = true;
     },
     clearQuery: () => {
@@ -60,6 +64,7 @@ const handleSelect = async (item: SearchResultItem) => {
 const handleClosePanel = () => {
   activePanelComponent.value = null;
   activePluginNameKey.value = null;
+  activePanelOnReady.value = undefined;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -128,6 +133,7 @@ onUnmounted(() => {
       v-else
       :component="activePanelComponent"
       :query="query"
+      :on-ready="activePanelOnReady"
       @close="handleClosePanel"
     />
   </main>

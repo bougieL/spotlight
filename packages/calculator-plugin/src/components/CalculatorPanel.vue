@@ -4,9 +4,10 @@ import { calculatorPlugin } from '../index';
 
 interface Props {
   query: string;
+  onReady?: () => void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -15,8 +16,26 @@ const emit = defineEmits<{
 const expressions = ref<string[]>(['', '', '']);
 
 onMounted(async () => {
-  expressions.value = await calculatorPlugin.getExpressions();
+  let loadedExpressions = await calculatorPlugin.getExpressions();
+
+  // If query is a math expression, prepend it as a new expression at the top
+  if (props.query && isMathExpression(props.query)) {
+    const queryExpr = props.query.startsWith('=') ? props.query.slice(1).trim() : props.query.trim();
+    // Only prepend if the expression is not already in the list
+    if (queryExpr && !loadedExpressions.includes(queryExpr)) {
+      loadedExpressions = [queryExpr, ...loadedExpressions];
+    }
+  }
+
+  expressions.value = loadedExpressions;
+  props.onReady?.();
 });
+
+function isMathExpression(query: string): boolean {
+  const mathPattern = /^[\d+\-*/().%\s^sqrtabsincostanlogexppi,]+$/i;
+  const trimmed = query.trim();
+  return mathPattern.test(trimmed) || trimmed.startsWith('=');
+}
 
 watch(
   () => expressions.value,
