@@ -6,7 +6,11 @@ use commands::{
     launch_app, read_plugin_settings, resize_window, save_pasted_file, save_temp_image,
     write_plugin_settings,
 };
-use tauri::Manager;
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::TrayIconBuilder,
+    Manager,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -28,6 +32,10 @@ pub fn run() {
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
+
+            // Hide window on startup, show only when tray icon is clicked
+            let _ = window.hide();
+
             if let Ok(Some(monitor)) = window.current_monitor() {
                 let scale_factor = window.scale_factor().unwrap_or(1.0);
                 let monitor_size = *monitor.size();
@@ -45,6 +53,41 @@ pub fn run() {
                 let _ =
                     window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
             }
+
+            // Build system tray menu
+            let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
+
+            // Create system tray icon
+            let _tray = TrayIconBuilder::new()
+                .icon(app.default_window_icon().cloned().unwrap())
+                .menu(&menu)
+                .tooltip("spotlight")
+                .on_tray_icon_event(|tray, event| {
+                    if let tauri::tray::TrayIconEvent::Click { button, .. } = event {
+                        if button == tauri::tray::MouseButton::Left {
+                            if let Some(window) = tray.app_handle().get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                    }
+                })
+                .on_menu_event(|app, event| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+                    }
+                    "quit" => {
+                        app.exit(0);
+                    }
+                    _ => {}
+                })
+                .build(app)?;
+
             Ok(())
         })
         .run(tauri::generate_context!())
