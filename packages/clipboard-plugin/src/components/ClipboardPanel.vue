@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Clipboard, FileText, Image, Copy } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
@@ -107,10 +107,6 @@ function handleKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   await loadItems();
-});
-
-onUnmounted(() => {
-  clipboardPlugin.stopPolling();
 });
 
 async function loadItems() {

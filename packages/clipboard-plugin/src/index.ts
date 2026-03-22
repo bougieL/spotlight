@@ -6,6 +6,8 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -44,7 +46,8 @@ export class ClipboardPlugin extends BasePlugin {
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
-  private pollingInterval: ReturnType<typeof setInterval> | null = null;
+  private unlisten: UnlistenFn | null = null;
+  private monitoring = false;
 
   constructor() {
     super();
@@ -57,6 +60,10 @@ export class ClipboardPlugin extends BasePlugin {
           ctx.setPanel(component, this.name);
         }
       },
+    });
+
+    this.startMonitoring().catch((err: unknown) => {
+      logger.error('Failed to start clipboard monitoring:', err);
     });
   }
 
@@ -97,22 +104,32 @@ export class ClipboardPlugin extends BasePlugin {
     await this.saveData({ items: [] });
   }
 
-  startPolling(): void {
-    if (this.pollingInterval) return;
+  async startMonitoring(): Promise<void> {
+    if (this.monitoring) return;
 
-    this.pollingInterval = setInterval(async () => {
+    this.monitoring = true;
+
+    this.unlisten = await listen('clipboard-changed', async () => {
       try {
         await this.checkClipboard();
       } catch (error) {
-        logger.error('Clipboard polling error:', error);
+        logger.error('Clipboard check error:', error);
       }
-    }, 500);
+    });
+
+    await invoke('start_clipboard_monitor');
   }
 
-  stopPolling(): void {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
+  async stopMonitoring(): Promise<void> {
+    if (!this.monitoring) return;
+
+    this.monitoring = false;
+
+    await invoke('stop_clipboard_monitor');
+
+    if (this.unlisten) {
+      this.unlisten();
+      this.unlisten = null;
     }
   }
 

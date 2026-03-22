@@ -14,7 +14,11 @@ pub fn write_log(
     let log_dir: PathBuf = if cfg!(debug_assertions) {
         // In development, use devLogs folder next to the executable
         if let Ok(exe_path) = std::env::current_exe() {
-            exe_path.parent().map(|p| p.to_path_buf()).unwrap_or_default().join("devLogs")
+            exe_path
+                .parent()
+                .map(|p| p.to_path_buf())
+                .unwrap_or_default()
+                .join("devLogs")
         } else {
             PathBuf::from("devLogs")
         }

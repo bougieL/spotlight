@@ -10,6 +10,7 @@ pub mod window;
 pub use apps::{get_app_icon, get_installed_applications};
 pub use clipboard::{
     get_clipboard_file_paths, get_clipboard_image, get_clipboard_text, set_clipboard_text,
+    start_clipboard_monitor, stop_clipboard_monitor,
 };
 pub use file::{save_pasted_file, save_temp_image};
 pub use launcher::launch_app;
