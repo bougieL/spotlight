@@ -5,7 +5,3 @@ edition = "2021"
 
 [lib]
 path = "lib.rs"
-
-[dependencies]
-tauri = { version = "2", features = [] }
-chrono = "0.4"
