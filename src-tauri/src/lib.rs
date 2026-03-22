@@ -2,8 +2,9 @@ pub mod commands;
 pub mod utils;
 
 use commands::{
-    get_clipboard_file_paths, get_installed_applications, get_plugin_storage_dir, launch_app,
-    read_plugin_settings, resize_window, save_pasted_file, save_temp_image, write_plugin_settings,
+    get_app_icon, get_clipboard_file_paths, get_installed_applications, get_plugin_storage_dir,
+    launch_app, read_plugin_settings, resize_window, save_pasted_file, save_temp_image,
+    write_plugin_settings,
 };
 use tauri::Manager;
 
@@ -19,6 +20,7 @@ pub fn run() {
             get_clipboard_file_paths,
             resize_window,
             get_installed_applications,
+            get_app_icon,
             launch_app,
             get_plugin_storage_dir,
             read_plugin_settings,
@@ -40,10 +42,8 @@ pub fn run() {
                 let x = (monitor_width - window_width) / 2.0;
                 let y = 200.0;
 
-                let _ = window.set_position(tauri::Position::Logical(tauri::LogicalPosition {
-                    x,
-                    y,
-                }));
+                let _ =
+                    window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
             }
             Ok(())
         })

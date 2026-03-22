@@ -2,11 +2,11 @@ use crate::utils::color::generate_color_from_string;
 
 #[cfg(windows)]
 pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
-    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, ICONINFO, HICON};
     use windows::Win32::Graphics::Gdi::{
-        CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits, GetObjectW, SelectObject,
-        BITMAP, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC,
+        CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits, GetObjectW, SelectObject, BITMAP,
+        BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC,
     };
+    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, HICON, ICONINFO};
 
     #[link(name = "shell32")]
     extern "system" {
@@ -142,7 +142,10 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
         let mut png_bytes: Vec<u8> = Vec::new();
         let mut cursor = std::io::Cursor::new(&mut png_bytes);
 
-        if img_buffer.write_to(&mut cursor, image::ImageFormat::Png).is_ok() {
+        if img_buffer
+            .write_to(&mut cursor, image::ImageFormat::Png)
+            .is_ok()
+        {
             let base64_data =
                 base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
             Some(format!("data:image/png;base64,{}", base64_data))
@@ -177,10 +180,7 @@ pub fn generate_letter_icon(name: &str) -> Option<String> {
 }
 
 pub fn read_icon_file(icon_path: &str) -> Option<String> {
-    if !icon_path.contains('/')
-        && !icon_path.contains('\\')
-        && !icon_path.starts_with('.')
-    {
+    if !icon_path.contains('/') && !icon_path.contains('\\') && !icon_path.starts_with('.') {
         return None;
     }
 
@@ -198,7 +198,10 @@ pub fn read_icon_file(icon_path: &str) -> Option<String> {
         if let Ok(dyn_image) = image::load_from_memory(&file_data) {
             let mut png_bytes: Vec<u8> = Vec::new();
             let mut cursor = std::io::Cursor::new(&mut png_bytes);
-            if dyn_image.write_to(&mut cursor, image::ImageFormat::Png).is_ok() {
+            if dyn_image
+                .write_to(&mut cursor, image::ImageFormat::Png)
+                .is_ok()
+            {
                 let base64_data =
                     base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
                 return Some(format!("data:image/png;base64,{}", base64_data));

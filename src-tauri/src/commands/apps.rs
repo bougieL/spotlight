@@ -1,42 +1,120 @@
-
+use std::collections::HashSet;
 use std::path::Path;
 
 #[derive(serde::Serialize)]
 pub struct AppInfo {
     pub name: String,
     pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub icon_data: Option<String>,
 }
 
-// Recursively search for .lnk files in a directory
+const SKIP_PATTERNS: &[&str] = &[
+    "install",
+    "setup",
+    "update",
+    "uninstall",
+    "unins",
+    "helper",
+    "service",
+    "launcher",
+    "bootstrap",
+    "telemetry",
+    "report",
+    "crashreporter",
+    "diagnose",
+    "config",
+    "startup",
+    "autostart",
+    "autorun",
+    "python",
+    "pythonw",
+    "python3",
+    "node",
+    "npm",
+    "npx",
+    "yarn",
+    "powershell",
+    "pwsh",
+    "cmd",
+    "oneocr",
+    "onnx",
+    "opencv",
+    "libpng",
+    "zlib",
+    "libjpeg",
+    "vcruntime",
+    "vcredist",
+    "msvcp",
+    "mfc",
+    "directx",
+    "xact",
+    "xaudio",
+    "xinput",
+    "gpu",
+    "cuda",
+    "cudart",
+    "opengl",
+    "opencl",
+    "steam",
+    "epic",
+    "origin",
+    "uplay",
+    "gog",
+    "adobe",
+    "creative cloud",
+    "nvidia",
+    "amd",
+    "intel",
+    "radeon",
+    "geforce",
+];
+
 #[cfg(windows)]
-unsafe fn search_directory_recursively(dir_path: &Path, apps: &mut Vec<AppInfo>) {
+fn is_skip_file(name: &str) -> bool {
+    let lower = name.to_lowercase();
+    SKIP_PATTERNS.iter().any(|p| lower.contains(p))
+        || lower.ends_with(".dll")
+        || lower.ends_with(".winmd")
+        || lower.ends_with(".tlb")
+        || lower.ends_with(".ocx")
+        || lower.contains("_backup")
+        || lower.contains("_old")
+        || lower.contains("_native")
+        || lower.contains("_wrapper")
+        || lower.contains("_host")
+        || lower.contains("_runtime")
+        || lower.contains("_framework")
+}
+
+#[cfg(windows)]
+unsafe fn search_directory_recursively(
+    dir_path: &Path,
+    apps: &mut Vec<AppInfo>,
+    seen_paths: &mut HashSet<String>,
+) {
     if let Ok(entries) = std::fs::read_dir(dir_path) {
         for entry in entries.flatten() {
             let entry_path = entry.path();
 
             if entry_path.is_dir() {
-                // Skip reparse points (symlinks, junction points) to avoid infinite loops
                 if let Ok(meta) = std::fs::symlink_metadata(&entry_path) {
                     if meta.file_type().is_symlink() {
                         continue;
                     }
                 }
-                // Recursively search subdirectories
-                search_directory_recursively(&entry_path, apps);
+                search_directory_recursively(&entry_path, apps, seen_paths);
             } else if entry_path.extension().map_or(false, |e| e == "lnk") {
                 if let Some(name) = entry_path.file_stem() {
                     let name_str = name.to_string_lossy().to_string();
                     let target_path = get_shortcut_target(&entry_path)
                         .unwrap_or_else(|| entry_path.to_string_lossy().to_string());
 
-                    // Skip if target path is empty or is a URI (e.g., ms-settings:, explorer:)
                     let is_uri = target_path.chars().nth(1).map_or(false, |c| c != ':');
                     if target_path.is_empty() || (target_path.contains(':') && is_uri) {
                         continue;
                     }
 
-                    // Skip if target is not an .exe file
                     let target_ext = Path::new(&target_path)
                         .extension()
                         .map(|e| e.to_string_lossy().to_lowercase());
@@ -44,11 +122,21 @@ unsafe fn search_directory_recursively(dir_path: &Path, apps: &mut Vec<AppInfo>)
                         continue;
                     }
 
-                    let icon_data = crate::utils::icon::extract_icon_base64(&target_path);
+                    let resolved = Path::new(&target_path);
+                    let canonical = resolved
+                        .canonicalize()
+                        .unwrap_or_else(|_| resolved.to_path_buf());
+                    let path_str = canonical.to_string_lossy().to_string();
+
+                    if seen_paths.contains(&path_str) {
+                        continue;
+                    }
+                    seen_paths.insert(path_str);
+
                     apps.push(AppInfo {
                         name: name_str,
                         path: target_path,
-                        icon_data,
+                        icon_data: None,
                     });
                 }
             }
@@ -69,8 +157,15 @@ fn resolve_symlink(path: &Path) -> String {
                 let converted = if target_str.starts_with("/c/") {
                     let rest = &target_str[3..];
                     format!("C:{}", rest.replace('/', "\\"))
-                } else if target_str.starts_with("/") && target_str.len() > 2 && target_str.chars().nth(2) == Some('/') {
-                    let drive = target_str.chars().nth(1).map(|c| c.to_ascii_uppercase()).unwrap_or('C');
+                } else if target_str.starts_with("/")
+                    && target_str.len() > 2
+                    && target_str.chars().nth(2) == Some('/')
+                {
+                    let drive = target_str
+                        .chars()
+                        .nth(1)
+                        .map(|c| c.to_ascii_uppercase())
+                        .unwrap_or('C');
                     let rest = &target_str[3..];
                     format!("{}:{}", drive, rest.replace('/', "\\"))
                 } else {
@@ -79,7 +174,11 @@ fn resolve_symlink(path: &Path) -> String {
 
                 // If still a symlink (chain), try to resolve again
                 let p = Path::new(&converted);
-                if p.exists() && std::fs::symlink_metadata(p).map(|m| m.file_type().is_symlink()).unwrap_or(false) {
+                if p.exists()
+                    && std::fs::symlink_metadata(p)
+                        .map(|m| m.file_type().is_symlink())
+                        .unwrap_or(false)
+                {
                     return resolve_symlink(p);
                 }
 
@@ -90,122 +189,113 @@ fn resolve_symlink(path: &Path) -> String {
     path.to_string_lossy().to_string()
 }
 
-// Search for Windows App (UWP) executables in WindowsApps directories
-// PowerToys approach: filter out non-app executables
 #[cfg(windows)]
-unsafe fn search_windows_apps_directory(dir_path: &Path, apps: &mut Vec<AppInfo>) {
+unsafe fn search_windows_apps_directory(
+    dir_path: &Path,
+    apps: &mut Vec<AppInfo>,
+    seen_paths: &mut HashSet<String>,
+    seen_names: &mut HashSet<String>,
+) {
     if let Ok(entries) = std::fs::read_dir(dir_path) {
         for entry in entries.flatten() {
             let entry_path = entry.path();
 
-            // If it's a directory, search inside for .exe files
             if entry_path.is_dir() {
                 if let Ok(sub_entries) = std::fs::read_dir(&entry_path) {
                     for sub_entry in sub_entries.flatten() {
                         let sub_path = sub_entry.path();
                         if sub_path.extension().map_or(false, |e| e == "exe") {
-                            let file_name = sub_path.file_name()
+                            let file_name = sub_path
+                                .file_name()
                                 .map(|n| n.to_string_lossy().to_string())
                                 .unwrap_or_default();
 
-                            // Filter out non-app executables (matching PowerToys filtering)
-                            let skip_patterns = [
-                                "install", "setup", "update", "uninstall", "unins",
-                                "helper", "service", "launcher", "bootstrap",
-                                "telemetry", "report", "crashreporter", "diagnose", "config",
-                                "startup", "autostart", "autorun",
-                                "python", "pythonw", "python3",
-                                "node", "npm", "npx", "yarn",
-                                "powershell", "pwsh", "cmd",
-                                "oneocr", "onnx", "opencv", "libpng", "zlib", "libjpeg",
-                                "vcruntime", "vcredist", "msvcp", "mfc",
-                                "directx", "xact", "xaudio", "xinput",
-                                "gpu", "cuda", "cudart",
-                                "opengl", "opencl",
-                                "steam", "epic", "origin", "uplay", "gog",
-                                "adobe", "creative cloud",
-                                "nvidia", "amd", "intel", "radeon", "geforce",
-                            ];
-
-                            let file_lower = file_name.to_lowercase();
-                            let is_skip = skip_patterns.iter().any(|p| file_lower.contains(p))
-                                || file_lower.ends_with(".dll")
-                                || file_lower.ends_with(".winmd")
-                                || file_lower.ends_with(".tlb")
-                                || file_lower.ends_with(".ocx")
-                                || file_lower.contains("_backup")
-                                || file_lower.contains("_old")
-                                || file_lower.contains("_native")
-                                || file_lower.contains("_wrapper")
-                                || file_lower.contains("_host")
-                                || file_lower.contains("_runtime")
-                                || file_lower.contains("_framework");
-
-                            if !is_skip {
-                                let name = sub_path.file_stem()
-                                    .map(|n| n.to_string_lossy().to_string())
-                                    .unwrap_or_default();
-
-                                let clean_name = clean_windows_app_name(&name);
-
-                                // Skip if already have this app
-                                let exists = apps.iter().any(|a| a.name.to_lowercase() == clean_name.to_lowercase());
-                                if !exists && !clean_name.is_empty() && clean_name.len() >= 2 {
-                                    // Resolve symlinks to get actual target path
-                                    let resolved_path = resolve_symlink(&sub_path);
-                                    let icon_data = crate::utils::icon::extract_icon_base64(&resolved_path);
-                                    apps.push(AppInfo {
-                                        name: clean_name,
-                                        path: resolved_path,
-                                        icon_data,
-                                    });
-                                }
+                            if is_skip_file(&file_name) {
+                                continue;
                             }
+
+                            let name = sub_path
+                                .file_stem()
+                                .map(|n| n.to_string_lossy().to_string())
+                                .unwrap_or_default();
+
+                            let clean_name = clean_windows_app_name(&name);
+                            let clean_lower = clean_name.to_lowercase();
+
+                            if seen_names.contains(&clean_lower)
+                                || clean_name.is_empty()
+                                || clean_name.len() < 2
+                            {
+                                continue;
+                            }
+
+                            let resolved_path = resolve_symlink(&sub_path);
+                            let resolved = Path::new(&resolved_path);
+                            let canonical = resolved
+                                .canonicalize()
+                                .unwrap_or_else(|_| resolved.to_path_buf());
+                            let path_str = canonical.to_string_lossy().to_string();
+
+                            if seen_paths.contains(&path_str) {
+                                continue;
+                            }
+                            seen_paths.insert(path_str);
+                            seen_names.insert(clean_lower);
+
+                            apps.push(AppInfo {
+                                name: clean_name,
+                                path: resolved_path,
+                                icon_data: None,
+                            });
                         }
                     }
                 }
             } else if entry_path.extension().map_or(false, |e| e == "exe") {
-                // Top-level .exe files (these are typically symlinks/aliases)
-                let file_name = entry_path.file_name()
+                let file_name = entry_path
+                    .file_name()
                     .map(|n| n.to_string_lossy().to_string())
                     .unwrap_or_default();
 
-                // Skip non-app executables
-                let skip_patterns = [
-                    "install", "setup", "update", "uninstall", "unins",
-                    "helper", "service", "launcher", "bootstrap",
-                    "telemetry", "report", "crashreporter", "diagnose", "config",
-                ];
-                let file_lower = file_name.to_lowercase();
-                let is_app = !skip_patterns.iter().any(|p| file_lower.contains(p));
-
-                if is_app {
-                    let name = entry_path.file_stem()
-                        .map(|n| n.to_string_lossy().to_string())
-                        .unwrap_or_default();
-
-                    // Clean up name - but preserve names like "notepad", "SnippingTool"
-                    let clean_name = if name.to_lowercase() == "snippingtool" {
-                        "Snipping Tool".to_string()
-                    } else if name.to_lowercase() == "snippingtoolui" {
-                        continue; // Skip duplicate UI entry
-                    } else {
-                        clean_windows_app_name(&name)
-                    };
-
-                    // Skip if already have this app
-                    let exists = apps.iter().any(|a| a.name.to_lowercase() == clean_name.to_lowercase());
-                    if !exists && !clean_name.is_empty() {
-                        // Resolve symlinks to get actual target path
-                        let resolved_path = resolve_symlink(&entry_path);
-                        let icon_data = crate::utils::icon::extract_icon_base64(&resolved_path);
-                        apps.push(AppInfo {
-                            name: clean_name,
-                            path: resolved_path,
-                            icon_data,
-                        });
-                    }
+                if is_skip_file(&file_name) {
+                    continue;
                 }
+
+                let name = entry_path
+                    .file_stem()
+                    .map(|n| n.to_string_lossy().to_string())
+                    .unwrap_or_default();
+
+                let clean_name = if name.to_lowercase() == "snippingtool" {
+                    "Snipping Tool".to_string()
+                } else if name.to_lowercase() == "snippingtoolui" {
+                    continue;
+                } else {
+                    clean_windows_app_name(&name)
+                };
+
+                let clean_lower = clean_name.to_lowercase();
+                if seen_names.contains(&clean_lower) || clean_name.is_empty() {
+                    continue;
+                }
+
+                let resolved_path = resolve_symlink(&entry_path);
+                let resolved = Path::new(&resolved_path);
+                let canonical = resolved
+                    .canonicalize()
+                    .unwrap_or_else(|_| resolved.to_path_buf());
+                let path_str = canonical.to_string_lossy().to_string();
+
+                if seen_paths.contains(&path_str) {
+                    continue;
+                }
+                seen_paths.insert(path_str);
+                seen_names.insert(clean_lower);
+
+                apps.push(AppInfo {
+                    name: clean_name,
+                    path: resolved_path,
+                    icon_data: None,
+                });
             }
         }
     }
@@ -237,7 +327,8 @@ fn clean_windows_app_name(name: &str) -> String {
         .replace("Microsoft", "");
 
     // Remove version numbers and architecture suffixes
-    let re = regex_lite::Regex::new(r"[\-_]\d+(\.\d+)*(_[a-zA-Z0-9]+)?$").unwrap_or_else(|_| regex_lite::Regex::new(r"dummy").unwrap());
+    let re = regex_lite::Regex::new(r"[\-_]\d+(\.\d+)*(_[a-zA-Z0-9]+)?$")
+        .unwrap_or_else(|_| regex_lite::Regex::new(r"dummy").unwrap());
     let cleaned = re.replace_all(&cleaned, "").to_string();
 
     // If name has uppercase letters (camelCase), try to split them
@@ -257,7 +348,11 @@ fn clean_windows_app_name(name: &str) -> String {
         result.join(" ")
     } else if !cleaned.is_empty() {
         // Just title case the whole thing
-        cleaned.chars().next().map(|c| c.to_uppercase().collect::<String>() + &cleaned[1..].to_lowercase()).unwrap_or(cleaned)
+        cleaned
+            .chars()
+            .next()
+            .map(|c| c.to_uppercase().collect::<String>() + &cleaned[1..].to_lowercase())
+            .unwrap_or(cleaned)
     } else {
         cleaned
     }
@@ -270,16 +365,15 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
         use windows::Win32::System::Com::{CoInitializeEx, COINIT_MULTITHREADED};
 
         let mut apps: Vec<AppInfo> = Vec::new();
+        let mut seen_paths: HashSet<String> = HashSet::new();
+        let mut seen_names: HashSet<String> = HashSet::new();
 
-        // Get Start Menu paths
         let start_menu_user = std::env::var("APPDATA")
             .map(|p| format!(r"{}\Microsoft\Windows\Start Menu\Programs", p))
             .ok();
         let start_menu_all = std::env::var("PROGRAMDATA")
             .map(|p| format!(r"{}\Microsoft\Windows\Start Menu\Programs", p))
             .ok();
-
-        // Get Desktop paths (user and common)
         let desktop_user = std::env::var("USERPROFILE")
             .map(|p| format!(r"{}\Desktop", p))
             .ok();
@@ -287,7 +381,6 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
             .map(|p| format!(r"{}\Microsoft\Windows\Desktop", p))
             .ok();
 
-        // WindowsApps paths for UWP apps (Notepad, Snipping Tool, etc.)
         let mut windowsapps_paths: Vec<String> = Vec::new();
 
         if let Ok(local) = std::env::var("LOCALAPPDATA") {
@@ -311,7 +404,6 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
             }
         }
 
-        // Collect Start Menu and Desktop paths for .lnk search
         let search_paths: Vec<String> = start_menu_user
             .into_iter()
             .chain(start_menu_all.into_iter())
@@ -319,46 +411,30 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
             .chain(desktop_common.into_iter())
             .collect();
 
-        // Initialize COM
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
-            // Search Start Menu and Desktop for .lnk files
             for dir_path in &search_paths {
                 let path = Path::new(dir_path);
                 if path.exists() {
-                    search_directory_recursively(path, &mut apps);
+                    search_directory_recursively(path, &mut apps, &mut seen_paths);
                 }
             }
 
-            // Search WindowsApps for UWP apps
             for dir_path in &windowsapps_paths {
                 let path = Path::new(dir_path);
                 if path.exists() {
-                    search_windows_apps_directory(path, &mut apps);
+                    search_windows_apps_directory(
+                        path,
+                        &mut apps,
+                        &mut seen_paths,
+                        &mut seen_names,
+                    );
                 }
             }
         }
 
-        // Deduplicate by path (resolving symlinks) - keep the first (localized) name
         apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-
-        // Create a set of resolved paths we've seen, and only keep first occurrence
-        let mut seen_paths: std::collections::HashSet<String> = std::collections::HashSet::new();
-        apps.retain(|app| {
-            // Resolve the path to check for duplicates
-            let resolved = Path::new(&app.path);
-            let canonical = resolved.canonicalize().unwrap_or_else(|_| resolved.to_path_buf());
-            let path_str = canonical.to_string_lossy().to_string();
-
-            if seen_paths.contains(&path_str) {
-                false
-            } else {
-                seen_paths.insert(path_str);
-                true
-            }
-        });
-
         Ok(apps)
     }
 
@@ -407,17 +483,13 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
     {
         let mut apps: Vec<AppInfo> = Vec::new();
 
-        let desktop_dirs = [
-            "/usr/share/applications",
-            "/usr/local/share/applications",
-        ];
+        let desktop_dirs = ["/usr/share/applications", "/usr/local/share/applications"];
 
         if let Ok(home) = std::env::var("HOME") {
             let user_dir = format!("{}/.local/share/applications", home);
-            let desktop_dirs_with_user: Vec<&str> =
-                std::iter::once(user_dir.as_str())
-                    .chain(desktop_dirs.iter().copied())
-                    .collect();
+            let desktop_dirs_with_user: Vec<&str> = std::iter::once(user_dir.as_str())
+                .chain(desktop_dirs.iter().copied())
+                .collect();
 
             for dir in desktop_dirs_with_user {
                 if let Ok(entries) = std::fs::read_dir(dir) {
@@ -445,8 +517,8 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                                 }
 
                                 if !name.is_empty() && !exec.is_empty() {
-                                    let icon_data =
-                                        icon.and_then(|path| crate::utils::icon::read_icon_file(&path));
+                                    let icon_data = icon
+                                        .and_then(|path| crate::utils::icon::read_icon_file(&path));
                                     apps.push(AppInfo {
                                         name,
                                         path: exec,
@@ -470,31 +542,45 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
     }
 }
 
-// Helper function to get shortcut target path using Windows COM
+#[tauri::command]
+pub fn get_app_icon(path: String) -> Option<String> {
+    crate::utils::icon::extract_icon_base64(&path)
+}
+
 #[cfg(windows)]
 unsafe fn get_shortcut_target(lnk_path: &std::path::Path) -> Option<String> {
+    use windows::core::{Interface, PCWSTR};
+    use windows::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
     use windows::Win32::System::Com::{CoCreateInstance, IPersistFile, CLSCTX_INPROC_SERVER};
     use windows::Win32::UI::Shell::{IShellLinkW, ShellLink};
-    use windows::Win32::Storage::FileSystem::WIN32_FIND_DATAW;
-    use windows::core::{PCWSTR, Interface};
 
     let shell_link: IShellLinkW = CoCreateInstance(&ShellLink, None, CLSCTX_INPROC_SERVER).ok()?;
     let persist_file: IPersistFile = shell_link.cast().ok()?;
 
-    let path_wide: Vec<u16> = lnk_path.to_string_lossy().encode_utf16().chain(std::iter::once(0)).collect();
-    persist_file.Load(PCWSTR(path_wide.as_ptr()), windows::Win32::System::Com::STGM(0)).ok()?;
+    let path_wide: Vec<u16> = lnk_path
+        .to_string_lossy()
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect();
+    persist_file
+        .Load(
+            PCWSTR(path_wide.as_ptr()),
+            windows::Win32::System::Com::STGM(0),
+        )
+        .ok()?;
 
-    let mut target_buf: [u16; windows::Win32::Foundation::MAX_PATH as usize] = [0; windows::Win32::Foundation::MAX_PATH as usize];
+    let mut target_buf: [u16; windows::Win32::Foundation::MAX_PATH as usize] =
+        [0; windows::Win32::Foundation::MAX_PATH as usize];
     let mut find_data: WIN32_FIND_DATAW = WIN32_FIND_DATAW::default();
 
-    shell_link.GetPath(
-        &mut target_buf,
-        &mut find_data,
-        0
-    ).ok()?;
+    shell_link
+        .GetPath(&mut target_buf, &mut find_data, 0)
+        .ok()?;
 
-    // Find null terminator and only take the valid string
-    let null_pos = target_buf.iter().position(|&c| c == 0).unwrap_or(target_buf.len());
+    let null_pos = target_buf
+        .iter()
+        .position(|&c| c == 0)
+        .unwrap_or(target_buf.len());
     let target = String::from_utf16_lossy(&target_buf[..null_pos]);
     if target.is_empty() {
         None

@@ -3,7 +3,10 @@ use std::path::PathBuf;
 use tauri::Manager;
 
 #[tauri::command]
-pub fn get_plugin_storage_dir(plugin_name: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+pub fn get_plugin_storage_dir(
+    plugin_name: String,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
     let app_data_dir = app_handle
         .path()
         .app_data_dir()

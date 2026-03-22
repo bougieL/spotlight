@@ -1,21 +1,33 @@
 import { pinyin } from 'pinyin-pro';
 
+const pinyinCache = new Map<string, { full: string; initials: string }>();
+
 export function toPinyin(text: string): string {
   if (!text) return '';
-  return pinyin(text, { toneType: 'none', segmentit: 'word' } as never).replace(/\s+/g, '');
-}
-
-export function toPinyinWithSpaces(text: string): string {
-  if (!text) return '';
-  return pinyin(text, { toneType: 'none', segmentit: 'word' } as never);
+  const cached = pinyinCache.get(text);
+  if (cached) return cached.full;
+  const result = pinyin(text, { toneType: 'none', segmentit: 'word' } as never).replace(/\s+/g, '');
+  pinyinCache.set(text, { full: result, initials: '' });
+  return result;
 }
 
 export function toPinyinInitials(text: string): string {
   if (!text) return '';
-  return pinyin(text, { toneType: 'none', segmentit: 'word' } as never)
-    .split(/\s+/)
-    .map((syllable) => syllable[0])
-    .join('');
+  const cached = pinyinCache.get(text);
+  if (cached) {
+    if (!cached.initials) {
+      cached.initials = cached.full.split(/\s+/).map((s) => s[0]).join('');
+    }
+    return cached.initials;
+  }
+  const full = pinyin(text, { toneType: 'none', segmentit: 'word' } as never);
+  const initials = full.split(/\s+/).map((s) => s[0]).join('');
+  pinyinCache.set(text, { full: full.replace(/\s+/g, ''), initials });
+  return initials;
+}
+
+export function clearPinyinCache(): void {
+  pinyinCache.clear();
 }
 
 export function hasChineseChars(text: string): boolean {
@@ -28,11 +40,6 @@ export function normalizeForSearch(text: string): string {
   return `${lowerText}|${pinyinText}`;
 }
 
-/**
- * Fuzzy matching - checks if query characters appear in order in the target string.
- * For example, "vs" matches "visual studio" because 'v' and 's' appear in order.
- * Returns a score (higher is better), or -1 if no match.
- */
 export function fuzzyMatch(query: string, target: string): number {
   const lowerQuery = query.toLowerCase();
   const lowerTarget = target.toLowerCase();
@@ -44,19 +51,18 @@ export function fuzzyMatch(query: string, target: string): number {
 
   while (queryIdx < lowerQuery.length && targetIdx < lowerTarget.length) {
     if (lowerQuery[queryIdx] === lowerTarget[targetIdx]) {
-      // Bonus points for consecutive matches
       if (lastMatchIdx === targetIdx - 1) {
         score += 2;
       } else {
         score += 1;
       }
-      // Bonus for matching at word boundary (start of target or after separator)
       if (targetIdx === 0 || /[\s\-_.]/.test(lowerTarget[targetIdx - 1])) {
         score += 3;
       }
-      // Bonus for matching uppercase letter when query is lowercase
-      if (target[targetIdx] === target[targetIdx].toUpperCase() &&
-          lowerQuery[queryIdx] === lowerQuery[queryIdx].toLowerCase()) {
+      if (
+        target[targetIdx] === target[targetIdx].toUpperCase() &&
+        lowerQuery[queryIdx] === lowerQuery[queryIdx].toLowerCase()
+      ) {
         score += 2;
       }
       lastMatchIdx = targetIdx;
@@ -65,7 +71,6 @@ export function fuzzyMatch(query: string, target: string): number {
     targetIdx++;
   }
 
-  // All query characters must be found
   if (queryIdx < lowerQuery.length) {
     return -1;
   }
