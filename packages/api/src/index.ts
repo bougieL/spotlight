@@ -1,5 +1,7 @@
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 
+export { createPluginStorage, type PluginStorage } from './storage';
+
 export interface AppInfo {
   name: string;
   path: string;
@@ -13,7 +15,6 @@ export interface TauriApi {
   getInstalledApplications: () => Promise<AppInfo[]>;
   getAppIcon: (path: string) => Promise<string | null>;
   launchApp: (path: string) => Promise<void>;
-  getPluginStorageDir: (pluginName: string) => Promise<string>;
   convertFileSrc: typeof convertFileSrc;
 }
 
@@ -29,8 +30,6 @@ export const tauriApi: TauriApi = {
   getAppIcon: (path: string) => invoke<string | null>('get_app_icon', { path }),
 
   launchApp: (path: string) => invoke('launch_app', { path }),
-
-  getPluginStorageDir: (pluginName: string) => invoke<string>('get_plugin_storage_dir', { plugin_name: pluginName }),
 
   convertFileSrc,
 };

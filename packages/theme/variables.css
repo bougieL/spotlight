@@ -17,8 +17,46 @@
   --spotlight-scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
 }
 
+:root[data-theme="dark"] {
+  --spotlight-bg: rgb(50, 50, 50);
+  --spotlight-text: #fff;
+  --spotlight-placeholder: #888;
+  --spotlight-icon: #888;
+  --spotlight-plugin-name: #888;
+  --spotlight-shadow: rgba(0, 0, 0, 0.4);
+  --spotlight-image-bg: rgba(80, 80, 80, 0.6);
+  --spotlight-item-hover: rgba(255, 255, 255, 0.1);
+  --spotlight-tag-bg: rgba(120, 150, 255, 0.2);
+  --spotlight-tag-text: #8ba4e8;
+  --spotlight-shortcut-bg: rgba(255, 255, 255, 0.1);
+  --spotlight-shortcut-border: rgba(255, 255, 255, 0.2);
+  --spotlight-shortcut-text: #888;
+  --spotlight-scrollbar-bg: transparent;
+  --spotlight-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --spotlight-scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+}
+
+:root[data-theme="light"] {
+  --spotlight-bg: rgb(255, 255, 255);
+  --spotlight-text: #1a1a1a;
+  --spotlight-placeholder: #888;
+  --spotlight-icon: #666;
+  --spotlight-plugin-name: #666;
+  --spotlight-shadow: rgba(0, 0, 0, 0.15);
+  --spotlight-image-bg: rgba(200, 200, 200, 0.6);
+  --spotlight-item-hover: rgba(0, 0, 0, 0.05);
+  --spotlight-tag-bg: rgba(100, 120, 255, 0.15);
+  --spotlight-tag-text: #3b5998;
+  --spotlight-shortcut-bg: rgba(0, 0, 0, 0.05);
+  --spotlight-shortcut-border: rgba(0, 0, 0, 0.15);
+  --spotlight-shortcut-text: #666;
+  --spotlight-scrollbar-bg: transparent;
+  --spotlight-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --spotlight-scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --spotlight-bg: rgb(50, 50, 50);
     --spotlight-text: #fff;
     --spotlight-placeholder: #888;

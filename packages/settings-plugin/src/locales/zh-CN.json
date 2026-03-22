@@ -1,0 +1,10 @@
+{
+  "settings": "设置",
+  "settings.theme": "主题",
+  "settings.theme.light": "浅色",
+  "settings.theme.dark": "深色",
+  "settings.theme.system": "跟随系统",
+  "settings.language": "语言",
+  "settings.language.en": "English",
+  "settings.language.zh": "中文"
+}

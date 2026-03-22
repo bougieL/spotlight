@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { FileText, Image, Package } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { translations, useLocale } from '@spotlight/i18n';
 import type { FileItem, SearchResultItem } from '@spotlight/core';
 
 interface Props {
@@ -17,6 +18,11 @@ const emit = defineEmits<{
 }>();
 
 const selectedIndex = ref(0);
+const locale = useLocale();
+
+const translateTitle = (title: string): string => {
+  return translations[locale.value][title] ?? title;
+};
 
 watch(
   () => props.searchResults,
@@ -99,7 +105,7 @@ onUnmounted(() => {
         />
         <Package v-else class="result-icon" :size="20" />
         <div class="result-content">
-          <div class="result-title">{{ item.title }}</div>
+          <div class="result-title">{{ translateTitle(item.title) }}</div>
           <div class="result-desc">{{ item.desc }}</div>
         </div>
         <div v-if="index < 9" class="shortcut-hint">
