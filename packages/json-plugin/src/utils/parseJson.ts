@@ -5,6 +5,58 @@ function fixUnquotedKeys(json: string): string {
   );
 }
 
+function fixSingleQuotes(json: string): string {
+  let result = '';
+  let inString = false;
+  let escape = false;
+  let stringChar = '';
+
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i];
+    if (escape) {
+      result += ch;
+      escape = false;
+      continue;
+    }
+    if (ch === '\\') {
+      result += ch;
+      escape = true;
+      continue;
+    }
+    if (!inString && (ch === '"' || ch === "'")) {
+      inString = true;
+      stringChar = ch;
+      result += '"';
+      continue;
+    }
+    if (inString && ch === stringChar) {
+      inString = false;
+      result += '"';
+      continue;
+    }
+    result += ch;
+  }
+  return result;
+}
+
+function fixTrailingCommas(json: string): string {
+  return json
+    .replace(/,\s*(?=[}\]])/g, '')
+    .replace(/,\s*$/gm, '');
+}
+
+function unescapeQuotes(json: string): string {
+  return json.replace(/\\"/g, '"');
+}
+
+function normalizeJson(raw: string): string {
+  let result = unescapeQuotes(raw);
+  result = fixSingleQuotes(result);
+  result = fixUnquotedKeys(result);
+  result = fixTrailingCommas(result);
+  return result;
+}
+
 function findBalancedJson(text: string): string | null {
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '{' || text[i] === '[') {
@@ -41,8 +93,13 @@ function findBalancedJson(text: string): string | null {
 }
 
 export function parseJson(text: string): unknown {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error('No valid JSON found');
+  }
+
   try {
-    const parsed: unknown = JSON.parse(text);
+    const parsed: unknown = JSON.parse(trimmed);
     if (typeof parsed === 'string') {
       try {
         return JSON.parse(parsed);
@@ -56,11 +113,7 @@ export function parseJson(text: string): unknown {
     if (!raw) {
       throw new Error('No valid JSON found');
     }
-    try {
-      return JSON.parse(raw);
-    } catch {
-      const fixed = fixUnquotedKeys(raw);
-      return JSON.parse(fixed);
-    }
+    const normalized = normalizeJson(raw);
+    return JSON.parse(normalized);
   }
 }
