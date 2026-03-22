@@ -94,7 +94,15 @@ export class ClipboardPlugin extends BasePlugin {
     data.items.unshift(newItem);
 
     if (data.items.length > MAX_ITEMS) {
-      data.items = data.items.slice(0, MAX_ITEMS);
+      const favoriteContents = new Set(data.favorites.map(f => f.content));
+      let nonFavoriteCount = 0;
+      data.items = data.items.filter(item => {
+        if (favoriteContents.has(item.content)) {
+          return true;
+        }
+        nonFavoriteCount++;
+        return nonFavoriteCount <= MAX_ITEMS;
+      });
     }
 
     await this.saveData(data);

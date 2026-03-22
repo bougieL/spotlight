@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Clipboard, FileText, Image, Copy, Check, LayoutGrid } from 'lucide-vue-next';
+import { Clipboard, FileText, Image, Copy, Check, LayoutGrid, Star } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { formatTime } from '@spotlight/utils';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 import { on, type UnlistenFn } from '@spotlight/api';
 
@@ -18,15 +19,16 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const items = ref<ClipboardItem[]>([]);
+const favorites = ref<ClipboardItem[]>([]);
 const copiedId = ref<string | null>(null);
-const selectedType = ref<'all' | ClipboardItemType>('all');
+const selectedType = ref<'all' | 'favorites' | ClipboardItemType>('all');
 let unlistenClipboard: UnlistenFn | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const filteredItems = computed(() => {
-  let result = items.value;
+  let result = selectedType.value === 'favorites' ? favorites.value : items.value;
   
-  if (selectedType.value !== 'all') {
+  if (selectedType.value !== 'favorites' && selectedType.value !== 'all') {
     result = result.filter(item => item.type === selectedType.value);
   }
   
@@ -39,6 +41,7 @@ const filteredItems = computed(() => {
 });
 
 const filterTabs = computed(() => [
+  { key: 'favorites' as const, icon: Star, label: t('clipboard.favorites') },
   { key: 'all' as const, icon: LayoutGrid, label: t('clipboard.all') },
   { key: 'text' as const, icon: FileText, label: t('clipboard.text') },
   { key: 'image' as const, icon: Image, label: t('clipboard.image') },
@@ -112,25 +115,6 @@ function getFileExtension(path: string): string {
   return dotIndex > 0 ? name.substring(dotIndex + 1).toLowerCase() : '';
 }
 
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-
-  if (diff < 60000) {
-    return 'Just now';
-  }
-  if (diff < 3600000) {
-    const mins = Math.floor(diff / 60000);
-    return `${mins}m ago`;
-  }
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000);
-    return `${hours}h ago`;
-  }
-  return date.toLocaleDateString();
-}
-
 async function handleCopy(item: ClipboardItem) {
   await clipboardPlugin.copyToClipboard(item);
   copiedId.value = item.id;
@@ -168,10 +152,20 @@ onUnmounted(() => {
 async function loadItems() {
   const data = await clipboardPlugin.getData();
   items.value = data.items;
+  favorites.value = data.favorites;
 }
 
 async function handleItemClick(item: ClipboardItem) {
   await handleCopy(item);
+}
+
+async function handleToggleFavorite(item: ClipboardItem) {
+  await clipboardPlugin.toggleFavorite(item);
+  await loadItems();
+}
+
+function isFavorite(item: ClipboardItem): boolean {
+  return favorites.value.some(f => f.content === item.content);
 }
 </script>
 
@@ -221,6 +215,9 @@ async function handleItemClick(item: ClipboardItem) {
             <span class="item-type">{{ getTypeLabel(item.type) }}</span>
             <span class="item-time">{{ formatTime(item.timestamp) }}</span>
           </span>
+        </div>
+        <div class="item-action favorite-action" @click.stop="handleToggleFavorite(item)">
+          <Star :size="14" :class="{ 'starred': isFavorite(item) }" />
         </div>
         <div class="item-action" :class="{ 'copied-action': copiedId === item.id }">
           <Check v-if="copiedId === item.id" :size="14" />
@@ -404,6 +401,19 @@ async function handleItemClick(item: ClipboardItem) {
   color: var(--spotlight-placeholder);
   opacity: 0;
   transition: opacity 0.15s;
+}
+
+.favorite-action {
+  cursor: pointer;
+}
+
+.favorite-action:hover {
+  color: var(--spotlight-text);
+}
+
+.starred {
+  color: #f59e0b;
+  fill: #f59e0b;
 }
 
 .clipboard-item:hover .item-action {
