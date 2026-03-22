@@ -3,7 +3,7 @@ import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, type Locale } from '@spotlight/i18n';
+import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -55,7 +55,8 @@ export class SettingsPlugin extends BasePlugin {
     return [
       {
         icon: Settings,
-        title: 'settings',
+        title: translations[getLocale()]['settings'] ?? 'settings',
+        score: 1000,
         action: async (ctx: SearchResultItemContext) => {
           const component = await this.render({ query: params.query });
           if (component) {

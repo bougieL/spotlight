@@ -99,6 +99,7 @@ export class CalculatorPlugin extends BasePlugin {
       {
         icon: Calculator,
         title: `${displayExpression} = ${formattedResult}`,
+        score: 1000,
         action: async (ctx: SearchResultItemContext) => {
           // Copy result to clipboard
           try {

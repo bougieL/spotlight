@@ -9,6 +9,7 @@ export interface SearchResultItem {
   iconUrl?: string;
   title: string;
   desc?: string;
+  score?: number;
   action: (ctx: SearchResultItemContext) => void | Promise<void>;
 }
 

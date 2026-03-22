@@ -1,6 +1,14 @@
 import type { BasePlugin, SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
 import type { Component } from 'vue';
 
+const MAX_RESULTS_PER_PLUGIN = 5;
+
+interface ScoredResult {
+  item: SearchResultItem;
+  score: number;
+  pluginIndex: number;
+}
+
 export class PluginRegistry {
   private plugins: BasePlugin[] = [];
 
@@ -17,9 +25,60 @@ export class PluginRegistry {
       return [];
     }
 
-    const results = await Promise.all(this.plugins.map((plugin) => plugin.search(params)));
+    const pluginResults = await Promise.all(
+      this.plugins.map((plugin) => plugin.search(params))
+    );
 
-    return results.flat();
+    const scoredResults: ScoredResult[] = [];
+
+    for (let pluginIndex = 0; pluginIndex < this.plugins.length; pluginIndex++) {
+      const results = pluginResults[pluginIndex];
+      const limit = params.limit ?? MAX_RESULTS_PER_PLUGIN;
+
+      for (const item of results.slice(0, limit)) {
+        const score = item.score ?? this.calculateGlobalScore(item, params.query);
+        scoredResults.push({ item, score, pluginIndex });
+      }
+    }
+
+    scoredResults.sort((a, b) => {
+      if (Math.abs(b.score - a.score) > 0.01) {
+        return b.score - a.score;
+      }
+      return a.pluginIndex - b.pluginIndex;
+    });
+
+    const finalResults = scoredResults.map((r) => r.item);
+    const uniqueResults: SearchResultItem[] = [];
+    const seenTitles = new Set<string>();
+
+    for (const item of finalResults) {
+      const key = item.title.toLowerCase();
+      if (!seenTitles.has(key)) {
+        seenTitles.add(key);
+        uniqueResults.push(item);
+      }
+    }
+
+    return uniqueResults;
+  }
+
+  private calculateGlobalScore(item: SearchResultItem, query: string): number {
+    const queryLower = query.toLowerCase().trim();
+    const titleLower = item.title.toLowerCase();
+    let score = 0;
+
+    if (titleLower === queryLower) {
+      score = 1000;
+    } else if (titleLower.startsWith(queryLower)) {
+      score = 900;
+    } else if (titleLower.includes(queryLower)) {
+      score = 800;
+    } else {
+      score = 700;
+    }
+
+    return score;
   }
 
   async render(pluginName: string, params: RenderParams): Promise<Component | null> {

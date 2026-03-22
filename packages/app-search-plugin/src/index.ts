@@ -196,17 +196,18 @@ export class AppSearchPlugin extends BasePlugin {
     scored.sort((a, b) => b.score - a.score);
 
     const topApps = scored.slice(0, limit);
-    const iconPromises = topApps.map(async ({ app }) => {
+    const iconPromises = topApps.map(async ({ app, score }) => {
       const icon = await this.getIcon(app.info.path);
-      return { app, icon };
+      return { app, score, icon };
     });
 
     const results = await Promise.all(iconPromises);
 
-    return results.map(({ app, icon }) => ({
+    return results.map(({ app, score, icon }) => ({
       iconUrl: icon ?? undefined,
       title: app.info.name,
       desc: app.info.path,
+      score,
       action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
     }));
   }
