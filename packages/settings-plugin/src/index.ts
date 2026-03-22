@@ -55,7 +55,7 @@ export class SettingsPlugin extends BasePlugin {
     return [
       {
         icon: Settings,
-        title: 'plugin.settings',
+        title: 'settings',
         action: async (ctx: SearchResultItemContext) => {
           const component = await this.render({ query: params.query });
           if (component) {

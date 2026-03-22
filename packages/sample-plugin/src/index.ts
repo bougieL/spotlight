@@ -21,24 +21,24 @@ interface SampleItem {
 const sampleItems: SampleItem[] = [
   {
     icon: FileText,
-    title: 'Document',
-    desc: 'Create a new document',
+    title: 'sample.document',
+    desc: 'sample.document.desc',
     action: () => {
       // Placeholder action - implement based on app requirements
     },
   },
   {
     icon: Calculator,
-    title: 'Calculator',
-    desc: 'Open calculator',
+    title: 'sample.calculator',
+    desc: 'sample.calculator.desc',
     action: () => {
       // Placeholder action - implement based on app requirements
     },
   },
   {
     icon: Globe,
-    title: 'Browser',
-    desc: 'Open web browser',
+    title: 'sample.browser',
+    desc: 'sample.browser.desc',
     action: () => {
       // Placeholder action - implement based on app requirements
     },

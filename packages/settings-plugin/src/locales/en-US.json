@@ -1,5 +1,5 @@
 {
-  "plugin.settings": "Settings",
+  "settings": "Settings",
   "settings.theme": "Theme",
   "settings.theme.light": "Light",
   "settings.theme.dark": "Dark",

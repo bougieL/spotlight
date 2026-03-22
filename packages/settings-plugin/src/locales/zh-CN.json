@@ -1,5 +1,5 @@
 {
-  "plugin.settings": "设置",
+  "settings": "设置",
   "settings.theme": "主题",
   "settings.theme.light": "浅色",
   "settings.theme.dark": "深色",
