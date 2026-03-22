@@ -7,6 +7,7 @@ import { registerTranslations, translations, getLocale, type Locale } from '@spo
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
+import { normalizeForSearch, toPinyinInitials, fuzzyMatch } from '@spotlight/utils/pinyin';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -44,9 +45,37 @@ export class SettingsPlugin extends BasePlugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    // Match "settings", "设置", "theme", "主题", "language", "语言"
-    const settingsKeywords = ['settings', '设置', 'theme', '主题', 'language', '语言', 'appearance', '外观'];
-    const matches = settingsKeywords.some(keyword => keyword.includes(query) || query.includes(keyword));
+    // Pre-compute search normalized versions for each keyword
+    const keywordSearchData = [
+      { keyword: 'settings', normalized: normalizeForSearch('settings') },
+      { keyword: '设置', normalized: normalizeForSearch('设置'), pinyinInitials: toPinyinInitials('设置') },
+      { keyword: 'theme', normalized: normalizeForSearch('theme') },
+      { keyword: '主题', normalized: normalizeForSearch('主题'), pinyinInitials: toPinyinInitials('主题') },
+      { keyword: 'language', normalized: normalizeForSearch('language') },
+      { keyword: '语言', normalized: normalizeForSearch('语言'), pinyinInitials: toPinyinInitials('语言') },
+      { keyword: 'appearance', normalized: normalizeForSearch('appearance') },
+      { keyword: '外观', normalized: normalizeForSearch('外观'), pinyinInitials: toPinyinInitials('外观') },
+    ];
+
+    const matches = keywordSearchData.some(({ keyword, normalized, pinyinInitials }) => {
+      // Direct substring match
+      if (keyword.toLowerCase().includes(query) || query.includes(keyword.toLowerCase())) {
+        return true;
+      }
+      // Pinyin normalized match (e.g., "sz" matches "设置")
+      if (normalized.includes(query)) {
+        return true;
+      }
+      // Pinyin initials match (e.g., "yt" matches "主题")
+      if (pinyinInitials && pinyinInitials.toLowerCase().includes(query)) {
+        return true;
+      }
+      // Fuzzy match on pinyin
+      if (pinyinInitials && fuzzyMatch(query, pinyinInitials) > 0) {
+        return true;
+      }
+      return false;
+    });
 
     if (!matches && query.length > 0) {
       return [];

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@spotlight/core": "*",
+    "@spotlight/utils": "*",
     "lucide-vue-next": "^0.577.0"
   }
 }

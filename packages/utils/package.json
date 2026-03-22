@@ -1,5 +1,5 @@
 {
-  "name": "@spotlight/app-search-plugin",
+  "name": "@spotlight/utils",
   "version": "1.0.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -9,9 +9,6 @@
     "./pinyin": "./src/pinyin.ts"
   },
   "dependencies": {
-    "@spotlight/core": "*",
-    "@spotlight/api": "*",
-    "@spotlight/utils": "*",
-    "@tauri-apps/plugin-opener": "^2"
+    "pinyin-pro": "^3.24.0"
   }
 }

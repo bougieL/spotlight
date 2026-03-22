@@ -2,7 +2,7 @@ import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
-import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from './pinyin';
+import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
 import { registerTranslations } from '@spotlight/i18n';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
