@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Clipboard, FileText, Image, Trash2, Copy } from 'lucide-vue-next';
+import { Clipboard, FileText, Image, Copy } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 
@@ -98,13 +98,6 @@ async function handleCopy(item: ClipboardItem) {
   }, 1500);
 }
 
-async function handleClear() {
-  if (confirm(t('clipboard.confirmClear'))) {
-    await clipboardPlugin.clearItems();
-    await loadItems();
-  }
-}
-
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     emit('close');
@@ -132,12 +125,6 @@ async function handleItemClick(item: ClipboardItem) {
 
 <template>
   <div class="clipboard-panel" tabindex="0" @keydown="handleKeydown">
-    <div class="clipboard-toolbar">
-      <button class="clear-btn" @click="handleClear" :title="t('clipboard.clear')">
-        <Trash2 :size="16" />
-      </button>
-    </div>
-
     <div class="clipboard-list">
       <div v-if="filteredItems.length === 0" class="empty-state">
         <Clipboard :size="48" class="empty-icon" />
@@ -176,33 +163,6 @@ async function handleItemClick(item: ClipboardItem) {
   height: 400px;
   background-color: var(--spotlight-bg);
   outline: none;
-}
-
-.clipboard-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-}
-
-.clear-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-placeholder);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 13px;
-  gap: 6px;
-}
-
-.clear-btn:hover {
-  background-color: var(--spotlight-tag-bg);
-  color: var(--spotlight-text);
 }
 
 .clipboard-list {
