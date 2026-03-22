@@ -43,7 +43,7 @@ pub fn run() {
                 let scale_factor = window.scale_factor().unwrap_or(1.0);
                 let monitor_size = *monitor.size();
                 let window_size = window.outer_size().unwrap_or(tauri::PhysicalSize {
-                    width: 600,
+                    width: 800,
                     height: 64,
                 });
 

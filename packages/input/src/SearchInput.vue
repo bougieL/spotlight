@@ -184,7 +184,7 @@ const handlePaste = async (event: ClipboardEvent) => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
 }
 
 .spotlight-input-row {

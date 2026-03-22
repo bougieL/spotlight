@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "spotlight",
-        "width": 600,
+        "width": 800,
         "height": 64,
         "decorations": false,
         "transparent": true,

@@ -130,7 +130,7 @@ onUnmounted(() => {
 
 html,
 body {
-  width: 600px;
+  width: 800px;
   height: fit-content;
   margin: 0;
   padding: 0;
@@ -153,7 +153,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 600px;
+  width: 800px;
   margin: 0 auto;
   padding: 0;
   border: none;
