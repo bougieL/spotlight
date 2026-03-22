@@ -10,160 +10,277 @@
       <BaseButton size="small" @click="handleCopy">{{ t('json.copy') }}</BaseButton>
       <BaseButton size="small" @click="handleClear">{{ t('json.clear') }}</BaseButton>
     </div>
-    <div ref="editorContainer" class="json-content"></div>
+    <div class="json-body">
+      <div class="json-gutter">
+        <div
+          v-for="(line, index) in displayLines"
+          :key="index"
+          class="json-line-number"
+          :class="{ 'json-foldable': line.foldable, 'json-folded': line.folded }"
+          @click="line.foldable && toggleFold(index)"
+        >
+          <span v-if="line.foldable" class="json-fold-marker">{{ line.folded ? '▶' : '▼' }}</span>
+          <span>{{ index + 1 }}</span>
+        </div>
+      </div>
+      <div class="json-editor-area">
+        <pre ref="highlightRef" class="json-highlight" aria-hidden="true"></pre>
+        <textarea
+          ref="textareaRef"
+          v-model="content"
+          class="json-textarea"
+          spellcheck="false"
+          @input="onInput"
+          @scroll="syncScroll"
+          @keydown="onKeydown"
+        ></textarea>
+      </div>
+    </div>
     <div v-if="error" class="json-error">{{ t('json.invalidJson') }}: {{ error }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton } from '@spotlight/components';
-import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView, lineNumbers, highlightActiveLine, highlightSpecialChars } from '@codemirror/view';
-import { json } from '@codemirror/lang-json';
-import { foldGutter, foldAll, unfoldAll, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 
 const { t } = useI18n();
 
-const editorContainer = ref<HTMLElement | null>(null);
+const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const highlightRef = ref<HTMLPreElement | null>(null);
+const content = ref('');
 const error = ref<string | null>(null);
-let editorView: EditorView | null = null;
+const foldedLines = ref<Set<number>>(new Set());
 
-function createEditorExtensions(): Extension {
-  return [
-    lineNumbers(),
-    highlightActiveLine(),
-    highlightSpecialChars(),
-    foldGutter(),
-    json(),
-    syntaxHighlighting(defaultHighlightStyle),
-    EditorView.updateListener.of((update) => {
-      if (update.docChanged) {
-        validateJson(update.state.doc.toString());
-      }
-    }),
-    EditorView.theme({
-      '&': {
-        height: '100%',
-        fontSize: '13px',
-      },
-      '.cm-scroller': {
-        fontFamily: "'Monaco', 'Menlo', 'Ubuntu Mono', monospace",
-        overflow: 'auto',
-      },
-      '.cm-content': {
-        caretColor: 'var(--spotlight-text)',
-      },
-      '&.cm-focused .cm-cursor': {
-        borderLeftColor: 'var(--spotlight-text)',
-      },
-      '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'var(--spotlight-item-hover)',
-      },
-      '.cm-gutters': {
-        backgroundColor: 'var(--spotlight-bg)',
-        color: 'var(--spotlight-placeholder)',
-        border: 'none',
-      },
-      '.cm-activeLineGutter': {
-        backgroundColor: 'var(--spotlight-item-hover)',
-      },
-      '.cm-foldGutter': {
-        width: '14px',
-      },
-    }),
-  ];
+interface DisplayLine {
+  text: string;
+  foldable: boolean;
+  folded: boolean;
 }
 
-function validateJson(content: string) {
-  if (!content.trim()) {
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function highlightJson(code: string): string {
+  return code.replace(
+    /("(?:\\.|[^"\\])*")\s*(:)?|(-?\d+\.?\d*(?:[eE][+-]?\d+)?)|\b(true|false)\b|\b(null)\b|[{}\[\],:]/g,
+    (match, str, colon, num, bool, nil) => {
+      if (str) {
+        return colon
+          ? `<span class="json-key">${escapeHtml(match)}</span>`
+          : `<span class="json-string">${escapeHtml(match)}</span>`;
+      }
+      if (num) return `<span class="json-number">${escapeHtml(match)}</span>`;
+      if (bool) return `<span class="json-boolean">${escapeHtml(match)}</span>`;
+      if (nil) return `<span class="json-null">${escapeHtml(match)}</span>`;
+      return escapeHtml(match);
+    },
+  );
+}
+
+function findFoldRanges(code: string): { start: number; end: number }[] {
+  const ranges: { start: number; end: number }[] = [];
+  const stack: number[] = [];
+  const lines = code.split('\n');
+
+  let charIndex = 0;
+  for (let i = 0; i < lines.length; i++) {
+    for (let j = 0; j < lines[i].length; j++) {
+      const ch = lines[i][j];
+      if (ch === '{' || ch === '[') {
+        stack.push(charIndex);
+      } else if (ch === '}' || ch === ']') {
+        const start = stack.pop();
+        if (start !== undefined && charIndex - start > 2) {
+          const startLine = code.substring(0, start).split('\n').length - 1;
+          if (startLine === i - 1 || startLine === i) {
+            // skip single-line
+          } else {
+            ranges.push({ start: startLine, end: i });
+          }
+        }
+      }
+      charIndex++;
+    }
+    charIndex++;
+  }
+  return ranges;
+}
+
+const foldRanges = computed(() => findFoldRanges(content.value));
+
+const displayLines = computed<DisplayLine[]>(() => {
+  const lines = content.value.split('\n');
+  const result: DisplayLine[] = [];
+  const skipUntil = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const foldable = foldRanges.value.some((r) => r.start === i);
+    const folded = foldedLines.value.has(i);
+    const insideFolded = foldRanges.value.some(
+      (r) => foldedLines.value.has(r.start) && i > r.start && i <= r.end,
+    );
+
+    if (insideFolded && i !== skipUntil) {
+      continue;
+    }
+
+    result.push({
+      text: lines[i],
+      foldable,
+      folded,
+    });
+  }
+  return result;
+});
+
+function toggleFold(lineIndex: number) {
+  if (foldedLines.value.has(lineIndex)) {
+    foldedLines.value.delete(lineIndex);
+  } else {
+    foldedLines.value.add(lineIndex);
+  }
+  foldedLines.value = new Set(foldedLines.value);
+  updateHighlight();
+}
+
+function getDisplayCode(): string {
+  const lines = content.value.split('\n');
+  const result: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const insideFolded = foldRanges.value.some(
+      (r) => foldedLines.value.has(r.start) && i > r.start && i <= r.end,
+    );
+    if (insideFolded) continue;
+    result.push(lines[i]);
+  }
+  return result.join('\n');
+}
+
+function updateHighlight() {
+  if (!highlightRef.value) return;
+  const displayCode = getDisplayCode();
+  highlightRef.value.innerHTML = highlightJson(displayCode) + '\n';
+}
+
+function onInput() {
+  validateJson();
+  updateHighlight();
+}
+
+function syncScroll() {
+  if (!highlightRef.value || !textareaRef.value) return;
+  highlightRef.value.scrollTop = textareaRef.value.scrollTop;
+  highlightRef.value.scrollLeft = textareaRef.value.scrollLeft;
+}
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const ta = textareaRef.value;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    content.value = content.value.substring(0, start) + '  ' + content.value.substring(end);
+    nextTick(() => {
+      ta.selectionStart = ta.selectionEnd = start + 2;
+    });
+  }
+}
+
+function validateJson() {
+  const text = content.value.trim();
+  if (!text) {
     error.value = null;
     return;
   }
   try {
-    JSON.parse(content);
+    JSON.parse(text);
     error.value = null;
   } catch (e) {
     error.value = (e as Error).message;
   }
 }
 
-function initEditor() {
-  if (!editorContainer.value) return;
-
-  const state = EditorState.create({
-    doc: '',
-    extensions: createEditorExtensions(),
-  });
-
-  editorView = new EditorView({
-    state,
-    parent: editorContainer.value,
-  });
+function parseJson(text: string): unknown {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (typeof parsed === 'string') {
+      try {
+        return JSON.parse(parsed);
+      } catch {
+        return parsed;
+      }
+    }
+    return parsed;
+  } catch {
+    // Try to extract JSON from mixed text
+    const match = text.match(/(\[[\s\S]*\]|\{[\s\S]*\})/);
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    throw new Error('No valid JSON found');
+  }
 }
 
 function handleFormat() {
-  if (!editorView) return;
-  const content = editorView.state.doc.toString();
-  if (!content.trim()) return;
+  const text = content.value.trim();
+  if (!text) return;
   try {
-    const parsed = JSON.parse(content);
-    const formatted = JSON.stringify(parsed, null, 2);
-    editorView.dispatch({
-      changes: { from: 0, to: editorView.state.doc.length, insert: formatted },
-    });
+    const parsed = parseJson(text);
+    content.value = JSON.stringify(parsed, null, 2);
+    foldedLines.value = new Set();
     error.value = null;
+    updateHighlight();
   } catch (e) {
     error.value = (e as Error).message;
   }
 }
 
 function handleMinify() {
-  if (!editorView) return;
-  const content = editorView.state.doc.toString();
-  if (!content.trim()) return;
+  const text = content.value.trim();
+  if (!text) return;
   try {
-    const parsed = JSON.parse(content);
-    const minified = JSON.stringify(parsed);
-    editorView.dispatch({
-      changes: { from: 0, to: editorView.state.doc.length, insert: minified },
-    });
+    const parsed = parseJson(text);
+    content.value = JSON.stringify(parsed);
+    foldedLines.value = new Set();
     error.value = null;
+    updateHighlight();
   } catch (e) {
     error.value = (e as Error).message;
   }
 }
 
 function handleFoldAll() {
-  if (!editorView) return;
-  foldAll(editorView);
+  const newSet = new Set<number>();
+  for (const range of foldRanges.value) {
+    newSet.add(range.start);
+  }
+  foldedLines.value = newSet;
+  updateHighlight();
 }
 
 function handleUnfoldAll() {
-  if (!editorView) return;
-  unfoldAll(editorView);
+  foldedLines.value = new Set();
+  updateHighlight();
 }
 
 function handleCopy() {
-  if (!editorView) return;
-  navigator.clipboard.writeText(editorView.state.doc.toString());
+  navigator.clipboard.writeText(content.value);
 }
 
 function handleClear() {
-  if (!editorView) return;
-  editorView.dispatch({
-    changes: { from: 0, to: editorView.state.doc.length, insert: '' },
-  });
+  content.value = '';
+  foldedLines.value = new Set();
   error.value = null;
+  updateHighlight();
 }
 
-onMounted(() => {
-  initEditor();
-});
-
-onUnmounted(() => {
-  editorView?.destroy();
+watch(content, () => {
+  nextTick(updateHighlight);
 });
 </script>
 
@@ -194,13 +311,106 @@ onUnmounted(() => {
   margin: 0 4px;
 }
 
-.json-content {
+.json-body {
+  display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-.json-content :deep(.cm-editor) {
+.json-gutter {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px;
+  background-color: var(--spotlight-bg-secondary, var(--spotlight-bg));
+  border-right: 1px solid var(--spotlight-border);
+  user-select: none;
+  overflow: hidden;
+}
+
+.json-line-number {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 21px;
+  padding: 0 6px;
+  font-size: 12px;
+  color: var(--spotlight-placeholder);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.json-foldable {
+  cursor: pointer;
+}
+
+.json-foldable:hover {
+  color: var(--spotlight-text);
+}
+
+.json-fold-marker {
+  font-size: 10px;
+  width: 12px;
+}
+
+.json-editor-area {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.json-textarea,
+.json-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 21px;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.json-textarea {
+  color: transparent;
+  caret-color: var(--spotlight-text);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  z-index: 1;
+}
+
+.json-highlight {
+  color: var(--spotlight-text);
+  background-color: var(--spotlight-bg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.json-highlight :deep(.json-key) {
+  color: var(--spotlight-json-key, #9c27b0);
+}
+
+.json-highlight :deep(.json-string) {
+  color: var(--spotlight-json-string, #2e7d32);
+}
+
+.json-highlight :deep(.json-number) {
+  color: var(--spotlight-json-number, #1565c0);
+}
+
+.json-highlight :deep(.json-boolean) {
+  color: var(--spotlight-json-boolean, #e65100);
+}
+
+.json-highlight :deep(.json-null) {
+  color: var(--spotlight-json-null, #757575);
 }
 
 .json-error {

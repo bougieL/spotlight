@@ -1,13 +1,11 @@
 {
-  "json": {
-    "name": "JSON Editor",
-    "placeholder": "Paste or type JSON here...",
-    "invalidJson": "Invalid JSON",
-    "foldAll": "Fold All",
-    "unfoldAll": "Unfold All",
-    "copy": "Copy",
-    "clear": "Clear",
-    "format": "Format",
-    "minify": "Minify"
-  }
+  "json": "JSON Editor",
+  "json.placeholder": "Paste or type JSON here...",
+  "json.invalidJson": "Invalid JSON",
+  "json.foldAll": "Fold All",
+  "json.unfoldAll": "Unfold All",
+  "json.copy": "Copy",
+  "json.clear": "Clear",
+  "json.format": "Format",
+  "json.minify": "Minify"
 }
