@@ -45,6 +45,9 @@ const handleSelect = async (item: SearchResultItem) => {
       activePluginNameKey.value = pluginNameKey ?? null;
       panelEntered = true;
     },
+    clearQuery: () => {
+      query.value = '';
+    },
   };
 
   await item.action(ctx);

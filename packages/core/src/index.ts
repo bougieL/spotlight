@@ -2,6 +2,7 @@ import type { Component } from 'vue';
 
 export interface SearchResultItemContext {
   setPanel: (component: Component, pluginName?: string) => void;
+  clearQuery: () => void;
 }
 
 export interface SearchResultItem {

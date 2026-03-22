@@ -159,6 +159,7 @@ const handlePaste = async (event: ClipboardEvent) => {
         type="text"
         class="spotlight-input"
         placeholder="Search..."
+        :value="modelValue"
         @input="handleInput"
         @paste="handlePaste"
         @keydown="handleKeydown"

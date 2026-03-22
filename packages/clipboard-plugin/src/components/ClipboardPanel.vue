@@ -17,14 +17,13 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const items = ref<ClipboardItem[]>([]);
-const searchQuery = ref('');
 const copiedId = ref<string | null>(null);
 
 const filteredItems = computed(() => {
-  if (!searchQuery.value.trim()) {
+  if (!props.query.trim()) {
     return items.value;
   }
-  const query = searchQuery.value.toLowerCase();
+  const query = props.query.toLowerCase();
   return items.value.filter(item => item.content.toLowerCase().includes(query));
 });
 
@@ -133,15 +132,7 @@ async function handleItemClick(item: ClipboardItem) {
 
 <template>
   <div class="clipboard-panel" tabindex="0" @keydown="handleKeydown">
-    <div class="clipboard-header">
-      <div class="search-box">
-        <input
-          v-model="searchQuery"
-          type="text"
-          :placeholder="t('clipboard.search')"
-          class="search-input"
-        />
-      </div>
+    <div class="clipboard-toolbar">
       <button class="clear-btn" @click="handleClear" :title="t('clipboard.clear')">
         <Trash2 :size="16" />
       </button>
@@ -187,47 +178,26 @@ async function handleItemClick(item: ClipboardItem) {
   outline: none;
 }
 
-.clipboard-header {
+.clipboard-toolbar {
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  border-bottom: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-}
-
-.search-box {
-  flex: 1;
-}
-
-.search-input {
-  width: 100%;
+  justify-content: flex-end;
   padding: 8px 12px;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-  border-radius: 6px;
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
-  font-size: 14px;
-  outline: none;
-}
-
-.search-input:focus {
-  border-color: var(--spotlight-primary, var(--spotlight-icon, #666));
-}
-
-.search-input::placeholder {
-  color: var(--spotlight-placeholder);
+  border-bottom: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
 }
 
 .clear-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px 12px;
   border: none;
   border-radius: 6px;
   background-color: var(--spotlight-item-hover);
   color: var(--spotlight-placeholder);
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 13px;
+  gap: 6px;
 }
 
 .clear-btn:hover {
