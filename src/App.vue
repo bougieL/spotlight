@@ -11,8 +11,7 @@ import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { clipboardPlugin } from "@spotlight/clipboard-plugin";
 import { recentPlugin } from "@spotlight/recent-plugin";
-import { tauriApi } from "@spotlight/api";
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
 import type { Component } from 'vue';
@@ -123,7 +122,7 @@ onMounted(async () => {
   performResize();
 
   // Focus input when window is shown
-  unlistenWindowFocus = await listen('tauri://focus', () => {
+  unlistenWindowFocus = await on.windowFocus(() => {
     searchInputRef.value?.focus();
   });
 });

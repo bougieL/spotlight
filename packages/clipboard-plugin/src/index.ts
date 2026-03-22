@@ -4,10 +4,8 @@ import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
-import { createPluginStorage, type PluginStorage, tauriApi } from '@spotlight/api';
+import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -109,7 +107,7 @@ export class ClipboardPlugin extends BasePlugin {
 
     this.monitoring = true;
 
-    this.unlisten = await listen('clipboard-changed', async () => {
+    this.unlisten = await on.clipboardChanged(async () => {
       try {
         await this.checkClipboard();
       } catch (error) {
@@ -117,7 +115,7 @@ export class ClipboardPlugin extends BasePlugin {
       }
     });
 
-    await invoke('start_clipboard_monitor');
+    await tauriApi.startClipboardMonitor();
   }
 
   async stopMonitoring(): Promise<void> {
@@ -125,7 +123,7 @@ export class ClipboardPlugin extends BasePlugin {
 
     this.monitoring = false;
 
-    await invoke('stop_clipboard_monitor');
+    await tauriApi.stopClipboardMonitor();
 
     if (this.unlisten) {
       this.unlisten();

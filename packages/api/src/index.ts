@@ -1,6 +1,7 @@
 import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 
 export { createPluginStorage, type PluginStorage } from './storage';
+export { listen, emit, on, EventName, type UnlistenFn, type EventNameType } from './event';
 
 export interface AppInfo {
   name: string;
@@ -15,6 +16,8 @@ export interface TauriApi {
   getClipboardText: () => Promise<string>;
   getClipboardImage: () => Promise<string>;
   setClipboardText: (text: string) => Promise<void>;
+  startClipboardMonitor: () => Promise<void>;
+  stopClipboardMonitor: () => Promise<void>;
   getInstalledApplications: () => Promise<AppInfo[]>;
   getAppIcon: (path: string) => Promise<string | null>;
   launchApp: (path: string) => Promise<void>;
@@ -35,6 +38,10 @@ export const tauriApi: TauriApi = {
   getClipboardImage: () => invoke<string>('get_clipboard_image'),
 
   setClipboardText: (text: string) => invoke<void>('set_clipboard_text', { text }),
+
+  startClipboardMonitor: () => invoke<void>('start_clipboard_monitor'),
+
+  stopClipboardMonitor: () => invoke<void>('stop_clipboard_monitor'),
 
   getInstalledApplications: () => invoke<AppInfo[]>('get_installed_applications'),
 

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Clipboard, FileText, Image, Copy } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
+import { on, type UnlistenFn } from '@spotlight/api';
 
 interface Props {
   query: string;
@@ -18,6 +19,8 @@ const { t } = useI18n();
 
 const items = ref<ClipboardItem[]>([]);
 const copiedId = ref<string | null>(null);
+let unlistenClipboard: UnlistenFn | null = null;
+let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const filteredItems = computed(() => {
   if (!props.query.trim()) {
@@ -107,6 +110,21 @@ function handleKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   await loadItems();
+  unlistenClipboard = await on.clipboardChanged(async () => {
+    await loadItems();
+  });
+  refreshTimer = setInterval(loadItems, 1000);
+});
+
+onUnmounted(() => {
+  if (unlistenClipboard) {
+    unlistenClipboard();
+    unlistenClipboard = null;
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 });
 
 async function loadItems() {
