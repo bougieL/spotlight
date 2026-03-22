@@ -64,6 +64,12 @@ const removeFile = (id: string) => {
   emit('update:files', props.files.filter((f) => f.id !== id));
 };
 
+const focus = () => {
+  inputRef.value?.focus();
+};
+
+defineExpose({ focus });
+
 const handlePaste = async (event: ClipboardEvent) => {
   event.preventDefault();
   const items = event.clipboardData?.items;

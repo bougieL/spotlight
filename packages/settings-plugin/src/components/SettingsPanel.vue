@@ -88,6 +88,16 @@ onMounted(async () => {
         </button>
       </div>
     </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">{{ t('settings.shortcut') }}</h3>
+      <div class="shortcut-display">
+        <kbd class="shortcut-key">Alt</kbd>
+        <span class="shortcut-plus">+</span>
+        <kbd class="shortcut-key">Space</kbd>
+      </div>
+      <p class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
+    </section>
   </div>
 </template>
 
@@ -151,5 +161,39 @@ onMounted(async () => {
 .option-label {
   font-size: 14px;
   font-weight: 500;
+}
+
+.shortcut-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--spotlight-text);
+  background-color: var(--spotlight-item-hover);
+  border: 1px solid var(--spotlight-shortcut-border);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.shortcut-plus {
+  color: var(--spotlight-placeholder);
+  font-size: 14px;
+}
+
+.shortcut-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--spotlight-placeholder);
 }
 </style>

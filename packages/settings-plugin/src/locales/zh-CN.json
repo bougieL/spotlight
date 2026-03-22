@@ -6,5 +6,7 @@
   "settings.theme.system": "跟随系统",
   "settings.language": "语言",
   "settings.language.en": "English",
-  "settings.language.zh": "中文"
+  "settings.language.zh": "中文",
+  "settings.shortcut": "快捷键",
+  "settings.shortcut.hint": "按下快捷键唤出 Spotlight"
 }

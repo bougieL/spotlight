@@ -6,5 +6,7 @@
   "settings.theme.system": "System",
   "settings.language": "Language",
   "settings.language.en": "English",
-  "settings.language.zh": "中文"
+  "settings.language.zh": "中文",
+  "settings.shortcut": "Shortcut",
+  "settings.shortcut.hint": "Press the shortcut to bring up Spotlight"
 }

@@ -8,6 +8,7 @@ import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { tauriApi } from "@spotlight/api";
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
 import type { Component } from 'vue';
@@ -23,6 +24,7 @@ const files = ref<FileItem[]>([]);
 const searchResults = ref<SearchResultItem[]>([]);
 const activePanelComponent = ref<Component | null>(null);
 const activePluginNameKey = ref<string | null>(null);
+const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
   const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
@@ -54,6 +56,7 @@ const handleClosePanel = () => {
 let resizeObserver: ResizeObserver | null = null;
 let resizeTimer: ReturnType<typeof setTimeout> | null = null;
 let lastHeight: number | null = null;
+let unlistenWindowFocus: UnlistenFn | null = null;
 
 const performResize = () => {
   const height = document.documentElement.offsetHeight;
@@ -77,17 +80,24 @@ onMounted(async () => {
   });
   resizeObserver.observe(document.documentElement);
   performResize();
+
+  // Focus input when window is shown
+  unlistenWindowFocus = await listen('tauri://focus', () => {
+    searchInputRef.value?.focus();
+  });
 });
 
 onUnmounted(() => {
   resizeObserver?.disconnect();
   if (resizeTimer) clearTimeout(resizeTimer);
+  unlistenWindowFocus?.();
 });
 </script>
 
 <template>
   <main class="spotlight-container">
     <SearchInput
+      ref="searchInputRef"
       v-model="query"
       v-model:files="files"
       :is-panel-mode="!!activePanelComponent"
