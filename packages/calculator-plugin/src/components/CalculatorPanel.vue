@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
 interface Props {
   query: string;
@@ -11,47 +11,50 @@ const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
-const expression = ref(props.query.replace(/^=/, ''));
-const displayExpression = ref(props.query.replace(/^=/, ''));
+const STORAGE_KEY = 'calculator_expressions';
 
-const buttons = [
-  { label: 'C', action: 'clear' },
-  { label: '(', action: 'parenthesis' },
-  { label: ')', action: 'parenthesis' },
-  { label: '/', action: 'operator' },
-  { label: '7', action: 'number' },
-  { label: '8', action: 'number' },
-  { label: '9', action: 'number' },
-  { label: '*', action: 'operator' },
-  { label: '4', action: 'number' },
-  { label: '5', action: 'number' },
-  { label: '6', action: 'number' },
-  { label: '-', action: 'operator' },
-  { label: '1', action: 'number' },
-  { label: '2', action: 'number' },
-  { label: '3', action: 'number' },
-  { label: '+', action: 'operator' },
-  { label: '0', action: 'number' },
-  { label: '.', action: 'decimal' },
-  { label: '=', action: 'equals' },
-  { label: '⌫', action: 'backspace' },
-];
+const expressions = ref<string[]>(['', '', '']);
 
-const result = computed(() => {
-  if (!expression.value.trim()) return '';
-  const evalResult = evaluateExpression(expression.value);
-  if (evalResult === null) return 'Error';
-  return formatResult(evalResult);
+onMounted(() => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length === 3) {
+        expressions.value = parsed;
+      }
+    } catch {
+      // Invalid JSON, use defaults
+    }
+  }
 });
 
+function saveToStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(expressions.value));
+}
+
+watch(
+  () => expressions.value,
+  () => {
+    saveToStorage();
+  },
+  { deep: true }
+);
+
 function evaluateExpression(expr: string): number | null {
-  const cleanExpr = expr.trim();
-  if (!cleanExpr) return null;
+  const cleanExpr = expr.startsWith('=') ? expr.slice(1) : expr;
+  const trimmed = cleanExpr.trim();
+
+  if (!trimmed) {
+    return null;
+  }
 
   const safePattern = /^[\d+\-*/().%\s^sqrtabsincontaolrllexppi\d,]+$/i;
-  if (!safePattern.test(cleanExpr)) return null;
+  if (!safePattern.test(trimmed)) {
+    return null;
+  }
 
-  let jsExpr = cleanExpr
+  let jsExpr = trimmed
     .replace(/\^/g, '**')
     .replace(/sqrt/gi, 'Math.sqrt')
     .replace(/abs/gi, 'Math.abs')
@@ -69,9 +72,9 @@ function evaluateExpression(expr: string): number | null {
   jsExpr = jsExpr.replace(/(\d+)%/g, '($1/100)');
 
   try {
-    const evalResult = eval(jsExpr);
-    if (typeof evalResult === 'number' && isFinite(evalResult)) {
-      return evalResult;
+    const result = eval(jsExpr);
+    if (typeof result === 'number' && isFinite(result)) {
+      return result;
     }
     return null;
   } catch {
@@ -87,34 +90,30 @@ function formatResult(value: number): string {
   return formatted.toString();
 }
 
-function handleButtonClick(button: { label: string; action: string }) {
-  switch (button.action) {
-    case 'clear':
-      expression.value = '';
-      displayExpression.value = '';
-      break;
-    case 'number':
-    case 'operator':
-    case 'decimal':
-    case 'parenthesis':
-      expression.value += button.label;
-      displayExpression.value += button.label;
-      break;
-    case 'backspace':
-      if (expression.value.length > 0) {
-        expression.value = expression.value.slice(0, -1);
-        displayExpression.value = displayExpression.value.slice(0, -1);
-      }
-      break;
-    case 'equals':
-      const evalResult = evaluateExpression(expression.value);
-      if (evalResult !== null) {
-        const formatted = formatResult(evalResult);
-        displayExpression.value = formatted;
-        expression.value = formatted;
-        copyToClipboard(formatted);
-      }
-      break;
+function handleInput(index: number) {
+  const expr = expressions.value[index];
+  if (expr.endsWith('=')) {
+    const result = evaluateExpression(expr);
+    if (result !== null) {
+      expressions.value[index] = formatResult(result);
+    }
+  }
+}
+
+function handleKeydown(index: number, event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    emit('close');
+    return;
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const result = evaluateExpression(expressions.value[index]);
+    if (result !== null) {
+      const formatted = formatResult(result);
+      expressions.value[index] = formatted;
+      copyToClipboard(formatted);
+    }
   }
 }
 
@@ -126,53 +125,27 @@ async function copyToClipboard(text: string) {
   }
 }
 
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    emit('close');
-    return;
-  }
-
-  const key = event.key;
-  if (/^[0-9]$/.test(key)) {
-    expression.value += key;
-    displayExpression.value += key;
-  } else if (key === '.') {
-    expression.value += '.';
-    displayExpression.value += '.';
-  } else if (key === '+' || key === '-' || key === '*' || key === '/') {
-    expression.value += key;
-    displayExpression.value += key;
-  } else if (key === 'Enter' || key === '=') {
-    handleButtonClick({ label: '=', action: 'equals' });
-  } else if (key === 'Backspace') {
-    handleButtonClick({ label: '⌫', action: 'backspace' });
-  } else if (key === '(' || key === ')') {
-    expression.value += key;
-    displayExpression.value += key;
-  }
+function clearInput(index: number) {
+  expressions.value[index] = '';
 }
 </script>
 
 <template>
-  <div class="calculator-panel" tabindex="0" @keydown="handleKeydown">
-    <div class="calculator-display">
-      <div class="calculator-expression">{{ displayExpression || '0' }}</div>
-      <div class="calculator-result">{{ result ? '=' + result : '' }}</div>
-    </div>
-    <div class="calculator-keypad">
-      <button
-        v-for="button in buttons"
-        :key="button.label"
-        class="calculator-button"
-        :class="{
-          'is-operator': ['/', '*', '-', '+'].includes(button.label),
-          'is-equals': button.label === '=',
-          'is-clear': button.label === 'C'
-        }"
-        @click="handleButtonClick(button)"
-      >
-        {{ button.label }}
-      </button>
+  <div class="calculator-panel">
+    <div class="calculator-inputs">
+      <div v-for="(_, index) in expressions" :key="index" class="input-row">
+        <input
+          v-model="expressions[index]"
+          type="text"
+          class="calculator-input"
+          :placeholder="`${index + 1}:`"
+          @input="handleInput(index)"
+          @keydown="handleKeydown(index, $event)"
+        />
+        <button class="clear-button" @click="clearInput(index)" :title="'Clear'">
+          ×
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -186,84 +159,60 @@ function handleKeydown(event: KeyboardEvent) {
   outline: none;
 }
 
-.calculator-display {
+.calculator-inputs {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-end;
-  padding: 16px;
-  margin-bottom: 12px;
-  min-height: 80px;
-  background-color: var(--spotlight-calc-display-bg);
-  border-radius: 8px;
+  gap: 12px;
 }
 
-.calculator-expression {
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--spotlight-text);
-  word-break: break-all;
-  text-align: right;
-}
-
-.calculator-result {
-  font-size: 16px;
-  color: var(--spotlight-placeholder);
-  margin-top: 4px;
-}
-
-.calculator-keypad {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.input-row {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.calculator-button {
+.calculator-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-family: monospace;
+  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.15));
+  border-radius: 8px;
+  background-color: var(--spotlight-calc-display-bg, var(--spotlight-bg));
+  color: var(--spotlight-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.calculator-input:focus {
+  border-color: var(--spotlight-primary, var(--spotlight-icon, #666));
+}
+
+.calculator-input::placeholder {
+  color: var(--spotlight-placeholder);
+}
+
+.clear-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
   cursor: pointer;
-  background-color: var(--spotlight-calc-button-bg);
+  background-color: var(--spotlight-calc-button-bg, var(--spotlight-item-hover, rgba(0, 0, 0, 0.05)));
   color: var(--spotlight-text);
   transition: background-color 0.15s;
 }
 
-.calculator-button:hover {
-  background-color: var(--spotlight-calc-button-hover);
+.clear-button:hover {
+  background-color: var(--spotlight-calc-button-hover, rgba(0, 0, 0, 0.1));
 }
 
-.calculator-button:active {
-  background-color: var(--spotlight-calc-button-active);
-}
-
-.calculator-button.is-operator {
-  background-color: var(--spotlight-calc-operator-bg);
-}
-
-.calculator-button.is-operator:hover {
-  background-color: var(--spotlight-calc-operator-hover);
-}
-
-.calculator-button.is-equals {
-  background-color: var(--spotlight-calc-equals-bg);
-  color: var(--spotlight-calc-equals-text);
-}
-
-.calculator-button.is-equals:hover {
-  background-color: var(--spotlight-calc-equals-hover);
-}
-
-.calculator-button.is-clear {
-  background-color: var(--spotlight-calc-clear-bg);
-  color: var(--spotlight-calc-clear-text);
-}
-
-.calculator-button.is-clear:hover {
-  background-color: var(--spotlight-calc-clear-hover);
+.clear-button:active {
+  background-color: var(--spotlight-calc-button-active, rgba(0, 0, 0, 0.15));
 }
 </style>
