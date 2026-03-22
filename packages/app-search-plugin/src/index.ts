@@ -64,11 +64,19 @@ export class AppSearchPlugin extends BasePlugin {
       pluginName: PLUGIN_NAME,
       actionId: ACTION_LAUNCH,
       handler: async (data, _ctx) => {
-        if (typeof data !== 'string') return;
+        logger.info(`[AppSearchPlugin] Launch handler called with data: ${data}`);
+        if (typeof data !== 'string') {
+          logger.warn('[AppSearchPlugin] Data is not a string');
+          return;
+        }
         const apps = await this.loadApps();
+        logger.info(`[AppSearchPlugin] Loaded ${apps.length} apps, looking for: ${data}`);
         const app = apps.find((a) => a.info.path === data);
         if (app) {
+          logger.info(`[AppSearchPlugin] Found app: ${app.info.name}`);
           await this.launchApp(app.info);
+        } else {
+          logger.warn(`[AppSearchPlugin] App not found for path: ${data}`);
         }
       },
     });

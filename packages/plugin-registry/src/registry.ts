@@ -1,5 +1,6 @@
 import type { BasePlugin, SearchResultItem, SearchParams, RenderParams, SearchResultItemContext } from '@spotlight/core';
 import type { Component } from 'vue';
+import logger from '@spotlight/logger';
 
 const MAX_RESULTS_PER_PLUGIN = 5;
 
@@ -37,7 +38,10 @@ export class PluginRegistry {
     const key = `${params.sourcePlugin}:${params.actionId}`;
     const handler = this.actionHandlers.get(key);
     if (handler) {
+      logger.info(`[PluginRegistry] Executing action: ${key}`);
       await handler(params.data, params.ctx);
+    } else {
+      logger.warn(`[PluginRegistry] No handler found for action: ${key}`);
     }
   }
 

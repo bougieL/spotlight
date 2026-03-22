@@ -4,6 +4,7 @@ import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -15,14 +16,48 @@ registerTranslations({
 });
 
 const STORAGE_KEY = 'calculator_expressions';
+const PLUGIN_NAME = 'calculator';
+const ACTION_OPEN = 'open';
+const ACTION_CALCULATE = 'calculate';
 
 export class CalculatorPlugin extends BasePlugin {
-  name = 'calculator';
+  name = PLUGIN_NAME;
   version = '1.0.0';
   description = 'Perform mathematical calculations';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(this.name);
+
+  constructor() {
+    super();
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_OPEN,
+      handler: async (_data, ctx) => {
+        const component = await this.render({ query: '' });
+        if (component) {
+          ctx.setPanel(component, this.name);
+        }
+      },
+    });
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_CALCULATE,
+      handler: async (data, ctx) => {
+        if (typeof data !== 'string') return;
+        try {
+          await navigator.clipboard.writeText(data);
+          logger.info('Calculator result copied to clipboard:', data);
+        } catch (error) {
+          logger.error('Failed to copy to clipboard:', error);
+        }
+        const component = await this.render({ query: data });
+        if (component) {
+          ctx.setPanel(component, this.name);
+        }
+      },
+    });
+  }
 
   async getExpressions(): Promise<string[]> {
     const stored = await this.storage.get<string[]>(STORAGE_KEY, ['', '', '']);
@@ -112,6 +147,9 @@ export class CalculatorPlugin extends BasePlugin {
           icon: Calculator,
           title: translations[getLocale()]['calculator'] ?? 'Calculator',
           score: 900,
+          sourcePlugin: PLUGIN_NAME,
+          actionId: ACTION_OPEN,
+          actionData: null,
           action: async (ctx: SearchResultItemContext) => {
             const component = await this.render({ query: params.query });
             if (component) {
@@ -144,6 +182,9 @@ export class CalculatorPlugin extends BasePlugin {
         icon: Calculator,
         title: `${displayExpression} = ${formattedResult}`,
         score: 1000,
+        sourcePlugin: PLUGIN_NAME,
+        actionId: ACTION_CALCULATE,
+        actionData: formattedResult,
         action: async (ctx: SearchResultItemContext) => {
           // Copy result to clipboard
           try {

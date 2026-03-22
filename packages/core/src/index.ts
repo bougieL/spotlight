@@ -13,7 +13,7 @@ export interface SearchResultItem {
   score?: number;
   action: (ctx: SearchResultItemContext) => void | Promise<void>;
   sourcePlugin?: string;
-  actionId?: string;
+  actionId: string;
   actionData?: unknown;
 }
 

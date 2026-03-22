@@ -5,6 +5,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi } from '@spotlight/api';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -16,6 +17,7 @@ registerTranslations({
 
 const STORAGE_KEY = 'clipboard_data';
 const PLUGIN_NAME = 'clipboard';
+const ACTION_OPEN = 'open';
 const MAX_ITEMS = 50;
 
 export type ClipboardItemType = 'text' | 'image' | 'files';
@@ -43,6 +45,20 @@ export class ClipboardPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
+
+  constructor() {
+    super();
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_OPEN,
+      handler: async (_data, ctx) => {
+        const component = await this.render({ query: '' });
+        if (component) {
+          ctx.setPanel(component, this.name);
+        }
+      },
+    });
+  }
 
   async getData(): Promise<ClipboardData> {
     const data = await this.storage.get<ClipboardData>(STORAGE_KEY, { items: [] });
@@ -172,6 +188,9 @@ export class ClipboardPlugin extends BasePlugin {
         icon: Clipboard,
         title: translations[getLocale()]['clipboard'] ?? 'Clipboard',
         score: 900,
+        sourcePlugin: PLUGIN_NAME,
+        actionId: ACTION_OPEN,
+        actionData: null,
         action: async (ctx: SearchResultItemContext) => {
           const component = await this.render({ query: params.query });
           if (component) {

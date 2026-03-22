@@ -5,6 +5,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 import { normalizeForSearch, toPinyinInitials, fuzzyMatch } from '@spotlight/utils/pinyin';
@@ -18,6 +19,7 @@ export interface ThemeSetting {
 }
 
 const PLUGIN_NAME = 'settings';
+const ACTION_OPEN = 'open';
 
 export function applyTheme(mode: ThemeMode): void {
   const root = document.documentElement;
@@ -43,6 +45,20 @@ export class SettingsPlugin extends BasePlugin {
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+
+  constructor() {
+    super();
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_OPEN,
+      handler: async (_data, ctx) => {
+        const component = await this.render({ query: '' });
+        if (component) {
+          ctx.setPanel(component, this.name);
+        }
+      },
+    });
+  }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
@@ -88,6 +104,9 @@ export class SettingsPlugin extends BasePlugin {
         icon: Settings,
         title: translations[getLocale()]['settings'] ?? 'settings',
         score: 1000,
+        sourcePlugin: PLUGIN_NAME,
+        actionId: ACTION_OPEN,
+        actionData: null,
         action: async (ctx: SearchResultItemContext) => {
           const component = await this.render({ query: params.query });
           if (component) {

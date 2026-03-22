@@ -5,6 +5,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -15,6 +16,7 @@ registerTranslations({
 
 const STORAGE_KEY = 'notes_data';
 const PLUGIN_NAME = 'notes';
+const ACTION_OPEN = 'open';
 
 export interface Note {
   id: string;
@@ -48,6 +50,20 @@ export class NotesPlugin extends BasePlugin {
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+
+  constructor() {
+    super();
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_OPEN,
+      handler: async (_data, ctx) => {
+        const component = await this.render({ query: '' });
+        if (component) {
+          ctx.setPanel(component, this.name);
+        }
+      },
+    });
+  }
 
   async getNotesData(): Promise<NotesData> {
     const data = await this.storage.get<NotesData>(STORAGE_KEY, {
@@ -157,6 +173,9 @@ export class NotesPlugin extends BasePlugin {
         icon: FileText,
         title: translations[getLocale()]['notes'] ?? 'Notes',
         score: 900,
+        sourcePlugin: PLUGIN_NAME,
+        actionId: ACTION_OPEN,
+        actionData: null,
         action: async (ctx: SearchResultItemContext) => {
           const component = await this.render({ query: params.query });
           if (component) {

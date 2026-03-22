@@ -16,6 +16,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
 import type { Component } from 'vue';
+import logger from '@spotlight/logger';
 
 provideI18n();
 
@@ -46,6 +47,7 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 };
 
 const handleSelect = async (item: SearchResultItem) => {
+  logger.info(`[App] handleSelect called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
   let panelEntered = false;
   const ctx: SearchResultItemContext = {
     setPanel: (component: Component, pluginNameKey?: string) => {
@@ -62,6 +64,7 @@ const handleSelect = async (item: SearchResultItem) => {
   };
 
   if (item.sourcePlugin && item.actionId !== undefined) {
+    logger.info(`[App] Recording selection for recent: ${item.title}`);
     await recentPlugin.recordSelection({
       item: {
         title: item.title,
@@ -74,7 +77,9 @@ const handleSelect = async (item: SearchResultItem) => {
     });
   }
 
+  logger.info(`[App] Calling item.action for: ${item.title}`);
   await item.action(ctx);
+  logger.info(`[App] item.action completed for: ${item.title}`);
 
   if (!panelEntered) {
     query.value = '';

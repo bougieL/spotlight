@@ -2,7 +2,10 @@
 import { ref } from 'vue';
 import { Clock, Trash2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { pluginRegistry } from '@spotlight/plugin-registry';
+import { formatTime } from '@spotlight/utils';
 import { recentPlugin, type RecentItem } from '../index';
+import logger from '@spotlight/logger';
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -22,23 +25,15 @@ async function handleClear() {
   items.value = [];
 }
 
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-
-  if (diff < 60000) {
-    return 'Just now';
-  }
-  if (diff < 3600000) {
-    const mins = Math.floor(diff / 60000);
-    return `${mins}m ago`;
-  }
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000);
-    return `${hours}h ago`;
-  }
-  return date.toLocaleDateString();
+async function handleItemClick(item: RecentItem) {
+  logger.info(`[RecentPanel] handleItemClick called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
+  await pluginRegistry.executeAction({
+    sourcePlugin: item.sourcePlugin,
+    actionId: item.actionId,
+    data: item.actionData,
+    ctx: { setPanel: () => {}, clearQuery: () => {} },
+  });
+  emit('close');
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -72,6 +67,7 @@ loadItems();
         v-for="item in items"
         :key="item.id"
         class="recent-item"
+        @click="handleItemClick(item)"
       >
         <div class="item-icon">
           <Clock :size="16" />

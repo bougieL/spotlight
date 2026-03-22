@@ -6,6 +6,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
+import { formatTime } from '@spotlight/utils';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -113,6 +114,9 @@ export class RecentPlugin extends BasePlugin {
           title: translations[getLocale()]['recent'] ?? 'Recent',
           desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
           score: 900,
+          sourcePlugin: PLUGIN_NAME,
+          actionId: 'noop',
+          actionData: null,
           action: async () => {},
         },
       ];
@@ -124,8 +128,11 @@ export class RecentPlugin extends BasePlugin {
         icon: IconComponent as Component,
         iconUrl: item.iconUrl,
         title: item.title,
-        desc: item.desc,
+        desc: formatTime(item.timestamp),
         score: 1000 - (Date.now() - item.timestamp) / 100000,
+        sourcePlugin: item.sourcePlugin,
+        actionId: item.actionId,
+        actionData: item.actionData,
         action: async (ctx: SearchResultItemContext) => {
           await pluginRegistry.executeAction({
             sourcePlugin: item.sourcePlugin,
