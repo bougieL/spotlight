@@ -16,6 +16,8 @@ export interface TauriApi {
   getClipboardText: () => Promise<string>;
   getClipboardImage: () => Promise<string>;
   setClipboardText: (text: string) => Promise<void>;
+  setClipboardImage: (dataUrl: string) => Promise<void>;
+  setClipboardFiles: (files: string[]) => Promise<void>;
   startClipboardMonitor: () => Promise<void>;
   stopClipboardMonitor: () => Promise<void>;
   getInstalledApplications: () => Promise<AppInfo[]>;
@@ -38,6 +40,10 @@ export const tauriApi: TauriApi = {
   getClipboardImage: () => invoke<string>('get_clipboard_image'),
 
   setClipboardText: (text: string) => invoke<void>('set_clipboard_text', { text }),
+
+  setClipboardImage: (dataUrl: string) => invoke<void>('set_clipboard_image', { dataUrl }),
+
+  setClipboardFiles: (files: string[]) => invoke<void>('set_clipboard_files', { files }),
 
   startClipboardMonitor: () => invoke<void>('start_clipboard_monitor'),
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Clipboard, FileText, Image, Copy } from 'lucide-vue-next';
+import { Clipboard, FileText, Image, Copy, Check } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 import { on, type UnlistenFn } from '@spotlight/api';
@@ -58,7 +58,7 @@ function getTypeLabel(type: ClipboardItemType) {
 
 function formatContent(item: ClipboardItem): string {
   if (item.type === 'image') {
-    return '[Image]';
+    return t('clipboard.image');
   }
   if (item.type === 'files') {
     const files = item.content.split('\n').filter(f => f.trim());
@@ -72,6 +72,29 @@ function formatContent(item: ClipboardItem): string {
     return text.substring(0, 100) + '...';
   }
   return text;
+}
+
+function isImage(item: ClipboardItem): boolean {
+  return item.type === 'image' && item.content.startsWith('data:image');
+}
+
+function isFiles(item: ClipboardItem): boolean {
+  return item.type === 'files';
+}
+
+function getFiles(item: ClipboardItem): string[] {
+  if (item.type !== 'files') return [];
+  return item.content.split('\n').filter(f => f.trim());
+}
+
+function getFileName(path: string): string {
+  return path.split(/[\\/]/).pop() || path;
+}
+
+function getFileExtension(path: string): string {
+  const name = getFileName(path);
+  const dotIndex = name.lastIndexOf('.');
+  return dotIndex > 0 ? name.substring(dotIndex + 1).toLowerCase() : '';
 }
 
 function formatTime(timestamp: number): string {
@@ -98,7 +121,7 @@ async function handleCopy(item: ClipboardItem) {
   copiedId.value = item.id;
   setTimeout(() => {
     copiedId.value = null;
-  }, 1500);
+  }, 3000);
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -113,7 +136,7 @@ onMounted(async () => {
   unlistenClipboard = await on.clipboardChanged(async () => {
     await loadItems();
   });
-  refreshTimer = setInterval(loadItems, 1000);
+  refreshTimer = setInterval(loadItems, 5000);
 });
 
 onUnmounted(() => {
@@ -156,14 +179,25 @@ async function handleItemClick(item: ClipboardItem) {
           <component :is="getTypeIcon(item.type)" :size="16" />
         </div>
         <div class="item-content">
-          <span class="item-text">{{ formatContent(item) }}</span>
+          <img v-if="isImage(item)" :src="item.content" class="item-image-preview" alt="preview" />
+          <div v-else-if="isFiles(item)" class="item-files">
+            <div v-for="file in getFiles(item)" :key="file" class="file-item">
+              <FileText :size="14" class="file-icon" />
+              <span class="file-name">{{ getFileName(file) }}</span>
+              <span class="file-ext">{{ getFileExtension(file) }}</span>
+            </div>
+          </div>
+          <template v-else>
+            <span class="item-text">{{ formatContent(item) }}</span>
+          </template>
           <span class="item-meta">
             <span class="item-type">{{ getTypeLabel(item.type) }}</span>
             <span class="item-time">{{ formatTime(item.timestamp) }}</span>
           </span>
         </div>
-        <div class="item-action">
-          <Copy :size="14" />
+        <div class="item-action" :class="{ 'copied-action': copiedId === item.id }">
+          <Check v-if="copiedId === item.id" :size="14" />
+          <Copy v-else :size="14" />
         </div>
       </div>
     </div>
@@ -232,12 +266,54 @@ async function handleItemClick(item: ClipboardItem) {
   flex-shrink: 0;
 }
 
+.item-image-preview {
+  max-width: 100%;
+  max-height: 80px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.item-files {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--spotlight-text);
+}
+
+.file-icon {
+  color: var(--spotlight-icon);
+  flex-shrink: 0;
+}
+
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-ext {
+  font-size: 11px;
+  color: var(--spotlight-placeholder);
+  text-transform: uppercase;
+}
+
 .item-content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: flex-start;
 }
 
 .item-text {

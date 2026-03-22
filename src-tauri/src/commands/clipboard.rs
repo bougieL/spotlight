@@ -14,6 +14,16 @@ pub fn set_clipboard_text(text: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn set_clipboard_image(data_url: String) -> Result<(), String> {
+    crate::clipboard::set_clipboard_image(data_url)
+}
+
+#[tauri::command]
+pub fn set_clipboard_files(files: Vec<String>) -> Result<(), String> {
+    crate::clipboard::set_clipboard_files(files)
+}
+
+#[tauri::command]
 pub fn get_clipboard_image() -> Result<String, String> {
     crate::clipboard::get_clipboard_image()
 }

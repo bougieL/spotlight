@@ -177,8 +177,11 @@ export class ClipboardPlugin extends BasePlugin {
     try {
       if (item.type === 'text') {
         await tauriApi.setClipboardText(item.content);
+      } else if (item.type === 'image') {
+        await tauriApi.setClipboardImage(item.content);
       } else if (item.type === 'files') {
-        logger.warn('File copy not implemented');
+        const files = item.content.split('\n').filter(f => f.trim());
+        await tauriApi.setClipboardFiles(files);
       }
     } catch (error) {
       logger.error('Failed to copy to clipboard:', error);
