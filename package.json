@@ -17,6 +17,7 @@
   "dependencies": {
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
+    "@spotlight/calendar-plugin": "*",
     "@spotlight/calculator-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",
