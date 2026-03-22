@@ -23,6 +23,7 @@ export default defineConfig(async () => ({
       "@spotlight/clipboard-plugin": resolve(__dirname, "./packages/clipboard-plugin/src"),
       "@spotlight/recent-plugin": resolve(__dirname, "./packages/recent-plugin/src"),
       "@spotlight/logger": resolve(__dirname, "./packages/logger/src"),
+      "@spotlight/qrcode-plugin": resolve(__dirname, "./packages/qrcode-plugin/src"),
     },
   },
 

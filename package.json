@@ -26,6 +26,7 @@
     "@spotlight/logger": "*",
     "@spotlight/notes-plugin": "*",
     "@spotlight/recent-plugin": "*",
+    "@spotlight/qrcode-plugin": "*",
     "@spotlight/settings-plugin": "*",
     "@spotlight/utils": "*",
     "lucide-vue-next": "^0.577.0",
