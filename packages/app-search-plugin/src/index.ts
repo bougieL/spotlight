@@ -3,6 +3,14 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from './pinyin';
+import { registerTranslations } from '@spotlight/i18n';
+import enUS from './locales/en-US.json';
+import zhCN from './locales/zh-CN.json';
+
+registerTranslations({
+  'en-US': enUS,
+  'zh-CN': zhCN,
+});
 
 // Chinese to English app name translation map
 const CHINESE_APP_NAMES: Record<string, string> = {

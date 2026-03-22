@@ -19,6 +19,7 @@
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calculator-plugin": "*",
     "@spotlight/core": "*",
+    "@spotlight/i18n": "*",
     "@spotlight/sample-plugin": "*",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-fs": "^2.4.5",

@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { SearchInput } from "@spotlight/input";
 import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
+import { provideI18n } from "@spotlight/i18n";
 import { samplePlugin } from "@spotlight/sample-plugin";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
@@ -10,6 +11,8 @@ import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
 import type { Component } from 'vue';
+
+provideI18n();
 
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
@@ -19,7 +22,7 @@ const query = ref('');
 const files = ref<FileItem[]>([]);
 const searchResults = ref<SearchResultItem[]>([]);
 const activePanelComponent = ref<Component | null>(null);
-const activePluginName = ref<string | null>(null);
+const activePluginNameKey = ref<string | null>(null);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
   const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
@@ -29,9 +32,9 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 const handleSelect = async (item: SearchResultItem) => {
   let panelEntered = false;
   const ctx: SearchResultItemContext = {
-    setPanel: (component: Component, pluginName?: string) => {
+    setPanel: (component: Component, pluginNameKey?: string) => {
       activePanelComponent.value = component;
-      activePluginName.value = pluginName ?? null;
+      activePluginNameKey.value = pluginNameKey ?? null;
       panelEntered = true;
     },
   };
@@ -45,7 +48,7 @@ const handleSelect = async (item: SearchResultItem) => {
 
 const handleClosePanel = () => {
   activePanelComponent.value = null;
-  activePluginName.value = null;
+  activePluginNameKey.value = null;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -82,7 +85,7 @@ onUnmounted(() => {
       v-model="query"
       v-model:files="files"
       :is-panel-mode="!!activePanelComponent"
-      :plugin-name="activePluginName"
+      :plugin-name-key="activePluginNameKey"
       @search="handleSearch"
       @back="handleClosePanel"
     />

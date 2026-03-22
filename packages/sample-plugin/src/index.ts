@@ -2,6 +2,14 @@ import { FileText, Calculator, Globe } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
+import { registerTranslations } from '@spotlight/i18n';
+import enUS from './locales/en-US.json';
+import zhCN from './locales/zh-CN.json';
+
+registerTranslations({
+  'en-US': enUS,
+  'zh-CN': zhCN,
+});
 
 interface SampleItem {
   icon: typeof FileText;

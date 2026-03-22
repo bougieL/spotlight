@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Search, X, FileText, ArrowLeft } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
+import { useI18n, translations } from '@spotlight/i18n';
 import type { FileItem } from '@spotlight/core';
 
 export type { FileItem };
@@ -10,10 +11,20 @@ interface Props {
   modelValue: string;
   files: FileItem[];
   isPanelMode?: boolean;
-  pluginName?: string | null;
+  pluginNameKey?: string | null;
 }
 
 const props = defineProps<Props>();
+
+const { locale } = useI18n();
+
+const displayPluginName = computed(() => {
+  if (!props.pluginNameKey) return '';
+  // Access translations with locale to create reactive dependency
+  const translation = translations[locale.value][props.pluginNameKey] ?? props.pluginNameKey;
+  return translation;
+});
+
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
   (e: 'update:modelValue', value: string): void;
@@ -136,7 +147,7 @@ const handlePaste = async (event: ClipboardEvent) => {
         <ArrowLeft class="back-icon" :size="24" />
       </button>
       <Search v-else class="search-icon" :size="24" />
-      <span v-if="props.isPanelMode && props.pluginName" class="plugin-name">{{ props.pluginName }}</span>
+      <span v-if="props.isPanelMode && displayPluginName" class="plugin-name">{{ displayPluginName }}</span>
       <input
         ref="inputRef"
         type="text"
