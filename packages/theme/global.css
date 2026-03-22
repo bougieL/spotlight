@@ -4,6 +4,10 @@
   scrollbar-color: var(--spotlight-scrollbar-thumb) var(--spotlight-scrollbar-bg);
 }
 
+textarea {
+  font: inherit;
+}
+
 /* WebKit browsers (Chrome, Safari, Edge) */
 *::-webkit-scrollbar {
   width: 8px;

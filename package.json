@@ -20,6 +20,7 @@
     "@spotlight/calculator-plugin": "*",
     "@spotlight/core": "*",
     "@spotlight/i18n": "*",
+    "@spotlight/notes-plugin": "*",
     "@spotlight/settings-plugin": "*",
     "@spotlight/utils": "*",
     "@tauri-apps/api": "^2",

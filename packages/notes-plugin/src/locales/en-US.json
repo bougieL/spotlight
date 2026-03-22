@@ -1,0 +1,21 @@
+{
+  "notes": "Notes",
+  "notes.placeholder": "Write your notes here... (Markdown supported)",
+  "notes.preview": "Preview",
+  "notes.edit": "Edit",
+  "notes.copied": "Copied to clipboard",
+  "notes.copy": "Copy",
+  "notes.categories": "Categories",
+  "notes.allNotes": "All Notes",
+  "notes.addCategory": "Add category",
+  "notes.addNote": "Add note",
+  "notes.delete": "Delete",
+  "notes.confirmDeleteCategory": "Delete this category? Notes will be moved to All Notes.",
+  "notes.confirmDeleteNote": "Delete this note?",
+  "notes.noNotes": "No notes yet",
+  "notes.titlePlaceholder": "Note title",
+  "notes.noCategory": "No category",
+  "notes.selectNoteOrCreate": "Select a note or create a new one",
+  "notes.untitled": "Untitled",
+  "notes.categoryNamePrompt": "Enter category name:"
+}
