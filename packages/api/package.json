@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2"
   }

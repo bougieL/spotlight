@@ -8,10 +8,10 @@
     ".": "./src/index.ts",
     "./pinyin": "./src/pinyin.ts"
   },
-  "dependencies": {
-    "@spotlight/core": "*",
+  "dependencies": {},
+  "peerDependencies": {
     "@spotlight/api": "*",
-    "@spotlight/utils": "*",
-    "@tauri-apps/plugin-opener": "^2"
+    "@spotlight/core": "*",
+    "@spotlight/utils": "*"
   }
 }

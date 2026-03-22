@@ -8,7 +8,7 @@
     ".": "./src/index.ts",
     "./pinyin": "./src/pinyin.ts"
   },
-  "dependencies": {
+  "peerDependencies": {
     "pinyin-pro": "^3.24.0"
   }
 }

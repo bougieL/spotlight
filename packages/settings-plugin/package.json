@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@spotlight/core": "*",
     "@spotlight/utils": "*",
     "lucide-vue-next": "^0.577.0"

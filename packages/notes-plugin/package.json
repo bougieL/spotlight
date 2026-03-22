@@ -4,7 +4,9 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@spotlight/components": "*",
     "marked": "^15.0.0"
+  },
+  "peerDependencies": {
+    "@spotlight/components": "*"
   }
 }

@@ -13,7 +13,7 @@
     "./Radio": "./src/components/BaseRadio.vue",
     "./RadioGroup": "./src/components/BaseRadioGroup.vue"
   },
-  "dependencies": {
+  "peerDependencies": {
     "vue": "^3.5.13"
   }
 }
