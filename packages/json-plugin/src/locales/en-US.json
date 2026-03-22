@@ -1,0 +1,13 @@
+{
+  "json": {
+    "name": "JSON Editor",
+    "placeholder": "Paste or type JSON here...",
+    "invalidJson": "Invalid JSON",
+    "foldAll": "Fold All",
+    "unfoldAll": "Unfold All",
+    "copy": "Copy",
+    "clear": "Clear",
+    "format": "Format",
+    "minify": "Minify"
+  }
+}

@@ -18,6 +18,12 @@
   --spotlight-control-height: 32px;
   --spotlight-control-height-sm: 24px;
   --spotlight-control-height-lg: 40px;
+  --spotlight-json-bracket: #666;
+  --spotlight-json-key: #9c27b0;
+  --spotlight-json-string: #e53935;
+  --spotlight-json-number: #1e88e5;
+  --spotlight-json-boolean: #fb8c00;
+  --spotlight-json-null: #888;
 }
 
 :root[data-theme="dark"] {
@@ -40,6 +46,12 @@
   --spotlight-control-height: 32px;
   --spotlight-control-height-sm: 24px;
   --spotlight-control-height-lg: 40px;
+  --spotlight-json-bracket: #888;
+  --spotlight-json-key: #ce93d8;
+  --spotlight-json-string: #ef9a9a;
+  --spotlight-json-number: #90caf9;
+  --spotlight-json-boolean: #ffcc80;
+  --spotlight-json-null: #888;
 }
 
 :root[data-theme="light"] {
@@ -62,6 +74,12 @@
   --spotlight-control-height: 32px;
   --spotlight-control-height-sm: 24px;
   --spotlight-control-height-lg: 40px;
+  --spotlight-json-bracket: #666;
+  --spotlight-json-key: #9c27b0;
+  --spotlight-json-string: #e53935;
+  --spotlight-json-number: #1e88e5;
+  --spotlight-json-boolean: #fb8c00;
+  --spotlight-json-null: #888;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -83,5 +101,11 @@
     --spotlight-scrollbar-thumb: rgba(255, 255, 255, 0.2);
     --spotlight-scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
     --spotlight-control-height: 32px;
+    --spotlight-json-bracket: #888;
+    --spotlight-json-key: #ce93d8;
+    --spotlight-json-string: #ef9a9a;
+    --spotlight-json-number: #90caf9;
+    --spotlight-json-boolean: #ffcc80;
+    --spotlight-json-null: #888;
   }
 }

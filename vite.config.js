@@ -12,6 +12,7 @@ export default defineConfig(async () => ({
     alias: {
       "@": resolve(__dirname, "./src"),
       "@spotlight/core": resolve(__dirname, "./packages/core/src"),
+      "@spotlight/i18n": resolve(__dirname, "./packages/i18n/src"),
       "@spotlight/api": resolve(__dirname, "./packages/api/src"),
       "@spotlight/input": resolve(__dirname, "./packages/input/src"),
       "@spotlight/panel": resolve(__dirname, "./packages/panel/src"),
@@ -20,10 +21,12 @@ export default defineConfig(async () => ({
       "@spotlight/calculator-plugin": resolve(__dirname, "./packages/calculator-plugin/src"),
       "@spotlight/settings-plugin": resolve(__dirname, "./packages/settings-plugin/src"),
       "@spotlight/theme": resolve(__dirname, "./packages/theme"),
+      "@spotlight/components": resolve(__dirname, "./packages/components/src"),
       "@spotlight/clipboard-plugin": resolve(__dirname, "./packages/clipboard-plugin/src"),
       "@spotlight/recent-plugin": resolve(__dirname, "./packages/recent-plugin/src"),
       "@spotlight/logger": resolve(__dirname, "./packages/logger/src"),
       "@spotlight/qrcode-plugin": resolve(__dirname, "./packages/qrcode-plugin/src"),
+      "@spotlight/json-plugin": resolve(__dirname, "./packages/json-plugin/src"),
     },
   },
 

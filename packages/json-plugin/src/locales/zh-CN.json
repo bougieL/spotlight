@@ -1,0 +1,13 @@
+{
+  "json": {
+    "name": "JSON 编辑器",
+    "placeholder": "在此粘贴或输入 JSON...",
+    "invalidJson": "无效的 JSON",
+    "foldAll": "折叠全部",
+    "unfoldAll": "展开全部",
+    "copy": "复制",
+    "clear": "清空",
+    "format": "格式化",
+    "minify": "压缩"
+  }
+}
