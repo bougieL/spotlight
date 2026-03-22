@@ -10,6 +10,7 @@ import { notesPlugin } from "@spotlight/notes-plugin";
 import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { clipboardPlugin } from "@spotlight/clipboard-plugin";
+import { recentPlugin } from "@spotlight/recent-plugin";
 import { tauriApi } from "@spotlight/api";
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { FileItem } from "@spotlight/input";
@@ -24,6 +25,7 @@ pluginRegistry.register(notesPlugin);
 pluginRegistry.register(calendarPlugin);
 pluginRegistry.register(settingsPlugin);
 pluginRegistry.register(clipboardPlugin);
+pluginRegistry.register(recentPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
@@ -34,8 +36,13 @@ const activePanelOnReady = ref<(() => void) | undefined>(undefined);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
-  const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
-  searchResults.value = results;
+  if (!searchQuery.trim()) {
+    const results = await recentPlugin.search({ query: searchQuery, files: searchFiles });
+    searchResults.value = results;
+  } else {
+    const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
+    searchResults.value = results;
+  }
 };
 
 const handleSelect = async (item: SearchResultItem) => {
@@ -53,6 +60,19 @@ const handleSelect = async (item: SearchResultItem) => {
       query.value = '';
     },
   };
+
+  if (item.sourcePlugin && item.actionId !== undefined) {
+    await recentPlugin.recordSelection({
+      item: {
+        title: item.title,
+        desc: item.desc,
+        iconUrl: item.iconUrl,
+      },
+      sourcePlugin: item.sourcePlugin,
+      actionId: item.actionId,
+      actionData: item.actionData,
+    });
+  }
 
   await item.action(ctx);
 

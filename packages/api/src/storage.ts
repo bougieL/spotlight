@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import logger from '@spotlight/logger';
 
 export interface PluginStorage {
   get<T>(key: string, defaultValue: T): Promise<T>;
@@ -37,7 +38,7 @@ export function createPluginStorage(pluginName: string): PluginStorage {
         parsed[key] = value;
         await writeSettings(pluginName, JSON.stringify(parsed));
       } catch (error) {
-        console.error(`Failed to save setting for ${pluginName}.${key}:`, error);
+        logger.error(`Failed to save setting for ${pluginName}.${key}:`, error);
       }
     },
 
@@ -51,15 +52,15 @@ export function createPluginStorage(pluginName: string): PluginStorage {
         delete parsed[key];
         await writeSettings(pluginName, JSON.stringify(parsed));
       } catch (error) {
-        console.error(`Failed to remove setting for ${pluginName}.${key}:`, error);
+        logger.error(`Failed to remove setting for ${pluginName}.${key}:`, error);
       }
     },
 
     async clear(): Promise<void> {
       try {
         await writeSettings(pluginName, JSON.stringify({}));
-      } catch (error) {
-        console.error(`Failed to clear settings for ${pluginName}:`, error);
+      } catch (_error) {
+        logger.error(`Failed to clear settings for ${pluginName}`);
       }
     },
   };

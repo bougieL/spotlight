@@ -54,6 +54,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': 'warn',
       'no-debugger': 'warn',
+      'max-params': ['error', 2],
     },
   },
   {

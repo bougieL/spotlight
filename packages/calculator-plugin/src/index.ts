@@ -5,6 +5,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -147,9 +148,9 @@ export class CalculatorPlugin extends BasePlugin {
           // Copy result to clipboard
           try {
             await navigator.clipboard.writeText(formattedResult);
-            console.log('Calculator result copied to clipboard:', formattedResult);
+            logger.info('Calculator result copied to clipboard:', formattedResult);
           } catch (error) {
-            console.error('Failed to copy to clipboard:', error);
+            logger.error('Failed to copy to clipboard:', error);
           }
           // Enter panel mode
           const component = await this.render({ query: params.query });

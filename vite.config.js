@@ -20,6 +20,9 @@ export default defineConfig(async () => ({
       "@spotlight/calculator-plugin": resolve(__dirname, "./packages/calculator-plugin/src"),
       "@spotlight/settings-plugin": resolve(__dirname, "./packages/settings-plugin/src"),
       "@spotlight/theme": resolve(__dirname, "./packages/theme"),
+      "@spotlight/clipboard-plugin": resolve(__dirname, "./packages/clipboard-plugin/src"),
+      "@spotlight/recent-plugin": resolve(__dirname, "./packages/recent-plugin/src"),
+      "@spotlight/logger": resolve(__dirname, "./packages/logger/src"),
     },
   },
 

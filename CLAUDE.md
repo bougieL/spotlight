@@ -27,6 +27,18 @@
 ### 5. Code Comments and Logs
 
 - **ALL code comments and console logs MUST be in English**
+- **Use the @spotlight/logger module for logging instead of console.log/console.error**
+- Web/TypeScript side: `import logger from '@spotlight/logger'; logger.info('message');`
+- Rust side: Use the `write_log` command from `spotlight_logger` crate
+- Log file location:
+  - **Development**: `{exe_dir}/devLogs/YYYY-MM-DD.log`
+  - **Release**: `{app_data_dir}/logs/YYYY-MM-DD.log`
+- Example:
+  ```typescript
+  import logger from '@spotlight/logger';
+  logger.info('Application started');
+  logger.error('Failed to load data', error);
+  ```
 
 ### 6. Cross-Platform Support (Mandatory)
 

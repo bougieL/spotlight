@@ -457,8 +457,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link 0.2.1",
 ]
 
@@ -3528,6 +3530,7 @@ dependencies = [
  "regex-lite",
  "serde",
  "serde_json",
+ "spotlight_logger",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -3536,6 +3539,14 @@ dependencies = [
  "tauri-plugin-opener",
  "uuid",
  "windows 0.58.0",
+]
+
+[[package]]
+name = "spotlight_logger"
+version = "1.0.0"
+dependencies = [
+ "chrono",
+ "tauri",
 ]
 
 [[package]]

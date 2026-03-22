@@ -1,4 +1,4 @@
-import type { BasePlugin, SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { BasePlugin, SearchResultItem, SearchParams, RenderParams, SearchResultItemContext } from '@spotlight/core';
 import type { Component } from 'vue';
 
 const MAX_RESULTS_PER_PLUGIN = 5;
@@ -9,8 +9,11 @@ interface ScoredResult {
   pluginIndex: number;
 }
 
+type ActionHandler = (data: unknown, ctx: SearchResultItemContext) => void | Promise<void>;
+
 export class PluginRegistry {
   private plugins: BasePlugin[] = [];
+  private actionHandlers: Map<string, ActionHandler> = new Map();
 
   register(plugin: BasePlugin): void {
     this.plugins.push(plugin);
@@ -18,6 +21,24 @@ export class PluginRegistry {
 
   unregister(name: string): void {
     this.plugins = this.plugins.filter((p) => p.name !== name);
+    // Clean up action handlers for this plugin
+    for (const key of this.actionHandlers.keys()) {
+      if (key.startsWith(name + ':')) {
+        this.actionHandlers.delete(key);
+      }
+    }
+  }
+
+  registerAction(params: { pluginName: string; actionId: string; handler: ActionHandler }): void {
+    this.actionHandlers.set(`${params.pluginName}:${params.actionId}`, params.handler);
+  }
+
+  async executeAction(params: { sourcePlugin: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
+    const key = `${params.sourcePlugin}:${params.actionId}`;
+    const handler = this.actionHandlers.get(key);
+    if (handler) {
+      await handler(params.data, params.ctx);
+    }
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -37,7 +58,12 @@ export class PluginRegistry {
 
       for (const item of results.slice(0, limit)) {
         const score = item.score ?? this.calculateGlobalScore(item, params.query);
-        scoredResults.push({ item, score, pluginIndex });
+        // Attach source plugin to each item
+        const itemWithSource: SearchResultItem = {
+          ...item,
+          sourcePlugin: item.sourcePlugin ?? this.plugins[pluginIndex].name,
+        };
+        scoredResults.push({ item: itemWithSource, score, pluginIndex });
       }
     }
 
@@ -66,7 +92,7 @@ export class PluginRegistry {
   private calculateGlobalScore(item: SearchResultItem, query: string): number {
     const queryLower = query.toLowerCase().trim();
     const titleLower = item.title.toLowerCase();
-    let score = 0;
+    let score: number;
 
     if (titleLower === queryLower) {
       score = 1000;

@@ -2,8 +2,10 @@ import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
 import { registerTranslations } from '@spotlight/i18n';
+import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -11,6 +13,9 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const PLUGIN_NAME = 'app-search';
+const ACTION_LAUNCH = 'launch';
 
 const CHINESE_APP_NAMES: Record<string, string> = {
   '记事本': 'Notepad',
@@ -44,13 +49,30 @@ interface CachedApp {
 }
 
 export class AppSearchPlugin extends BasePlugin {
-  name = 'app-search';
+  name = PLUGIN_NAME;
   version = '1.0.0';
   description = 'Search for installed applications';
   author = 'Spotlight Team';
 
   private cachedApps: CachedApp[] = [];
   private cacheLoaded = false;
+
+  constructor() {
+    super();
+    // Register action handlers
+    pluginRegistry.registerAction({
+      pluginName: PLUGIN_NAME,
+      actionId: ACTION_LAUNCH,
+      handler: async (data, _ctx) => {
+        if (typeof data !== 'string') return;
+        const apps = await this.loadApps();
+        const app = apps.find((a) => a.info.path === data);
+        if (app) {
+          await this.launchApp(app.info);
+        }
+      },
+    });
+  }
 
   async loadApps(): Promise<CachedApp[]> {
     if (this.cacheLoaded) {
@@ -118,7 +140,7 @@ export class AppSearchPlugin extends BasePlugin {
     try {
       await tauriApi.launchApp(info.path);
     } catch (error) {
-      console.error('Failed to launch app:', error);
+      logger.error('Failed to launch app:', error);
     }
   }
 
@@ -133,6 +155,9 @@ export class AppSearchPlugin extends BasePlugin {
       return apps.slice(0, limit).map((app) => ({
         title: app.info.name,
         desc: app.info.path,
+        sourcePlugin: PLUGIN_NAME,
+        actionId: ACTION_LAUNCH,
+        actionData: app.info.path,
         action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
       }));
     }
@@ -208,6 +233,9 @@ export class AppSearchPlugin extends BasePlugin {
       title: app.info.name,
       desc: app.info.path,
       score,
+      sourcePlugin: PLUGIN_NAME,
+      actionId: ACTION_LAUNCH,
+      actionData: app.info.path,
       action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
     }));
   }

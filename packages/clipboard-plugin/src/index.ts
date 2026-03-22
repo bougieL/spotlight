@@ -5,6 +5,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi } from '@spotlight/api';
+import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -87,7 +88,7 @@ export class ClipboardPlugin extends BasePlugin {
       try {
         await this.checkClipboard();
       } catch (error) {
-        console.error('Clipboard polling error:', error);
+        logger.error('Clipboard polling error:', error);
       }
     }, 500);
   }
@@ -109,7 +110,8 @@ export class ClipboardPlugin extends BasePlugin {
           await this.addItem('text', text);
         }
       }
-    } catch {
+    } catch (_error) {
+      // Ignore clipboard read errors
     }
 
     try {
@@ -122,7 +124,8 @@ export class ClipboardPlugin extends BasePlugin {
           await this.addItem('files', content);
         }
       }
-    } catch {
+    } catch (_error) {
+      // Ignore clipboard read errors
     }
 
     try {
@@ -134,7 +137,8 @@ export class ClipboardPlugin extends BasePlugin {
           await this.addItem('image', imageData);
         }
       }
-    } catch {
+    } catch (_error) {
+      // Ignore clipboard read errors
     }
   }
 
@@ -143,10 +147,10 @@ export class ClipboardPlugin extends BasePlugin {
       if (item.type === 'text') {
         await tauriApi.setClipboardText(item.content);
       } else if (item.type === 'files') {
-        console.warn('File copy not implemented');
+        logger.warn('File copy not implemented');
       }
     } catch (error) {
-      console.error('Failed to copy to clipboard:', error);
+      logger.error('Failed to copy to clipboard:', error);
     }
   }
 

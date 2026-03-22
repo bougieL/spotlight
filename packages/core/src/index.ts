@@ -12,6 +12,9 @@ export interface SearchResultItem {
   desc?: string;
   score?: number;
   action: (ctx: SearchResultItemContext) => void | Promise<void>;
+  sourcePlugin?: string;
+  actionId?: string;
+  actionData?: unknown;
 }
 
 export interface SearchParams {

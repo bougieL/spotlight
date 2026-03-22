@@ -7,6 +7,7 @@ use commands::{
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
     save_temp_image, set_clipboard_text, write_plugin_settings,
 };
+use spotlight_logger::write_log;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
@@ -35,7 +36,8 @@ pub fn run() {
             read_plugin_settings,
             write_plugin_settings,
             register_global_shortcut,
-            get_global_shortcut
+            get_global_shortcut,
+            write_log
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
