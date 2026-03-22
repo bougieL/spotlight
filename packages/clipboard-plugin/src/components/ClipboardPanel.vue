@@ -5,6 +5,7 @@ import { useI18n } from '@spotlight/i18n';
 import { formatTime } from '@spotlight/utils';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 import { on, type UnlistenFn } from '@spotlight/api';
+import logger from '@spotlight/logger';
 
 interface Props {
   query: string;
@@ -26,23 +27,23 @@ let unlistenClipboard: UnlistenFn | null = null;
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
 const filteredItems = computed(() => {
-  let result = selectedType.value === 'favorites' ? favorites.value : items.value;
-  
+  const sourceItems = selectedType.value === 'favorites' ? favorites.value : items.value;
+
   if (selectedType.value !== 'favorites' && selectedType.value !== 'all') {
-    result = result.filter(item => item.type === selectedType.value);
+    return sourceItems.filter(item => item.type === selectedType.value);
   }
-  
+
   if (props.query.trim()) {
     const query = props.query.toLowerCase();
-    result = result.filter(item => item.content.toLowerCase().includes(query));
+    return sourceItems.filter(item => item.content.toLowerCase().includes(query));
   }
-  
-  return result;
+
+  return sourceItems;
 });
 
 const filterTabs = computed(() => [
-  { key: 'favorites' as const, icon: Star, label: t('clipboard.favorites') },
   { key: 'all' as const, icon: LayoutGrid, label: t('clipboard.all') },
+  { key: 'favorites' as const, icon: Star, label: t('clipboard.favorites') },
   { key: 'text' as const, icon: FileText, label: t('clipboard.text') },
   { key: 'image' as const, icon: Image, label: t('clipboard.image') },
   { key: 'files' as const, icon: FileText, label: t('clipboard.files') },
@@ -150,9 +151,13 @@ onUnmounted(() => {
 });
 
 async function loadItems() {
-  const data = await clipboardPlugin.getData();
-  items.value = data.items;
-  favorites.value = data.favorites;
+  try {
+    const data = await clipboardPlugin.getData();
+    items.value = data.items || [];
+    favorites.value = data.favorites || [];
+  } catch (error) {
+    logger.error('Failed to load clipboard items:', error);
+  }
 }
 
 async function handleItemClick(item: ClipboardItem) {
