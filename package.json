@@ -19,6 +19,7 @@
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calendar-plugin": "*",
     "@spotlight/calculator-plugin": "*",
+    "@spotlight/clipboard-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",
     "@spotlight/i18n": "*",

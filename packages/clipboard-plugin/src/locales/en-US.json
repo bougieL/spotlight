@@ -1,0 +1,12 @@
+{
+  "clipboard": "Clipboard",
+  "clipboard.placeholder": "No clipboard history",
+  "clipboard.search": "Search clipboard...",
+  "clipboard.empty": "No items",
+  "clipboard.copied": "Copied!",
+  "clipboard.clear": "Clear",
+  "clipboard.confirmClear": "Clear all clipboard history?",
+  "clipboard.text": "Text",
+  "clipboard.image": "Image",
+  "clipboard.files": "Files"
+}

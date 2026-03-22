@@ -14,9 +14,9 @@ fn show_window(app_handle: &AppHandle) {
 #[tauri::command]
 pub fn register_global_shortcut(app_handle: AppHandle, shortcut: String) -> Result<(), String> {
     // Parse the new shortcut
-    let new_shortcut: Shortcut = shortcut.parse().map_err(|e| {
-        format!("Failed to parse shortcut '{}': {}", shortcut, e)
-    })?;
+    let new_shortcut: Shortcut = shortcut
+        .parse()
+        .map_err(|e| format!("Failed to parse shortcut '{}': {}", shortcut, e))?;
 
     // Get old shortcut and unregister it
     let old_shortcut = {
@@ -30,17 +30,20 @@ pub fn register_global_shortcut(app_handle: AppHandle, shortcut: String) -> Resu
     }
 
     // Unregister the new shortcut in case
-    let _ = app_handle.global_shortcut().unregister(new_shortcut.clone());
+    let _ = app_handle
+        .global_shortcut()
+        .unregister(new_shortcut.clone());
 
     // Set up handler
     let app_handle_clone = app_handle.clone();
-    app_handle.global_shortcut().on_shortcut(new_shortcut.clone(), move |_app, _shortcut, event| {
-        if event.state == ShortcutState::Pressed {
-            show_window(&app_handle_clone);
-        }
-    }).map_err(|e| {
-        format!("Failed to set shortcut handler: {}", e)
-    })?;
+    app_handle
+        .global_shortcut()
+        .on_shortcut(new_shortcut.clone(), move |_app, _shortcut, event| {
+            if event.state == ShortcutState::Pressed {
+                show_window(&app_handle_clone);
+            }
+        })
+        .map_err(|e| format!("Failed to set shortcut handler: {}", e))?;
 
     let mut current = CURRENT_SHORTCUT.lock().unwrap();
     *current = Some(new_shortcut);

@@ -9,6 +9,7 @@ import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { notesPlugin } from "@spotlight/notes-plugin";
 import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
+import { clipboardPlugin } from "@spotlight/clipboard-plugin";
 import { tauriApi } from "@spotlight/api";
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { FileItem } from "@spotlight/input";
@@ -22,6 +23,7 @@ pluginRegistry.register(calculatorPlugin);
 pluginRegistry.register(notesPlugin);
 pluginRegistry.register(calendarPlugin);
 pluginRegistry.register(settingsPlugin);
+pluginRegistry.register(clipboardPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

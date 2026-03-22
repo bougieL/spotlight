@@ -7,7 +7,9 @@ pub mod storage;
 pub mod window;
 
 pub use apps::{get_app_icon, get_installed_applications};
-pub use clipboard::get_clipboard_file_paths;
+pub use clipboard::{
+    get_clipboard_file_paths, get_clipboard_image, get_clipboard_text, set_clipboard_text,
+};
 pub use file::{save_pasted_file, save_temp_image};
 pub use launcher::launch_app;
 pub use shortcut::{get_global_shortcut, register_global_shortcut};

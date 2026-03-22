@@ -16,6 +16,20 @@ export async function getClipboardFilePaths(): Promise<string[]> {
   return [];
 }
 
+export async function getClipboardText(): Promise<string> {
+  // In mock mode, return empty string
+  return '';
+}
+
+export async function getClipboardImage(): Promise<string> {
+  // In mock mode, return empty string
+  return '';
+}
+
+export async function setClipboardText(_text: string): Promise<void> {
+  // In mock mode, do nothing
+}
+
 export async function getInstalledApplications(): Promise<AppInfo[]> {
   // In mock mode, return sample apps for testing
   return [
@@ -34,6 +48,12 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return saveTempImage(args?.data_url as string);
     case 'get_clipboard_file_paths':
       return getClipboardFilePaths();
+    case 'get_clipboard_text':
+      return getClipboardText();
+    case 'get_clipboard_image':
+      return getClipboardImage();
+    case 'set_clipboard_text':
+      return setClipboardText(args?.text as string);
     case 'get_installed_applications':
       return getInstalledApplications();
     case 'launch_app':

@@ -1,13 +1,13 @@
+use windows::Win32::Foundation::{HGLOBAL, HWND};
+use windows::Win32::System::DataExchange::{
+    CloseClipboard, EmptyClipboard, GetClipboardData, OpenClipboard, SetClipboardData,
+};
+use windows::Win32::System::Memory::{GlobalAlloc, GlobalLock, GlobalUnlock, GMEM_MOVEABLE};
+
 #[tauri::command]
 pub fn get_clipboard_file_paths() -> Result<Vec<String>, String> {
     #[cfg(windows)]
     {
-        use windows::Win32::Foundation::{HGLOBAL, HWND};
-        use windows::Win32::System::DataExchange::{
-            CloseClipboard, GetClipboardData, OpenClipboard,
-        };
-        use windows::Win32::System::Memory::{GlobalLock, GlobalUnlock};
-
         const CF_HDROP: u32 = 15;
 
         #[repr(C)]
@@ -84,4 +84,115 @@ pub fn get_clipboard_file_paths() -> Result<Vec<String>, String> {
     {
         Ok(Vec::new())
     }
+}
+
+#[tauri::command]
+pub fn get_clipboard_text() -> Result<String, String> {
+    #[cfg(windows)]
+    {
+        const CF_UNICODETEXT: u32 = 13;
+
+        unsafe {
+            if OpenClipboard(HWND::default()).is_err() {
+                return Err("Failed to open clipboard".to_string());
+            }
+
+            let hmem = GetClipboardData(CF_UNICODETEXT);
+            if hmem.is_err() {
+                let _ = CloseClipboard();
+                return Ok(String::new());
+            }
+
+            let hmem = hmem.unwrap();
+            let hmem_hg: HGLOBAL = std::mem::transmute(hmem.0);
+
+            let text_ptr = GlobalLock(hmem_hg);
+            if text_ptr.is_null() {
+                let _ = CloseClipboard();
+                return Ok(String::new());
+            }
+
+            let text_len = wcslen(text_ptr as *const u16);
+            let text = String::from_utf16_lossy(std::slice::from_raw_parts(
+                text_ptr as *const u16,
+                text_len,
+            ));
+
+            let _ = GlobalUnlock(hmem_hg);
+            let _ = CloseClipboard();
+
+            Ok(text)
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        Ok(String::new())
+    }
+}
+
+#[tauri::command]
+pub fn set_clipboard_text(text: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        const CF_UNICODETEXT: u32 = 13;
+
+        unsafe {
+            if OpenClipboard(HWND::default()).is_err() {
+                return Err("Failed to open clipboard".to_string());
+            }
+
+            let _ = EmptyClipboard();
+
+            let wide_chars: Vec<u16> = text.encode_utf16().chain(std::iter::once(0)).collect();
+            let size_bytes = wide_chars.len() * std::mem::size_of::<u16>();
+
+            let hmem = GlobalAlloc(GMEM_MOVEABLE, size_bytes);
+            if hmem.is_err() {
+                let _ = CloseClipboard();
+                return Err("Failed to allocate memory".to_string());
+            }
+
+            let hmem = hmem.unwrap();
+            let hmem_ptr = GlobalLock(hmem);
+
+            std::ptr::copy_nonoverlapping(
+                wide_chars.as_ptr(),
+                hmem_ptr as *mut u16,
+                wide_chars.len(),
+            );
+
+            let _ = GlobalUnlock(hmem);
+
+            let hmem_handle: windows::Win32::Foundation::HANDLE = std::mem::transmute(hmem);
+            let result = SetClipboardData(CF_UNICODETEXT, hmem_handle);
+            if result.is_err() {
+                let _ = CloseClipboard();
+                return Err("Failed to set clipboard data".to_string());
+            }
+
+            let _ = CloseClipboard();
+            Ok(())
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = text;
+        Ok(())
+    }
+}
+
+#[tauri::command]
+pub fn get_clipboard_image() -> Result<String, String> {
+    Ok(String::new())
+}
+
+#[cfg(windows)]
+unsafe fn wcslen(s: *const u16) -> usize {
+    let mut count = 0;
+    while *s.add(count) != 0 {
+        count += 1;
+    }
+    count
 }

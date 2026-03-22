@@ -12,6 +12,9 @@ export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
   getClipboardFilePaths: () => Promise<string[]>;
+  getClipboardText: () => Promise<string>;
+  getClipboardImage: () => Promise<string>;
+  setClipboardText: (text: string) => Promise<void>;
   getInstalledApplications: () => Promise<AppInfo[]>;
   getAppIcon: (path: string) => Promise<string | null>;
   launchApp: (path: string) => Promise<void>;
@@ -26,6 +29,12 @@ export const tauriApi: TauriApi = {
   saveTempImage: (dataUrl: string) => invoke<string>('save_temp_image', { dataUrl }),
 
   getClipboardFilePaths: () => invoke<string[]>('get_clipboard_file_paths'),
+
+  getClipboardText: () => invoke<string>('get_clipboard_text'),
+
+  getClipboardImage: () => invoke<string>('get_clipboard_image'),
+
+  setClipboardText: (text: string) => invoke<void>('set_clipboard_text', { text }),
 
   getInstalledApplications: () => invoke<AppInfo[]>('get_installed_applications'),
 

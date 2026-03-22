@@ -1,0 +1,17 @@
+{
+  "name": "@spotlight/clipboard-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@spotlight/api": "*",
+    "@spotlight/core": "*",
+    "@spotlight/components": "*",
+    "@spotlight/i18n": "*"
+  }
+}
