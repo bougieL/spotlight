@@ -1,6 +1,5 @@
-import { Clock } from 'lucide-vue-next';
-import { defineAsyncComponent } from 'vue';
-import type { Component } from 'vue';
+import { Clock, Calculator, Clipboard, Calendar, Settings, FileText, Search } from 'lucide-vue-next';
+import { defineAsyncComponent, type Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
@@ -15,6 +14,16 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
+const ICON_COMPONENTS: Record<string, Component> = {
+  Clock,
+  Calculator,
+  Clipboard,
+  Calendar,
+  Settings,
+  FileText,
+  Search,
+};
+
 const STORAGE_KEY = 'recent_items';
 const PLUGIN_NAME = 'recent';
 const MAX_RECENT_ITEMS = 10;
@@ -24,6 +33,7 @@ export interface RecentItem {
   title: string;
   desc?: string;
   iconUrl?: string;
+  iconComponentName?: string;
   sourcePlugin: string;
   actionId: string;
   actionData: unknown;
@@ -123,12 +133,12 @@ export class RecentPlugin extends BasePlugin {
     }
 
     return items.map((item): SearchResultItem => {
-      const IconComponent = item.iconUrl ? undefined : Clock;
+      const icon = item.iconUrl ? undefined : (item.iconComponentName ? ICON_COMPONENTS[item.iconComponentName] : undefined);
       return {
-        icon: IconComponent as Component,
+        icon,
         iconUrl: item.iconUrl,
         title: item.title,
-        desc: formatTime(item.timestamp),
+        desc: item.desc || formatTime(item.timestamp),
         score: 1000 - (Date.now() - item.timestamp) / 100000,
         sourcePlugin: item.sourcePlugin,
         actionId: item.actionId,

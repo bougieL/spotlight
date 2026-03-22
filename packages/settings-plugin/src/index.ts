@@ -102,6 +102,7 @@ export class SettingsPlugin extends BasePlugin {
     return [
       {
         icon: Settings,
+        iconComponentName: 'Settings',
         title: translations[getLocale()]['settings'] ?? 'settings',
         score: 1000,
         sourcePlugin: PLUGIN_NAME,

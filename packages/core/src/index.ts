@@ -8,6 +8,7 @@ export interface SearchResultItemContext {
 export interface SearchResultItem {
   icon?: Component;
   iconUrl?: string;
+  iconComponentName?: string;
   title: string;
   desc?: string;
   score?: number;

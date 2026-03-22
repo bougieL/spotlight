@@ -53,6 +53,7 @@ export class CalendarPlugin extends BasePlugin {
       return [
         {
           icon: Calendar,
+          iconComponentName: 'Calendar',
           title: translations[getLocale()]['calendar'] ?? 'Calendar',
           score: 900,
           sourcePlugin: PLUGIN_NAME,
@@ -74,6 +75,7 @@ export class CalendarPlugin extends BasePlugin {
       return [
         {
           icon: Calendar,
+          iconComponentName: 'Calendar',
           title: `${params.query}`,
           desc: translations[getLocale()]['calendar'] ?? 'Calendar',
           score: 800,

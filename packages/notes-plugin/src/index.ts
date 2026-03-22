@@ -171,6 +171,7 @@ export class NotesPlugin extends BasePlugin {
     return [
       {
         icon: FileText,
+        iconComponentName: 'FileText',
         title: translations[getLocale()]['notes'] ?? 'Notes',
         score: 900,
         sourcePlugin: PLUGIN_NAME,

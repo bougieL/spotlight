@@ -186,6 +186,7 @@ export class ClipboardPlugin extends BasePlugin {
     return [
       {
         icon: Clipboard,
+        iconComponentName: 'Clipboard',
         title: translations[getLocale()]['clipboard'] ?? 'Clipboard',
         score: 900,
         sourcePlugin: PLUGIN_NAME,

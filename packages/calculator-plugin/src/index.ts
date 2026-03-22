@@ -145,6 +145,7 @@ export class CalculatorPlugin extends BasePlugin {
       return [
         {
           icon: Calculator,
+          iconComponentName: 'Calculator',
           title: translations[getLocale()]['calculator'] ?? 'Calculator',
           score: 900,
           sourcePlugin: PLUGIN_NAME,
@@ -180,6 +181,7 @@ export class CalculatorPlugin extends BasePlugin {
     return [
       {
         icon: Calculator,
+        iconComponentName: 'Calculator',
         title: `${displayExpression} = ${formattedResult}`,
         score: 1000,
         sourcePlugin: PLUGIN_NAME,

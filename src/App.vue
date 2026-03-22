@@ -48,7 +48,6 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 
 const handleSelect = async (item: SearchResultItem) => {
   logger.info(`[App] handleSelect called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
-  let panelEntered = false;
   const ctx: SearchResultItemContext = {
     setPanel: (component: Component, pluginNameKey?: string) => {
       activePanelComponent.value = component;
@@ -56,7 +55,6 @@ const handleSelect = async (item: SearchResultItem) => {
       activePanelOnReady.value = () => {
         query.value = '';
       };
-      panelEntered = true;
     },
     clearQuery: () => {
       query.value = '';
@@ -70,6 +68,7 @@ const handleSelect = async (item: SearchResultItem) => {
         title: item.title,
         desc: item.desc,
         iconUrl: item.iconUrl,
+        iconComponentName: item.iconComponentName,
       },
       sourcePlugin: item.sourcePlugin,
       actionId: item.actionId,
@@ -80,10 +79,6 @@ const handleSelect = async (item: SearchResultItem) => {
   logger.info(`[App] Calling item.action for: ${item.title}`);
   await item.action(ctx);
   logger.info(`[App] item.action completed for: ${item.title}`);
-
-  if (!panelEntered) {
-    query.value = '';
-  }
 };
 
 const handleClosePanel = () => {
@@ -115,6 +110,10 @@ onMounted(async () => {
 
   // Register global hotkey on startup
   await settingsPlugin.registerHotkey();
+
+  // Initial search with recent items
+  const initialResults = await recentPlugin.search({ query: '', files: [] });
+  searchResults.value = initialResults;
 
   resizeObserver = new ResizeObserver(() => {
     if (resizeTimer) clearTimeout(resizeTimer);
