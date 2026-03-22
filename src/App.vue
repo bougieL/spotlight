@@ -74,6 +74,9 @@ onMounted(async () => {
   applyTheme(savedTheme);
   setLocale(savedLanguage);
 
+  // Register global hotkey on startup
+  await settingsPlugin.registerHotkey();
+
   resizeObserver = new ResizeObserver(() => {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(performResize, 16);
