@@ -4,7 +4,6 @@ import { SearchInput } from "@spotlight/input";
 import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
 import { provideI18n, setLocale } from "@spotlight/i18n";
-import { samplePlugin } from "@spotlight/sample-plugin";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
@@ -15,7 +14,6 @@ import type { Component } from 'vue';
 
 provideI18n();
 
-pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
 pluginRegistry.register(calculatorPlugin);
 pluginRegistry.register(settingsPlugin);

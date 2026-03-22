@@ -16,7 +16,6 @@ export default defineConfig(async () => ({
       "@spotlight/input": resolve(__dirname, "./packages/input/src"),
       "@spotlight/panel": resolve(__dirname, "./packages/panel/src"),
       "@spotlight/plugin-registry": resolve(__dirname, "./packages/plugin-registry/src"),
-      "@spotlight/sample-plugin": resolve(__dirname, "./packages/sample-plugin/src"),
       "@spotlight/app-search-plugin": resolve(__dirname, "./packages/app-search-plugin/src"),
       "@spotlight/calculator-plugin": resolve(__dirname, "./packages/calculator-plugin/src"),
       "@spotlight/settings-plugin": resolve(__dirname, "./packages/settings-plugin/src"),
