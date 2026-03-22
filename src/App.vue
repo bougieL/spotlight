@@ -6,6 +6,7 @@ import { pluginRegistry } from "@spotlight/plugin-registry";
 import { provideI18n, setLocale } from "@spotlight/i18n";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
+import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { tauriApi } from "@spotlight/api";
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
@@ -17,6 +18,7 @@ provideI18n();
 
 pluginRegistry.register(appSearchPlugin);
 pluginRegistry.register(calculatorPlugin);
+pluginRegistry.register(calendarPlugin);
 pluginRegistry.register(settingsPlugin);
 
 const query = ref('');
