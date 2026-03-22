@@ -4,10 +4,12 @@ import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
-import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 import { normalizeForSearch, toPinyinInitials, fuzzyMatch } from '@spotlight/utils/pinyin';
+
+const DEFAULT_HOTKEY = 'Alt+Space';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -115,6 +117,22 @@ export class SettingsPlugin extends BasePlugin {
 
   async updateLanguage(language: Locale): Promise<void> {
     await this.storage.set<Locale>('language', language);
+  }
+
+  async getHotkey(): Promise<string> {
+    return await this.storage.get<string>('hotkey', DEFAULT_HOTKEY);
+  }
+
+  async updateHotkey(hotkey: string): Promise<void> {
+    await this.storage.set<string>('hotkey', hotkey);
+    // Let errors propagate to UI
+    await this.registerHotkey(hotkey);
+  }
+
+  async registerHotkey(hotkey?: string): Promise<void> {
+    const shortcut = hotkey ?? (await this.getHotkey());
+    // Don't catch errors - let them propagate to UI
+    await tauriApi.registerGlobalShortcut(shortcut);
   }
 }
 

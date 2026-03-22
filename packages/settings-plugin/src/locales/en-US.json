@@ -8,5 +8,9 @@
   "settings.language.en": "English",
   "settings.language.zh": "中文",
   "settings.shortcut": "Shortcut",
-  "settings.shortcut.hint": "Press the shortcut to bring up Spotlight"
+  "settings.shortcut.hint": "Press the shortcut to bring up Spotlight",
+  "settings.shortcut.recording": "Recording",
+  "settings.shortcut.pressKeys": "Press keys...",
+  "settings.shortcut.altSpaceError": "Alt+Space cannot be used on Windows",
+  "settings.shortcut.reset": "Reset to Alt+Space"
 }

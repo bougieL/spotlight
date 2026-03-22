@@ -2,16 +2,15 @@ pub mod commands;
 pub mod utils;
 
 use commands::{
-    get_app_icon, get_clipboard_file_paths, get_installed_applications, get_plugin_storage_dir,
-    launch_app, read_plugin_settings, resize_window, save_pasted_file, save_temp_image,
-    write_plugin_settings,
+    get_app_icon, get_clipboard_file_paths, get_global_shortcut, get_installed_applications,
+    get_plugin_storage_dir, launch_app, read_plugin_settings, register_global_shortcut,
+    resize_window, save_pasted_file, save_temp_image, write_plugin_settings,
 };
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
     Manager,
 };
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -30,7 +29,9 @@ pub fn run() {
             launch_app,
             get_plugin_storage_dir,
             read_plugin_settings,
-            write_plugin_settings
+            write_plugin_settings,
+            register_global_shortcut,
+            get_global_shortcut
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
@@ -89,19 +90,6 @@ pub fn run() {
                     _ => {}
                 })
                 .build(app)?;
-
-            // Register global shortcut "Alt+Space" to show and focus the window
-            let shortcut: Shortcut = "Alt+Space".parse().expect("Failed to parse shortcut");
-            let app_handle = app.handle().clone();
-            app.global_shortcut().on_shortcut(shortcut, move |_app, _shortcut, event| {
-                if event.state == ShortcutState::Pressed {
-                    if let Some(window) = app_handle.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
-                }
-            })?;
-            let _ = app.global_shortcut().register(shortcut);
 
             Ok(())
         })
