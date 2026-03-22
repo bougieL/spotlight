@@ -12,7 +12,6 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-// Chinese to English app name translation map
 const CHINESE_APP_NAMES: Record<string, string> = {
   '记事本': 'Notepad',
   '备忘录': 'Notepad',
@@ -32,10 +31,16 @@ const CHINESE_APP_NAMES: Record<string, string> = {
   '视频': 'Media Player',
 };
 
+const ENGLISH_TO_CHINESE: Record<string, string> = Object.fromEntries(
+  Object.entries(CHINESE_APP_NAMES).map(([k, v]) => [v.toLowerCase(), k])
+);
+
 interface CachedApp {
   info: AppInfo;
   normalizedName: string;
   searchTerms: string[];
+  pinyin: string;
+  initials: string;
 }
 
 export class AppSearchPlugin extends BasePlugin {
@@ -56,27 +61,27 @@ export class AppSearchPlugin extends BasePlugin {
       const apps = await tauriApi.getInstalledApplications();
       this.cachedApps = apps.map((info) => {
         const normalizedName = normalizeForSearch(info.name);
+        const pinyin = toPinyin(info.name).toLowerCase();
+        const initials = toPinyinInitials(info.name).toLowerCase();
         const searchTerms: string[] = [normalizedName];
 
-        // Add Chinese translation and its pinyin for matching
         const englishName = CHINESE_APP_NAMES[info.name];
         if (englishName) {
           searchTerms.push(normalizeForSearch(englishName));
-          searchTerms.push(normalizeForSearch(info.name));
         }
 
-        // Check if app name has a Chinese translation
-        for (const [chinese, english] of Object.entries(CHINESE_APP_NAMES)) {
-          if (english.toLowerCase() === info.name.toLowerCase()) {
-            searchTerms.push(normalizeForSearch(chinese));
-            break;
-          }
+        const englishLower = info.name.toLowerCase();
+        const reverseChinese = ENGLISH_TO_CHINESE[englishLower];
+        if (reverseChinese) {
+          searchTerms.push(normalizeForSearch(reverseChinese));
         }
 
         return {
           info,
           normalizedName,
           searchTerms,
+          pinyin,
+          initials,
         };
       });
       this.cacheLoaded = true;
@@ -88,10 +93,27 @@ export class AppSearchPlugin extends BasePlugin {
     return this.cachedApps;
   }
 
+  private iconCache = new Map<string, string | null>();
+  private iconLoading = new Map<string, Promise<string | null>>();
+
+  private async getIcon(path: string): Promise<string | null> {
+    const cached = this.iconCache.get(path);
+    if (cached !== undefined) return cached;
+
+    let loader = this.iconLoading.get(path);
+    if (!loader) {
+      loader = tauriApi.getAppIcon(path);
+      this.iconLoading.set(path, loader);
+    }
+
+    const icon = await loader;
+    this.iconCache.set(path, icon);
+    this.iconLoading.delete(path);
+    return icon;
+  }
+
   private async launchApp(info: AppInfo): Promise<void> {
     if (!info.path) return;
-
-    console.log('Launching app:', info.name, 'at path:', info.path);
 
     try {
       await tauriApi.launchApp(info.path);
@@ -105,46 +127,88 @@ export class AppSearchPlugin extends BasePlugin {
     const lowerQuery = params.query.toLowerCase();
     const queryPinyin = toPinyin(params.query).toLowerCase();
     const queryInitials = toPinyinInitials(params.query).toLowerCase();
+    const limit = params.limit ?? 10;
 
-    return apps
-      .filter((app) => {
-        const name = app.info.name.toLowerCase();
-        const normalized = app.normalizedName;
-
-        // Direct match
-        if (name.includes(lowerQuery)) return true;
-
-        // Fuzzy match on app name (e.g., "vs" matches "visual studio")
-        const fuzzyScore = fuzzyMatch(params.query, app.info.name);
-        if (fuzzyScore > 0) return true;
-
-        // Check search terms for pinyin match
-        for (const term of app.searchTerms) {
-          if (term.includes(queryPinyin)) return true;
-        }
-
-        // Pinyin full match (e.g., "weixin" matches "微信")
-        if (normalized.includes(queryPinyin)) return true;
-
-        // Pinyin initials match (e.g., "wx" matches "微信")
-        const nameInitials = toPinyinInitials(app.info.name).toLowerCase();
-        if (nameInitials.includes(queryInitials) || queryInitials.length >= 2 && nameInitials.startsWith(queryInitials)) {
-          return true;
-        }
-
-        // Fuzzy match on pinyin initials (e.g., "vs" matches "wei xin")
-        const pinyinInitialsScore = fuzzyMatch(queryInitials, nameInitials);
-        if (pinyinInitialsScore > 0) return true;
-
-        return false;
-      })
-      .slice(0, params.limit ?? 10)
-      .map((app) => ({
-        iconUrl: app.info.icon_data ?? undefined,
+    if (!lowerQuery) {
+      return apps.slice(0, limit).map((app) => ({
         title: app.info.name,
         desc: app.info.path,
         action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
       }));
+    }
+
+    const scored: Array<{ app: CachedApp; score: number }> = [];
+
+    for (const app of apps) {
+      const name = app.info.name.toLowerCase();
+      let score = -1;
+
+      if (name === lowerQuery) {
+        score = 1000;
+      } else if (name.startsWith(lowerQuery)) {
+        score = 900;
+      } else if (name.includes(lowerQuery)) {
+        score = 800;
+      }
+
+      if (score < 0) {
+        const fuzzyScore = fuzzyMatch(params.query, app.info.name);
+        if (fuzzyScore > 0) {
+          score = 700 + fuzzyScore;
+        }
+      }
+
+      if (score < 0) {
+        for (const term of app.searchTerms) {
+          if (term.includes(queryPinyin)) {
+            score = 600;
+            break;
+          }
+        }
+      }
+
+      if (score < 0) {
+        if (app.pinyin.includes(queryPinyin)) {
+          score = 500;
+        }
+      }
+
+      if (score < 0) {
+        if (app.initials.startsWith(queryInitials)) {
+          score = 400;
+        } else if (app.initials.includes(queryInitials)) {
+          score = 300;
+        }
+      }
+
+      if (score < 0) {
+        const pinyinFuzzy = fuzzyMatch(queryInitials, app.initials);
+        if (pinyinFuzzy > 0) {
+          score = 200 + pinyinFuzzy;
+        }
+      }
+
+      if (score > 0) {
+        scored.push({ app, score });
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+
+    const topApps = scored.slice(0, limit);
+    const iconPromises = topApps.map(async ({ app }) => {
+      const icon = await this.getIcon(app.info.path);
+      return { app, icon };
+    });
+
+    const results = await Promise.all(iconPromises);
+
+    return results.map(({ app, icon }) => ({
+      iconUrl: icon ?? undefined,
+      title: app.info.name,
+      desc: app.info.path,
+      action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
+    }));
   }
 
   async render(_params: RenderParams): Promise<Component | null> {

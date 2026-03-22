@@ -11,6 +11,7 @@ export interface TauriApi {
   saveTempImage: (dataUrl: string) => Promise<string>;
   getClipboardFilePaths: () => Promise<string[]>;
   getInstalledApplications: () => Promise<AppInfo[]>;
+  getAppIcon: (path: string) => Promise<string | null>;
   launchApp: (path: string) => Promise<void>;
   getPluginStorageDir: (pluginName: string) => Promise<string>;
   convertFileSrc: typeof convertFileSrc;
@@ -24,6 +25,8 @@ export const tauriApi: TauriApi = {
   getClipboardFilePaths: () => invoke<string[]>('get_clipboard_file_paths'),
 
   getInstalledApplications: () => invoke<AppInfo[]>('get_installed_applications'),
+
+  getAppIcon: (path: string) => invoke<string | null>('get_app_icon', { path }),
 
   launchApp: (path: string) => invoke('launch_app', { path }),
 
