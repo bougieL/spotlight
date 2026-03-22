@@ -1,0 +1,19 @@
+{
+  "name": "@spotlight/components",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./Button": "./src/components/BaseButton.vue",
+    "./IconButton": "./src/components/BaseIconButton.vue",
+    "./Input": "./src/components/BaseInput.vue",
+    "./Select": "./src/components/BaseSelect.vue",
+    "./Radio": "./src/components/BaseRadio.vue",
+    "./RadioGroup": "./src/components/BaseRadioGroup.vue"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  }
+}

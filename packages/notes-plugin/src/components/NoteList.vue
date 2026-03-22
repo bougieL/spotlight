@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { FileText, Plus, Trash2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { BaseIconButton } from '@spotlight/components';
 import type { Note } from '../index';
 
 interface Props {
@@ -50,9 +51,9 @@ function handleDelete(event: Event, noteId: string) {
   <div class="note-list">
     <div class="note-header">
       <span class="header-title">{{ t('notes.notes') }}</span>
-      <button class="add-btn" @click="emit('create')" :title="t('notes.addNote')">
+      <BaseIconButton size="small" :title="t('notes.addNote')" @click="emit('create')">
         <Plus :size="16" />
-      </button>
+      </BaseIconButton>
     </div>
     <div class="note-items">
       <div
@@ -68,13 +69,15 @@ function handleDelete(event: Event, noteId: string) {
           <span class="note-preview">{{ getPreview(note.content) }}</span>
         </div>
         <span class="note-date">{{ formatDate(note.updatedAt) }}</span>
-        <button
+        <BaseIconButton
           class="delete-btn"
-          @click="(e) => handleDelete(e, note.id)"
+          size="small"
+          variant="danger"
           :title="t('notes.delete')"
+          @click="(e: Event) => handleDelete(e, note.id)"
         >
           <Trash2 :size="14" />
-        </button>
+        </BaseIconButton>
       </div>
       <div v-if="notes.length === 0" class="empty-state">
         {{ t('notes.noNotes') }}
@@ -104,26 +107,6 @@ function handleDelete(event: Event, noteId: string) {
   font-weight: 600;
   text-transform: uppercase;
   color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-}
-
-.add-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.add-btn:hover {
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
 }
 
 .note-items {
@@ -194,28 +177,11 @@ function handleDelete(event: Event, noteId: string) {
 }
 
 .delete-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-  cursor: pointer;
   opacity: 0;
-  transition: all 0.15s ease;
 }
 
 .note-item:hover .delete-btn {
   opacity: 1;
-}
-
-.delete-btn:hover {
-  background-color: var(--spotlight-danger, #dc3545);
-  color: white;
 }
 
 .empty-state {

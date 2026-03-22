@@ -18,6 +18,7 @@
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calculator-plugin": "*",
+    "@spotlight/components": "*",
     "@spotlight/core": "*",
     "@spotlight/i18n": "*",
     "@spotlight/notes-plugin": "*",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { FolderPlus, Trash2, Folder } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { BaseIconButton } from '@spotlight/components';
 import type { Category } from '../index';
 
 interface Props {
@@ -18,12 +18,10 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const deletingId = ref<string | null>(null);
 
 function handleDelete(event: Event, categoryId: string) {
   event.stopPropagation();
   if (confirm(t('notes.confirmDeleteCategory'))) {
-    deletingId.value = categoryId;
     emit('delete', categoryId);
   }
 }
@@ -33,9 +31,9 @@ function handleDelete(event: Event, categoryId: string) {
   <div class="category-list">
     <div class="category-header">
       <span class="header-title">{{ t('notes.categories') }}</span>
-      <button class="add-btn" @click="emit('create')" :title="t('notes.addCategory')">
+      <BaseIconButton size="small" :title="t('notes.addCategory')" @click="emit('create')">
         <FolderPlus :size="16" />
-      </button>
+      </BaseIconButton>
     </div>
     <div class="category-items">
       <div
@@ -55,13 +53,15 @@ function handleDelete(event: Event, categoryId: string) {
       >
         <Folder :size="16" class="category-icon" />
         <span class="category-name">{{ category.name }}</span>
-        <button
+        <BaseIconButton
           class="delete-btn"
-          @click="(e) => handleDelete(e, category.id)"
+          size="small"
+          variant="danger"
           :title="t('notes.delete')"
+          @click="(e: Event) => handleDelete(e, category.id)"
         >
           <Trash2 :size="14" />
-        </button>
+        </BaseIconButton>
       </div>
     </div>
   </div>
@@ -86,26 +86,6 @@ function handleDelete(event: Event, categoryId: string) {
   font-weight: 600;
   text-transform: uppercase;
   color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-}
-
-.add-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.add-btn:hover {
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
 }
 
 .category-items {
@@ -154,27 +134,10 @@ function handleDelete(event: Event, categoryId: string) {
 }
 
 .delete-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-  cursor: pointer;
   opacity: 0;
-  transition: all 0.15s ease;
 }
 
 .category-item:hover .delete-btn {
   opacity: 1;
-}
-
-.delete-btn:hover {
-  background-color: var(--spotlight-danger, #dc3545);
-  color: white;
 }
 </style>

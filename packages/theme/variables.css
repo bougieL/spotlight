@@ -15,6 +15,9 @@
   --spotlight-scrollbar-bg: transparent;
   --spotlight-scrollbar-thumb: rgba(0, 0, 0, 0.2);
   --spotlight-scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+  --spotlight-control-height: 32px;
+  --spotlight-control-height-sm: 24px;
+  --spotlight-control-height-lg: 40px;
 }
 
 :root[data-theme="dark"] {
@@ -34,6 +37,9 @@
   --spotlight-scrollbar-bg: transparent;
   --spotlight-scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --spotlight-scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+  --spotlight-control-height: 32px;
+  --spotlight-control-height-sm: 24px;
+  --spotlight-control-height-lg: 40px;
 }
 
 :root[data-theme="light"] {
@@ -53,6 +59,9 @@
   --spotlight-scrollbar-bg: transparent;
   --spotlight-scrollbar-thumb: rgba(0, 0, 0, 0.2);
   --spotlight-scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
+  --spotlight-control-height: 32px;
+  --spotlight-control-height-sm: 24px;
+  --spotlight-control-height-lg: 40px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,5 +82,6 @@
     --spotlight-scrollbar-bg: transparent;
     --spotlight-scrollbar-thumb: rgba(255, 255, 255, 0.2);
     --spotlight-scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+    --spotlight-control-height: 32px;
   }
 }

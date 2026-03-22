@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { marked } from 'marked';
+import { marked } from '../utils/marked';
 import { FileText, Eye, EyeOff } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { BaseButton, BaseIconButton, BaseInput, BaseSelect } from '@spotlight/components';
 import { notesPlugin, type Note, type Category } from '../index';
 import NotesSidebar from './NotesSidebar.vue';
 
@@ -22,6 +23,8 @@ const categories = ref<Category[]>([]);
 const notes = ref<Note[]>([]);
 const activeNoteId = ref<string | null>(null);
 const isPreview = ref(false);
+const isEditingPreview = ref(false);
+const previewRef = ref<HTMLDivElement | null>(null);
 
 const activeNote = computed(() => {
   if (!activeNoteId.value) return null;
@@ -37,11 +40,16 @@ const filteredNotes = computed(() => {
 
 const activeCategoryId = ref<string | null>(null);
 
+const categoryOptions = computed(() => [
+  { value: '', label: t('notes.noCategory'), disabled: true },
+  ...categories.value.map(cat => ({ value: cat.id, label: cat.name })),
+]);
+
 const renderedContent = computed(() => {
   if (!activeNote.value || !activeNote.value.content.trim()) {
     return '<p class="empty-hint">' + t('notes.placeholder') + '</p>';
   }
-  return marked(activeNote.value.content);
+  return marked.parse(activeNote.value.content, { breaks: true, gfm: true });
 });
 
 onMounted(async () => {
@@ -112,6 +120,35 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+function handleCategoryChange(value: string) {
+  handleUpdateNote({ categoryId: value || null });
+}
+
+function enablePreviewEdit() {
+  if (isPreview.value && activeNote.value) {
+    isEditingPreview.value = true;
+    setTimeout(() => {
+      if (previewRef.value) {
+        previewRef.value.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(previewRef.value);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }, 0);
+  }
+}
+
+function handlePreviewBlur() {
+  if (isEditingPreview.value && previewRef.value) {
+    const content = previewRef.value.innerText;
+    handleUpdateNote({ content });
+    isEditingPreview.value = false;
+  }
+}
+
 </script>
 
 <template>
@@ -132,30 +169,19 @@ function handleKeydown(event: KeyboardEvent) {
     <div class="notes-main">
       <div v-if="activeNote" class="editor-container">
         <div class="editor-header">
-          <input
-            :value="activeNote.title"
-            @input="handleUpdateNote({ title: ($event.target as HTMLInputElement).value })"
-            type="text"
-            class="title-input"
+          <BaseInput
+            :modelValue="activeNote.title"
             :placeholder="t('notes.titlePlaceholder')"
+            @update:modelValue="(v) => handleUpdateNote({ title: v })"
           />
-          <select
-            :value="activeNote.categoryId"
-            @change="handleUpdateNote({ categoryId: ($event.target as HTMLSelectElement).value || null })"
-            class="category-select"
-          >
-            <option :value="null">{{ t('notes.noCategory') }}</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-              {{ cat.name }}
-            </option>
-          </select>
-          <button
-            class="preview-toggle"
-            @click="isPreview = !isPreview"
-            :title="isPreview ? t('notes.edit') : t('notes.preview')"
-          >
+          <BaseSelect
+            :modelValue="activeNote.categoryId || ''"
+            :options="categoryOptions"
+            @update:modelValue="handleCategoryChange"
+          />
+          <BaseIconButton @click="isPreview = !isPreview">
             <component :is="isPreview ? EyeOff : Eye" :size="16" />
-          </button>
+          </BaseIconButton>
         </div>
 
         <div class="notes-content">
@@ -169,8 +195,13 @@ function handleKeydown(event: KeyboardEvent) {
           ></textarea>
           <div
             v-else
+            ref="previewRef"
             class="notes-preview"
+            :class="{ 'is-editing': isEditingPreview }"
+            :contenteditable="isEditingPreview"
             v-html="renderedContent"
+            @dblclick="enablePreviewEdit"
+            @blur="handlePreviewBlur"
           ></div>
         </div>
       </div>
@@ -178,9 +209,9 @@ function handleKeydown(event: KeyboardEvent) {
       <div v-else class="empty-state">
         <FileText :size="48" class="empty-icon" />
         <p class="empty-text">{{ t('notes.selectNoteOrCreate') }}</p>
-        <button class="create-button" @click="handleCreateNote">
+        <BaseButton variant="primary" @click="handleCreateNote">
           {{ t('notes.addNote') }}
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -215,64 +246,6 @@ function handleKeydown(event: KeyboardEvent) {
   align-items: center;
 }
 
-.title-input {
-  flex: 1;
-  padding: 8px 12px;
-  font-size: 16px;
-  font-weight: 600;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-  border-radius: 6px;
-  background-color: var(--spotlight-bg);
-  color: var(--spotlight-text);
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-
-.title-input:focus {
-  border-color: var(--spotlight-primary, var(--spotlight-icon, #666));
-}
-
-.title-input::placeholder {
-  color: var(--spotlight-placeholder);
-}
-
-.category-select {
-  padding: 8px 12px;
-  font-size: 13px;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-  border-radius: 6px;
-  background-color: var(--spotlight-bg);
-  color: var(--spotlight-text);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-  min-width: 140px;
-}
-
-.category-select:focus {
-  border-color: var(--spotlight-primary, var(--spotlight-icon, #666));
-}
-
-.preview-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-  border-radius: 6px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary, var(--spotlight-placeholder));
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.preview-toggle:hover {
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
-}
-
 .notes-content {
   flex: 1;
   overflow: hidden;
@@ -301,6 +274,19 @@ function handleKeydown(event: KeyboardEvent) {
   font-size: 14px;
   line-height: 1.6;
   color: var(--spotlight-text);
+}
+
+.notes-preview.is-editing {
+  outline: 2px solid var(--spotlight-primary, var(--spotlight-icon, #666));
+  cursor: text;
+}
+
+.notes-preview:not(.is-editing) {
+  cursor: pointer;
+}
+
+.notes-preview:not(.is-editing):hover {
+  background-color: var(--spotlight-item-hover);
 }
 
 .notes-preview :deep(h1) {
@@ -421,21 +407,5 @@ function handleKeydown(event: KeyboardEvent) {
 .empty-text {
   font-size: 14px;
   margin: 0;
-}
-
-.create-button {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
-  border-radius: 6px;
-  background-color: var(--spotlight-tag-bg);
-  color: var(--spotlight-tag-text);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.create-button:hover {
-  opacity: 0.9;
 }
 </style>
