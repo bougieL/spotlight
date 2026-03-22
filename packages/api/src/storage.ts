@@ -8,11 +8,11 @@ export interface PluginStorage {
 }
 
 async function readSettings(pluginName: string): Promise<string> {
-  return invoke<string>('read_plugin_settings', { plugin_name: pluginName });
+  return invoke<string>('read_plugin_settings', { pluginName });
 }
 
 async function writeSettings(pluginName: string, settings: string): Promise<void> {
-  return invoke<void>('write_plugin_settings', { plugin_name: pluginName, settings });
+  return invoke<void>('write_plugin_settings', { pluginName, settings });
 }
 
 export function createPluginStorage(pluginName: string): PluginStorage {

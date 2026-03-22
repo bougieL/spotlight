@@ -40,9 +40,9 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       console.log('Mock launch_app:', args?.path);
       return Promise.resolve();
     case 'read_plugin_settings':
-      return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.plugin_name}`) || '';
+      return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`) || '';
     case 'write_plugin_settings':
-      localStorage.setItem(`${MOCK_SETTINGS_PREFIX}${args?.plugin_name}`, args?.settings as string);
+      localStorage.setItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`, args?.settings as string);
       return Promise.resolve();
     default:
       return invoke(command, args);
