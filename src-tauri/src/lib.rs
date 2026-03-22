@@ -3,7 +3,7 @@ pub mod utils;
 
 use commands::{
     get_clipboard_file_paths, get_installed_applications, get_plugin_storage_dir, launch_app,
-    resize_window, save_pasted_file, save_temp_image,
+    read_plugin_settings, resize_window, save_pasted_file, save_temp_image, write_plugin_settings,
 };
 use tauri::Manager;
 
@@ -20,7 +20,9 @@ pub fn run() {
             resize_window,
             get_installed_applications,
             launch_app,
-            get_plugin_storage_dir
+            get_plugin_storage_dir,
+            read_plugin_settings,
+            write_plugin_settings
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

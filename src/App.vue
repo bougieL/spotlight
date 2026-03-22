@@ -3,10 +3,11 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { SearchInput } from "@spotlight/input";
 import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
-import { provideI18n } from "@spotlight/i18n";
+import { provideI18n, setLocale } from "@spotlight/i18n";
 import { samplePlugin } from "@spotlight/sample-plugin";
 import { appSearchPlugin } from "@spotlight/app-search-plugin";
 import { calculatorPlugin } from "@spotlight/calculator-plugin";
+import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
@@ -17,6 +18,7 @@ provideI18n();
 pluginRegistry.register(samplePlugin);
 pluginRegistry.register(appSearchPlugin);
 pluginRegistry.register(calculatorPlugin);
+pluginRegistry.register(settingsPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
@@ -64,7 +66,13 @@ const performResize = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Apply saved settings
+  const savedTheme = await settingsPlugin.getThemeMode();
+  const savedLanguage = await settingsPlugin.getLanguage();
+  applyTheme(savedTheme);
+  setLocale(savedLanguage);
+
   resizeObserver = new ResizeObserver(() => {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(performResize, 16);

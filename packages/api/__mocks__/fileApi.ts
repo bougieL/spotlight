@@ -26,10 +26,7 @@ export async function getInstalledApplications(): Promise<AppInfo[]> {
   ];
 }
 
-export async function getPluginStorageDir(pluginName: string): Promise<string> {
-  // In mock mode, return a mock storage path
-  return `mock_storage/${pluginName}`;
-}
+const MOCK_SETTINGS_PREFIX = 'mock_plugin_settings_';
 
 export async function invokeCommand(command: string, args?: Record<string, unknown>) {
   switch (command) {
@@ -42,8 +39,11 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'launch_app':
       console.log('Mock launch_app:', args?.path);
       return Promise.resolve();
-    case 'get_plugin_storage_dir':
-      return getPluginStorageDir(args?.plugin_name as string);
+    case 'read_plugin_settings':
+      return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.plugin_name}`) || '';
+    case 'write_plugin_settings':
+      localStorage.setItem(`${MOCK_SETTINGS_PREFIX}${args?.plugin_name}`, args?.settings as string);
+      return Promise.resolve();
     default:
       return invoke(command, args);
   }
