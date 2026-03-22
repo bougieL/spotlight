@@ -30,9 +30,8 @@ pub fn save_pasted_file(data_url: String, file_name: String) -> Result<String, S
     }
 
     let base64_data = parts[1];
-    let file_data =
-        base64::Engine::decode(&base64::engine::general_purpose::STANDARD, base64_data)
-            .map_err(|e| e.to_string())?;
+    let file_data = base64::Engine::decode(&base64::engine::general_purpose::STANDARD, base64_data)
+        .map_err(|e| e.to_string())?;
 
     let temp_dir = std::env::temp_dir();
     let safe_file_name = format!("spotlight_{}_{}", uuid::Uuid::new_v4(), file_name);

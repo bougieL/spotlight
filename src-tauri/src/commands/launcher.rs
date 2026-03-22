@@ -1,9 +1,11 @@
 #[cfg(windows)]
 fn resolve_shortcut(path: &str) -> Result<String, String> {
-    use windows::Win32::UI::Shell::IShellLinkW;
-    use windows::Win32::System::Com::IPersistFile;
-    use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED, STGM};
     use windows::core::Interface;
+    use windows::Win32::System::Com::IPersistFile;
+    use windows::Win32::System::Com::{
+        CoCreateInstance, CoInitializeEx, CLSCTX_ALL, COINIT_MULTITHREADED, STGM,
+    };
+    use windows::Win32::UI::Shell::IShellLinkW;
 
     let path_wide: Vec<u16> = path.encode_utf16().chain(std::iter::once(0)).collect();
 
@@ -11,12 +13,9 @@ fn resolve_shortcut(path: &str) -> Result<String, String> {
         // Initialize COM
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
-        let shell_link: IShellLinkW = CoCreateInstance(
-            &windows::Win32::UI::Shell::ShellLink,
-            None,
-            CLSCTX_ALL,
-        )
-        .map_err(|e| format!("Failed to create ShellLink: {:?}", e))?;
+        let shell_link: IShellLinkW =
+            CoCreateInstance(&windows::Win32::UI::Shell::ShellLink, None, CLSCTX_ALL)
+                .map_err(|e| format!("Failed to create ShellLink: {:?}", e))?;
 
         let persist_file: IPersistFile = shell_link
             .cast()
@@ -27,7 +26,8 @@ fn resolve_shortcut(path: &str) -> Result<String, String> {
             .map_err(|e| format!("Failed to load shortcut: {:?}", e))?;
 
         let mut target_path = [0u16; 260];
-        let mut find_data = std::mem::zeroed::<windows::Win32::Storage::FileSystem::WIN32_FIND_DATAW>();
+        let mut find_data =
+            std::mem::zeroed::<windows::Win32::Storage::FileSystem::WIN32_FIND_DATAW>();
 
         shell_link
             .GetPath(&mut target_path, &mut find_data, 0)
@@ -50,9 +50,9 @@ pub fn launch_app(path: String) -> Result<(), String> {
 
     #[cfg(windows)]
     {
+        use windows::Win32::Foundation::HWND;
         use windows::Win32::UI::Shell::ShellExecuteW;
         use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
-        use windows::Win32::Foundation::HWND;
 
         // If it's a shortcut, resolve it first
         let target_path = if path.to_lowercase().ends_with(".lnk") {
@@ -63,7 +63,10 @@ pub fn launch_app(path: String) -> Result<(), String> {
                     target
                 }
                 Err(e) => {
-                    println!("Rust: Failed to resolve shortcut: {}, using original path", e);
+                    println!(
+                        "Rust: Failed to resolve shortcut: {}, using original path",
+                        e
+                    );
                     path
                 }
             }
@@ -71,7 +74,10 @@ pub fn launch_app(path: String) -> Result<(), String> {
             path
         };
 
-        let path_wide: Vec<u16> = target_path.encode_utf16().chain(std::iter::once(0)).collect();
+        let path_wide: Vec<u16> = target_path
+            .encode_utf16()
+            .chain(std::iter::once(0))
+            .collect();
 
         println!("Rust: Wide path length: {}", path_wide.len());
 

@@ -3,7 +3,10 @@ use std::path::PathBuf;
 use tauri::Manager;
 
 #[tauri::command]
-pub fn get_plugin_storage_dir(plugin_name: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+pub fn get_plugin_storage_dir(
+    plugin_name: String,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
     let app_data_dir = app_handle
         .path()
         .app_data_dir()
@@ -17,7 +20,10 @@ pub fn get_plugin_storage_dir(plugin_name: String, app_handle: tauri::AppHandle)
 }
 
 #[tauri::command]
-pub fn read_plugin_settings(plugin_name: String, app_handle: tauri::AppHandle) -> Result<String, String> {
+pub fn read_plugin_settings(
+    plugin_name: String,
+    app_handle: tauri::AppHandle,
+) -> Result<String, String> {
     let app_data_dir = app_handle
         .path()
         .app_data_dir()
@@ -36,15 +42,17 @@ pub fn read_plugin_settings(plugin_name: String, app_handle: tauri::AppHandle) -
 }
 
 #[tauri::command]
-pub fn write_plugin_settings(plugin_name: String, settings: String, app_handle: tauri::AppHandle) -> Result<(), String> {
+pub fn write_plugin_settings(
+    plugin_name: String,
+    settings: String,
+    app_handle: tauri::AppHandle,
+) -> Result<(), String> {
     let app_data_dir = app_handle
         .path()
         .app_data_dir()
         .map_err(|e: tauri::Error| e.to_string())?;
 
-    let storage_dir: PathBuf = app_data_dir
-        .join("plugin_storage")
-        .join(&plugin_name);
+    let storage_dir: PathBuf = app_data_dir.join("plugin_storage").join(&plugin_name);
 
     fs::create_dir_all(&storage_dir).map_err(|e| e.to_string())?;
 
