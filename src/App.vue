@@ -12,6 +12,8 @@ import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { clipboardPlugin } from "@spotlight/clipboard-plugin";
 import { recentPlugin } from "@spotlight/recent-plugin";
+import { qrcodePlugin } from "@spotlight/qrcode-plugin";
+import { jsonPlugin } from "@spotlight/json-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
@@ -28,6 +30,8 @@ pluginRegistry.register(calendarPlugin);
 pluginRegistry.register(settingsPlugin);
 pluginRegistry.register(clipboardPlugin);
 pluginRegistry.register(recentPlugin);
+pluginRegistry.register(qrcodePlugin);
+pluginRegistry.register(jsonPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

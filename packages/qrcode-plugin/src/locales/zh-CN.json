@@ -1,0 +1,9 @@
+{
+  "qrcode": "二维码",
+  "qrcode.placeholder": "输入文本以生成二维码",
+  "qrcode.generate": "生成",
+  "qrcode.copy": "复制",
+  "qrcode.copied": "已复制！",
+  "qrcode.empty": "请先输入文本",
+  "qrcode.error": "生成二维码失败"
+}
