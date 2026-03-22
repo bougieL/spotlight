@@ -3,7 +3,8 @@ import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations } from '@spotlight/i18n';
+import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -12,11 +13,27 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
+const STORAGE_KEY = 'calculator_expressions';
+
 export class CalculatorPlugin extends BasePlugin {
   name = 'calculator';
   version = '1.0.0';
   description = 'Perform mathematical calculations';
   author = 'Spotlight Team';
+
+  private storage: PluginStorage = createPluginStorage(this.name);
+
+  async getExpressions(): Promise<string[]> {
+    const stored = await this.storage.get<string[]>(STORAGE_KEY, ['', '', '']);
+    if (Array.isArray(stored) && stored.length >= 1) {
+      return stored;
+    }
+    return ['', '', ''];
+  }
+
+  async saveExpressions(expressions: string[]): Promise<void> {
+    await this.storage.set(STORAGE_KEY, expressions);
+  }
 
   private evaluateExpression(expr: string): number | null {
     // Remove leading = if present
@@ -77,6 +94,32 @@ export class CalculatorPlugin extends BasePlugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
+    const queryLower = query.toLowerCase();
+
+    // Keywords for finding the calculator plugin
+    const keywords = [
+      'calculator', 'calcul', 'calc', 'jisuan', 'jisuanqi',
+      '计算', '计算器', '数学', 'math', '表达式', 'expression'
+    ];
+
+    // Check if query matches keywords to show the plugin
+    const isKeywordMatch = keywords.some(kw => kw.toLowerCase().includes(queryLower) || queryLower.includes(kw.toLowerCase()));
+
+    if (isKeywordMatch) {
+      return [
+        {
+          icon: Calculator,
+          title: translations[getLocale()]['calculator'] ?? 'Calculator',
+          score: 900,
+          action: async (ctx: SearchResultItemContext) => {
+            const component = await this.render({ query: params.query });
+            if (component) {
+              ctx.setPanel(component, this.name);
+            }
+          },
+        },
+      ];
+    }
 
     // Check if query looks like a math expression
     const mathPattern = /^[\d+\-*/().%\s^sqrtabsincostanlogexppi,]+$/i;
