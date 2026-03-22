@@ -9,6 +9,8 @@ import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
+const chromeIconUrl = new URL('./assets/chrome-icon.svg', import.meta.url).href;
+
 registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
@@ -148,6 +150,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       return [{
         title: query,
         desc: translations[locale]?.['plugin.chrome-bookmarks.open'] ?? 'Open in Chrome',
+        iconUrl: chromeIconUrl,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,
         actionData: query,
@@ -164,6 +167,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       return bookmarks.slice(0, limit).map((cb) => ({
         title: cb.bookmark.name,
         desc: cb.bookmark.url,
+        iconUrl: chromeIconUrl,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,
         actionData: cb.bookmark.url,
@@ -244,6 +248,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       title: cb.bookmark.name,
       desc: `${cb.bookmark.folder_path.join(' > ')} (${cb.bookmark.profile})`,
       score,
+      iconUrl: chromeIconUrl,
       sourcePlugin: PLUGIN_NAME,
       actionId: ACTION_OPEN,
       actionData: cb.bookmark.url,

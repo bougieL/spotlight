@@ -111,7 +111,7 @@ fn parse_bookmark_node(
                     name: name.clone(),
                     url: url.clone(),
                     profile: profile.to_string(),
-                    folder_path: new_folder_path,
+                    folder_path: new_folder_path.clone(),
                 });
             }
         }
