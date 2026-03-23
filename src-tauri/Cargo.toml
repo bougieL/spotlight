@@ -29,6 +29,8 @@ base64 = "0.22"
 uuid = { version = "1", features = ["v4"] }
 chrono = "0.4"
 tauri-plugin-http = "2"
+url = "2"
+percent-encoding = "2"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.58", features = [

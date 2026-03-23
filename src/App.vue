@@ -15,6 +15,7 @@ import { recentPlugin } from "@spotlight/recent-plugin";
 import { qrcodePlugin } from "@spotlight/qrcode-plugin";
 import { jsonPlugin } from "@spotlight/json-plugin";
 import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
+import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
@@ -34,6 +35,7 @@ pluginRegistry.register(recentPlugin);
 pluginRegistry.register(qrcodePlugin);
 pluginRegistry.register(jsonPlugin);
 pluginRegistry.register(aiChatPlugin);
+pluginRegistry.register(colorPickerPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
@@ -115,8 +117,12 @@ onMounted(async () => {
   applyTheme(savedTheme);
   setLocale(savedLanguage);
 
-  // Register global hotkey on startup
-  await settingsPlugin.registerHotkey();
+  // Register global hotkey on startup (non-blocking)
+  try {
+    await settingsPlugin.registerHotkey();
+  } catch (error) {
+    logger.warn('Failed to register global shortcut:', error);
+  }
 
   // Initial search with recent items
   const initialResults = await recentPlugin.search({ query: '', files: [] });

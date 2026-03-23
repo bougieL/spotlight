@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      overflow: hidden;
+      background: rgba(255, 0, 0, 0.3);
+      outline: none;
+    }
+    body {
+      tab-index: -1;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      cursor: crosshair;
+    }
+    #crosshair {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+    }
+    #info {
+      position: fixed;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 10000;
+    }
+    #info.show {
+      display: block;
+    }
+    #test-btn {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      padding: 20px;
+      background: blue;
+      color: white;
+      font-size: 24px;
+      border: none;
+      cursor: pointer;
+      z-index: 10001;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div id="crosshair"></div>
+  <div id="info">Loading...</div>
+  <button id="test-btn">TEST CLICK</button>
+  <script>
+    console.log('Color picker HTML loaded');
+    console.log('window.__TAURI__:', window.__TAURI__);
+
+    const crosshair = document.getElementById('crosshair');
+    const info = document.getElementById('info');
+    const overlay = document.getElementById('overlay');
+    const testBtn = document.getElementById('test-btn');
+    let lastColor = '#000000';
+
+    // Get invoke from Tauri
+    const invoke = window.__TAURI__?.core?.invoke;
+
+    // Ensure window has focus
+    window.focus();
+
+    // Test button click
+    testBtn.addEventListener('click', () => {
+      console.log('Test button clicked!');
+      alert('Test button works!');
+    });
+
+    // Overlay click
+    overlay.addEventListener('click', () => {
+      console.log('Overlay clicked!');
+    });
+
+    async function closePicker() {
+      if (!invoke) {
+        console.error('Invoke not available');
+        return;
+      }
+      try {
+        await invoke('close_overlay_window', { label: 'color-picker-overlay' });
+      } catch (err) {
+        console.error('Failed to close picker:', err);
+      }
+    }
+
+    document.addEventListener('mousemove', async (e) => {
+      crosshair.style.left = e.clientX + 'px';
+      crosshair.style.top = e.clientY + 'px';
+      info.style.left = (e.clientX + 15) + 'px';
+      info.style.top = (e.clientY + 15) + 'px';
+
+      if (!invoke) return;
+
+      try {
+        const color = await invoke('get_color_at_position', { x: e.screenX, y: e.screenY });
+        if (color) {
+          lastColor = color;
+          info.textContent = color;
+          info.classList.add('show');
+          crosshair.style.borderColor = isLightColor(color) ? '#000' : '#fff';
+        }
+      } catch (err) {
+        console.error('Failed to get color:', err);
+      }
+    });
+
+    // Handle click on entire window
+    document.addEventListener('click', async (e) => {
+      console.log('Document clicked!');
+      e.preventDefault();
+      e.stopPropagation();
+      if (invoke) {
+        try {
+          await invoke('copy_color_to_clipboard', { color: lastColor });
+        } catch (err) {
+          console.error('Failed to copy color:', err);
+        }
+      }
+      await closePicker();
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', async (e) => {
+      console.log('Key pressed:', e.key);
+      if (e.key === 'Escape') {
+        await closePicker();
+      }
+    });
+
+    function isLightColor(color) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      return brightness > 128;
+    }
+  </script>
+</body>
+</html>

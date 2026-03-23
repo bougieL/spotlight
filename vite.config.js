@@ -1,12 +1,47 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
+import { readFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
 
 const host = process.env.TAURI_DEV_HOST;
 
+// Plugin public directories
+const pluginPublicDirs = [
+  { name: "color-picker-plugin", path: "./packages/color-picker-plugin/public" },
+];
+
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // Custom plugin to serve plugin public files
+    {
+      name: "plugin-public-files",
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url.split("?")[0];
+
+          for (const plugin of pluginPublicDirs) {
+            if (url.startsWith(`/plugins/${plugin.name}/`)) {
+              const filename = url.replace(`/plugins/${plugin.name}/`, "");
+              const filePath = join(plugin.path, filename);
+
+              if (existsSync(filePath)) {
+                const content = readFileSync(filePath);
+                const ext = filename.split(".").pop();
+                const contentType = ext === "html" ? "text/html" : "text/plain";
+                res.setHeader("Content-Type", contentType);
+                res.end(content);
+                return;
+              }
+            }
+          }
+          next();
+        });
+      },
+    },
+  ],
 
   resolve: {
     alias: {

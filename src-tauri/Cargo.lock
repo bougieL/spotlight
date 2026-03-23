@@ -3869,6 +3869,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "image",
+ "percent-encoding",
  "plist",
  "regex-lite",
  "serde",
@@ -3880,6 +3881,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-http",
  "tauri-plugin-opener",
+ "url",
  "uuid",
  "windows 0.58.0",
 ]

@@ -20,6 +20,7 @@
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calculator-plugin": "*",
     "@spotlight/calendar-plugin": "*",
+    "@spotlight/color-picker-plugin": "*",
     "@spotlight/chrome-bookmarks-plugin": "*",
     "@spotlight/clipboard-plugin": "*",
     "@spotlight/components": "*",

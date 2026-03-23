@@ -19,6 +19,8 @@ export interface ChromeBookmark {
 
 export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
+  createOverlayWindow: (url: string, label: string) => Promise<void>;
+  closeOverlayWindow: (label: string) => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
   getClipboardFilePaths: () => Promise<string[]>;
   getClipboardText: () => Promise<string>;
@@ -39,6 +41,11 @@ export interface TauriApi {
 
 export const tauriApi: TauriApi = {
   resizeWindow: (height: number) => invoke('resize_window', { height }),
+
+  createOverlayWindow: (url: string, label: string) =>
+    invoke('create_overlay_window', { url, label }),
+
+  closeOverlayWindow: (label: string) => invoke('close_overlay_window', { label }),
 
   saveTempImage: (dataUrl: string) => invoke<string>('save_temp_image', { dataUrl }),
 
