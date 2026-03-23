@@ -27,7 +27,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const PLUGIN_NAME = 'ai-chat';
+const PLUGIN_NAME = 'aiChat';
 const ACTION_OPEN = 'open';
 
 const STORAGE_KEYS = {

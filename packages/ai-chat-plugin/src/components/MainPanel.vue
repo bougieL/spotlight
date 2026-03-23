@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { MessageSquare, Plus, Settings, Send, Copy, Check, ArrowLeft, Pin, Trash2, Edit2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
-import { BaseButton, BaseIconButton, BaseModal, BaseContextMenu } from '@spotlight/components';
+import { BaseButton, BaseIconButton, BaseModal, BaseContextMenu, BaseSelect } from '@spotlight/components';
 import { aiChatPlugin, openaiAdapter, anthropicAdapter, type Session, type ChatMessage, type ModelConfig } from '../index';
 import ModelsEditor from './ModelsEditor.vue';
 
@@ -135,6 +135,13 @@ const activeModel = computed(() => {
   return models.value.find(m => m.id === activeSession.value!.modelId) || null;
 });
 
+const modelOptions = computed(() => {
+  return models.value.map(m => ({
+    value: m.id,
+    label: `${m.provider}/${m.name || m.id}`,
+  }));
+});
+
 const messages = computed(() => {
   return activeSession.value?.messages || [];
 });
@@ -158,6 +165,15 @@ async function selectSession(session: Session) {
     temperature: 0.7,
     maxTokens: 4096,
   });
+}
+
+async function selectModel(modelId: string) {
+  if (!activeSessionId.value) return;
+  await aiChatPlugin.updateSession(activeSessionId.value, { modelId });
+  const session = sessions.value.find(s => s.id === activeSessionId.value);
+  if (session) {
+    session.modelId = modelId;
+  }
 }
 
 async function deleteSession(session: Session) {
@@ -293,6 +309,7 @@ async function processStream() {
       timestamp: Date.now(),
     };
     messages.value.push(errorMessage);
+    await aiChatPlugin.addMessage(activeSession.value.id, errorMessage);
   } finally {
     isStreaming.value = false;
     streamedContent.value = '';
@@ -480,9 +497,18 @@ function handleKeydown(event: KeyboardEvent) {
             @click="sendMessage"
             :disabled="!inputText.trim() || isStreaming"
             :title="t('aiChat.send')"
+            size="large"
           >
             <Send :size="16" />
           </BaseIconButton>
+        </div>
+
+        <div class="chat-toolbar" v-if="activeSession && models.length > 0">
+          <BaseSelect
+            :model-value="activeSession.modelId"
+            :options="modelOptions"
+            @update:model-value="selectModel"
+          />
         </div>
       </div>
 
@@ -824,6 +850,7 @@ function handleKeydown(event: KeyboardEvent) {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 4px;
+  color: var(--spotlight-icon, #666);
 }
 
 .message-time {
@@ -850,14 +877,31 @@ function handleKeydown(event: KeyboardEvent) {
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: 12px 16px;
+  padding: 8px;
   border-top: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
+}
+
+.chat-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 8px 4px 8px;
+  margin: 0;
+  background-color: var(--spotlight-bg);
+}
+
+.chat-toolbar :deep(.base-select) {
+  min-width: 80px;
+  height: 24px;
+  font-size: 11px;
+  padding: 0 8px;
 }
 
 .message-input {
   flex: 1;
-  padding: 10px 14px;
+  padding: 8px 14px;
   font-size: 14px;
+  line-height: 1.4;
   border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
   border-radius: 12px;
   background-color: var(--spotlight-bg);
@@ -865,8 +909,10 @@ function handleKeydown(event: KeyboardEvent) {
   resize: none;
   outline: none;
   font-family: inherit;
+  height: 40px;
   max-height: 100px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .message-input:focus {

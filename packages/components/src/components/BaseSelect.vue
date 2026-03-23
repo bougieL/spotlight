@@ -56,6 +56,8 @@ function handleChange(event: Event) {
   cursor: pointer;
   transition: border-color 0.15s ease;
   min-width: 120px;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }
 
 .base-select:focus {
