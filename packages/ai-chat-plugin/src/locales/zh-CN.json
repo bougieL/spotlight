@@ -1,0 +1,21 @@
+{
+  "aiChat": "AI 聊天",
+  "settings": "设置",
+  "apiUrl": "API 地址",
+  "apiKey": "API 密钥",
+  "endpointType": "端点类型",
+  "openai": "OpenAI",
+  "anthropic": "Anthropic",
+  "model": "模型",
+  "temperature": "温度",
+  "maxTokens": "最大令牌数",
+  "systemPrompt": "系统提示词",
+  "send": "发送",
+  "placeholder": "输入你的问题...",
+  "save": "保存",
+  "cancel": "取消",
+  "notConfigured": "请先配置 API 设置",
+  "error": "错误",
+  "newChat": "新建对话",
+  "chatHistory": "对话历史"
+}

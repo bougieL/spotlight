@@ -3,7 +3,7 @@ pub mod commands;
 pub mod utils;
 
 use commands::{
-    get_app_icon, get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image,
+    ai_chat, get_app_icon, get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image,
     get_clipboard_text, get_global_shortcut, get_installed_applications,
     get_plugin_storage_dir, launch_app, read_plugin_settings, register_global_shortcut,
     resize_window, save_pasted_file, save_temp_image, set_clipboard_files, set_clipboard_image,
@@ -44,7 +44,8 @@ pub fn run() {
             write_plugin_settings,
             register_global_shortcut,
             get_global_shortcut,
-            write_log
+            write_log,
+            ai_chat
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

@@ -1,6 +1,7 @@
 pub mod apps;
 pub mod chrome;
 pub mod clipboard;
+pub mod ai;
 pub mod file;
 pub mod launcher;
 pub mod log;
@@ -8,6 +9,7 @@ pub mod shortcut;
 pub mod storage;
 pub mod window;
 
+pub use ai::ai_chat;
 pub use apps::{get_app_icon, get_installed_applications};
 pub use chrome::get_chrome_bookmarks;
 pub use clipboard::{

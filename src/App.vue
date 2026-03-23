@@ -14,6 +14,7 @@ import { clipboardPlugin } from "@spotlight/clipboard-plugin";
 import { recentPlugin } from "@spotlight/recent-plugin";
 import { qrcodePlugin } from "@spotlight/qrcode-plugin";
 import { jsonPlugin } from "@spotlight/json-plugin";
+import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
@@ -32,6 +33,7 @@ pluginRegistry.register(clipboardPlugin);
 pluginRegistry.register(recentPlugin);
 pluginRegistry.register(qrcodePlugin);
 pluginRegistry.register(jsonPlugin);
+pluginRegistry.register(aiChatPlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

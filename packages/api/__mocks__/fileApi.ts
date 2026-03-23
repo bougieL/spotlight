@@ -58,6 +58,26 @@ export async function getChromeBookmarks(): Promise<ChromeBookmark[]> {
   ];
 }
 
+export interface AIChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+export interface AIChatRequest {
+  endpoint_type: 'openai' | 'anthropic';
+  api_url: string;
+  api_key: string;
+  messages: AIChatMessage[];
+  model?: string;
+  max_tokens?: number;
+  temperature?: number;
+}
+
+export interface AIChatResponse {
+  content: string;
+  usage?: Record<string, number>;
+}
+
 const MOCK_SETTINGS_PREFIX = 'mock_plugin_settings_';
 
 export async function invokeCommand(command: string, args?: Record<string, unknown>) {
@@ -79,6 +99,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return Promise.resolve();
     case 'get_chrome_bookmarks':
       return getChromeBookmarks();
+    case 'ai_chat':
+      return aiChatMock(args?.request as AIChatRequest);
     case 'read_plugin_settings':
       return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`) || '';
     case 'write_plugin_settings':
@@ -87,4 +109,22 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     default:
       return invoke(command, args);
   }
+}
+
+async function aiChatMock(request: AIChatRequest): Promise<AIChatResponse> {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  const lastMessage = request.messages[request.messages.length - 1];
+  const userContent = lastMessage?.content || '';
+
+  // Return a mock response
+  return {
+    content: `[Mock AI Response] You said: "${userContent.substring(0, 50)}${userContent.length > 50 ? '...' : ''}". This is a mock response from the AI chat plugin.`,
+    usage: {
+      prompt_tokens: 10,
+      completion_tokens: 20,
+      total_tokens: 30,
+    },
+  };
 }
