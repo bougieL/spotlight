@@ -199,7 +199,7 @@ function validateJson() {
     return;
   }
   try {
-    JSON.parse(text);
+    parseJson(text);
     error.value = null;
   } catch (e) {
     error.value = (e as Error).message;
@@ -335,6 +335,7 @@ watch(content, () => {
 .json-editor-area {
   position: relative;
   flex: 1;
+  min-height: 400px;
   overflow: hidden;
 }
 

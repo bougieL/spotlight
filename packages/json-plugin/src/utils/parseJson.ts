@@ -40,9 +40,7 @@ function fixSingleQuotes(json: string): string {
 }
 
 function fixTrailingCommas(json: string): string {
-  return json
-    .replace(/,\s*(?=[}\]])/g, '')
-    .replace(/,\s*$/gm, '');
+  return json.replace(/,\s*(?=[}\]])/g, '');
 }
 
 function unescapeQuotes(json: string): string {
@@ -54,6 +52,7 @@ function normalizeJson(raw: string): string {
   result = fixSingleQuotes(result);
   result = fixUnquotedKeys(result);
   result = fixTrailingCommas(result);
+  result = result.replace(/\\'/g, "'");
   return result;
 }
 
@@ -113,7 +112,11 @@ export function parseJson(text: string): unknown {
     if (!raw) {
       throw new Error('No valid JSON found');
     }
-    const normalized = normalizeJson(raw);
-    return JSON.parse(normalized);
+    try {
+      return JSON.parse(raw);
+    } catch {
+      const normalized = normalizeJson(raw);
+      return JSON.parse(normalized);
+    }
   }
 }
