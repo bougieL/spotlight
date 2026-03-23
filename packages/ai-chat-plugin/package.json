@@ -1,0 +1,12 @@
+{
+  "name": "@spotlight/ai-chat-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@tauri-apps/plugin-http": "^2.5.7"
+  },
+  "peerDependencies": {
+    "@spotlight/components": "*"
+  }
+}

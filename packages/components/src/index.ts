@@ -5,3 +5,4 @@ export { default as BaseSelect } from './components/BaseSelect.vue';
 export { default as BaseRadio } from './components/BaseRadio.vue';
 export { default as BaseRadioGroup } from './components/BaseRadioGroup.vue';
 export { default as BaseModal } from './components/BaseModal.vue';
+export { default as BaseContextMenu, type ContextMenuItem } from './components/BaseContextMenu.vue';
