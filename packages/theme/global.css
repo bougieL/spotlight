@@ -4,7 +4,8 @@
   scrollbar-color: var(--spotlight-scrollbar-thumb) var(--spotlight-scrollbar-bg);
 }
 
-textarea {
+textarea,
+pre {
   font: inherit;
 }
 

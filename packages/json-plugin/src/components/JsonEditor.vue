@@ -348,7 +348,6 @@ watch(content, () => {
   height: 100%;
   margin: 0;
   padding: 0 12px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 13px;
   line-height: 21px;
   tab-size: 2;
