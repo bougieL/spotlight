@@ -1,6 +1,8 @@
 :root {
   --spotlight-bg: rgb(255, 255, 255);
+  --spotlight-bg-secondary: rgb(245, 245, 245);
   --spotlight-text: #1a1a1a;
+  --spotlight-text-secondary: #666;
   --spotlight-placeholder: #888;
   --spotlight-icon: #666;
   --spotlight-plugin-name: #666;
@@ -29,7 +31,9 @@
 
 :root[data-theme="dark"] {
   --spotlight-bg: rgb(50, 50, 50);
+  --spotlight-bg-secondary: rgb(40, 40, 40);
   --spotlight-text: #fff;
+  --spotlight-text-secondary: #aaa;
   --spotlight-placeholder: #888;
   --spotlight-icon: #888;
   --spotlight-plugin-name: #888;
@@ -58,7 +62,9 @@
 
 :root[data-theme="light"] {
   --spotlight-bg: rgb(255, 255, 255);
+  --spotlight-bg-secondary: rgb(245, 245, 245);
   --spotlight-text: #1a1a1a;
+  --spotlight-text-secondary: #666;
   --spotlight-placeholder: #888;
   --spotlight-icon: #666;
   --spotlight-plugin-name: #666;
@@ -88,7 +94,9 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --spotlight-bg: rgb(50, 50, 50);
+    --spotlight-bg-secondary: rgb(40, 40, 40);
     --spotlight-text: #fff;
+    --spotlight-text-secondary: #aaa;
     --spotlight-placeholder: #888;
     --spotlight-icon: #888;
     --spotlight-plugin-name: #888;

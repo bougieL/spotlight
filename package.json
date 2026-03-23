@@ -16,7 +16,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@spotlight/ai-chat-plugin": "*",
     "@spotlight/api": "*",
     "@spotlight/app-search-plugin": "*",
     "@spotlight/calculator-plugin": "*",
