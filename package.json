@@ -33,6 +33,7 @@
     "@spotlight/recent-plugin": "*",
     "@spotlight/settings-plugin": "*",
     "@spotlight/utils": "*",
+    "@tauri-apps/plugin-http": "^2.5.7",
     "lucide-vue-next": "^0.577.0",
     "pinyin-pro": "^3.24.0",
     "vue": "^3.5.13"

@@ -17,26 +17,6 @@ export interface ChromeBookmark {
   folder_path: string[];
 }
 
-export interface AIChatMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
-
-export interface AIChatRequest {
-  endpoint_type: 'openai' | 'anthropic';
-  api_url: string;
-  api_key: string;
-  messages: AIChatMessage[];
-  model?: string;
-  max_tokens?: number;
-  temperature?: number;
-}
-
-export interface AIChatResponse {
-  content: string;
-  usage?: Record<string, number>;
-}
-
 export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
@@ -54,7 +34,6 @@ export interface TauriApi {
   registerGlobalShortcut: (shortcut: string) => Promise<void>;
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
-  aiChat: (request: AIChatRequest) => Promise<AIChatResponse>;
   convertFileSrc: typeof convertFileSrc;
 }
 
@@ -90,8 +69,6 @@ export const tauriApi: TauriApi = {
   getGlobalShortcut: () => invoke<string>('get_global_shortcut'),
 
   getChromeBookmarks: () => invoke<ChromeBookmark[]>('get_chrome_bookmarks'),
-
-  aiChat: (request: AIChatRequest) => invoke<AIChatResponse>('ai_chat', { request }),
 
   convertFileSrc,
 };
