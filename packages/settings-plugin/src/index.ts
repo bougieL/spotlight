@@ -39,9 +39,14 @@ registerTranslations({
 });
 
 export class SettingsPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['settings'] ?? 'Spotlight Settings';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.settings'];
+  }
+  pluginId = 'settings-plugin';
   version = '1.0.0';
-  description = 'Configure application settings';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
@@ -103,7 +108,7 @@ export class SettingsPlugin extends BasePlugin {
       {
         icon: Settings,
         iconComponentName: 'Settings',
-        title: translations[getLocale()]['settings'] ?? 'settings',
+        title: this.name,
         score: 1000,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,

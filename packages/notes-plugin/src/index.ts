@@ -44,9 +44,14 @@ function generateId(): string {
 }
 
 export class NotesPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['notes'] ?? 'Notes';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.notes'];
+  }
+  pluginId = 'notes-plugin';
   version = '1.0.0';
-  description = 'Take notes with markdown support';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
@@ -172,7 +177,7 @@ export class NotesPlugin extends BasePlugin {
       {
         icon: FileText,
         iconComponentName: 'FileText',
-        title: translations[getLocale()]['notes'] ?? 'Notes',
+        title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,

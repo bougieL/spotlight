@@ -43,9 +43,14 @@ function isUrl(input: string): boolean {
 }
 
 export class ChromeBookmarksPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['plugin.chrome-bookmarks'] ?? 'Chrome Bookmarks';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.chromeBookmarks'];
+  }
+  pluginId = 'chrome-bookmarks-plugin';
   version = '1.0.0';
-  description = 'Search Chrome bookmarks';
   author = 'Spotlight Team';
 
   private cachedBookmarks: CachedBookmark[] = [];

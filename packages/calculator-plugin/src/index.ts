@@ -21,9 +21,14 @@ const ACTION_OPEN = 'open';
 const ACTION_CALCULATE = 'calculate';
 
 export class CalculatorPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['calculator'] ?? 'Calculator';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.calculator'];
+  }
+  pluginId = 'calculator-plugin';
   version = '1.0.0';
-  description = 'Perform mathematical calculations';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(this.name);
@@ -146,7 +151,7 @@ export class CalculatorPlugin extends BasePlugin {
         {
           icon: Calculator,
           iconComponentName: 'Calculator',
-          title: translations[getLocale()]['calculator'] ?? 'Calculator',
+          title: this.name,
           score: 900,
           sourcePlugin: PLUGIN_NAME,
           actionId: ACTION_OPEN,

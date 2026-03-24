@@ -41,9 +41,14 @@ function generateId(): string {
 }
 
 export class AIChatPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['aiChat'] ?? 'AI Chat';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.aiChat'];
+  }
+  pluginId = 'ai-chat-plugin';
   version = '1.0.0';
-  description = 'AI Chat with streaming support';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
@@ -185,7 +190,7 @@ export class AIChatPlugin extends BasePlugin {
       {
         icon: MessageSquare,
         iconComponentName: 'MessageSquare',
-        title: translations[getLocale()]['aiChat'] ?? 'AI Chat',
+        title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,

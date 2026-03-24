@@ -43,12 +43,29 @@ export interface PluginMetadata {
 }
 
 export abstract class BasePlugin implements PluginMetadata {
-  abstract name: string;
+  abstract get name(): string;
+  abstract pluginId: string;
   abstract version: string;
-  description?: string;
+  abstract get description(): string | undefined;
   author?: string;
 
   abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
 
   abstract render(_params: RenderParams): Promise<Component | null>;
+
+  getPublicUrl(filePath: string): string {
+    const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
+    return `/plugins/${this.pluginId}/${normalizedPath}`;
+  }
+}
+
+/**
+ * Get the URL path for a plugin public file.
+ * @param pluginId - The plugin directory name (e.g. "color-picker-plugin")
+ * @param filePath - The file path within the plugin's public directory
+ * @returns The URL path for accessing the file (e.g. "/plugins/color-picker-plugin/icon.svg")
+ */
+export function getPluginPublicUrl(pluginId: string, filePath: string): string {
+  const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
+  return `/plugins/${pluginId}/${normalizedPath}`;
 }

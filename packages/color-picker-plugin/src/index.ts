@@ -14,28 +14,24 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const PLUGIN_NAME = 'color-picker';
 const ACTION_PICK = 'pick';
 const OVERLAY_WINDOW_LABEL = 'color-picker-overlay';
 
-const getOverlayUrl = (): string => {
-  if (import.meta.env.DEV) {
-    return 'http://localhost:1420/plugins/color-picker-plugin/color-picker.html';
-  }
-  // Production: use asset protocol
-  return 'asset://localhost/plugins/color-picker-plugin/color-picker.html';
-};
-
 export class ColorPickerPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['colorPicker'] ?? 'Color Picker';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.colorPicker'];
+  }
+  pluginId = 'color-picker-plugin';
   version = '1.0.0';
-  description = 'Pick colors from screen';
   author = 'Spotlight Team';
 
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginName: this.pluginId,
       actionId: ACTION_PICK,
       handler: async () => {
         await this.startColorPicker();
@@ -56,9 +52,9 @@ export class ColorPickerPlugin extends BasePlugin {
         {
           icon: Pipette,
           iconComponentName: 'Pipette',
-          title: translations[getLocale()]['colorPicker'] ?? 'Color Picker',
+          title: this.name,
           score: 900,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: ACTION_PICK,
           actionData: null,
           action: async () => {
@@ -77,7 +73,11 @@ export class ColorPickerPlugin extends BasePlugin {
 
   async startColorPicker(): Promise<void> {
     try {
-      await tauriApi.createOverlayWindow(getOverlayUrl(), OVERLAY_WINDOW_LABEL);
+      const publicUrl = this.getPublicUrl('color-picker.html');
+      const url = import.meta.env.DEV
+        ? `http://localhost:1420${publicUrl}`
+        : `asset://localhost${publicUrl}`;
+      await tauriApi.createOverlayWindow(url, OVERLAY_WINDOW_LABEL);
       logger.info('Color picker started');
     } catch (error) {
       logger.error('Failed to start color picker:', error);

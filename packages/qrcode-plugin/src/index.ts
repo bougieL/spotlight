@@ -17,9 +17,14 @@ const PLUGIN_NAME = 'qrcode';
 const ACTION_OPEN = 'open';
 
 export class QrCodePlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['qrcode'] ?? 'QR Code';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.qrcode'];
+  }
+  pluginId = 'qrcode-plugin';
   version = '1.0.0';
-  description = 'Generate QR codes from text';
   author = 'Spotlight Team';
 
   constructor() {
@@ -52,7 +57,7 @@ export class QrCodePlugin extends BasePlugin {
       {
         icon: QrCode,
         iconComponentName: 'QrCode',
-        title: translations[getLocale()]['qrcode'] ?? 'QR Code',
+        title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,

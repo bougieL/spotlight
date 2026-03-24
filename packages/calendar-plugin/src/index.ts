@@ -17,9 +17,14 @@ const PLUGIN_NAME = 'calendar';
 const ACTION_OPEN = 'open';
 
 export class CalendarPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['calendar'] ?? 'Calendar';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.calendar'];
+  }
+  pluginId = 'calendar-plugin';
   version = '1.0.0';
-  description = 'Calendar with holidays';
   author = 'Spotlight Team';
 
   constructor() {
@@ -54,7 +59,7 @@ export class CalendarPlugin extends BasePlugin {
         {
           icon: Calendar,
           iconComponentName: 'Calendar',
-          title: translations[getLocale()]['calendar'] ?? 'Calendar',
+          title: this.name,
           score: 900,
           sourcePlugin: PLUGIN_NAME,
           actionId: ACTION_OPEN,
@@ -77,7 +82,7 @@ export class CalendarPlugin extends BasePlugin {
           icon: Calendar,
           iconComponentName: 'Calendar',
           title: `${params.query}`,
-          desc: translations[getLocale()]['calendar'] ?? 'Calendar',
+          desc: this.name,
           score: 800,
           sourcePlugin: PLUGIN_NAME,
           actionId: ACTION_OPEN,

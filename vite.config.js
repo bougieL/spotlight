@@ -1,15 +1,45 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
-import { readFileSync, existsSync } from "fs";
-import { join, dirname } from "path";
+import { readFileSync, existsSync, readdirSync } from "fs";
+import { join } from "path";
+import { lookup } from "mime-types";
 
 const host = process.env.TAURI_DEV_HOST;
 
-// Plugin public directories
-const pluginPublicDirs = [
-  { name: "color-picker-plugin", path: "./packages/color-picker-plugin/public" },
-];
+// Auto-discover packages and generate aliases
+const packagesDir = resolve(__dirname, "./packages");
+const packageAliases = {};
+const pluginPublicDirs = [];
+
+try {
+  const packages = readdirSync(packagesDir, { withFileTypes: true });
+  for (const dir of packages) {
+    if (dir.isDirectory()) {
+      const packagePath = resolve(packagesDir, dir.name);
+      const packageJsonPath = join(packagePath, "package.json");
+
+      if (!existsSync(packageJsonPath)) continue;
+
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+      const packageName = packageJson.name;
+
+      // Add alias if src directory exists
+      const srcPath = join(packagePath, "src");
+      if (existsSync(srcPath)) {
+        packageAliases[packageName] = srcPath;
+      }
+
+      // Auto-detect public directories for plugins
+      const publicPath = join(packagePath, "public");
+      if (existsSync(publicPath)) {
+        pluginPublicDirs.push({ name: dir.name, path: publicPath });
+      }
+    }
+  }
+} catch (error) {
+  console.error("Failed to auto-discover packages:", error);
+}
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -29,8 +59,7 @@ export default defineConfig(async () => ({
 
               if (existsSync(filePath)) {
                 const content = readFileSync(filePath);
-                const ext = filename.split(".").pop();
-                const contentType = ext === "html" ? "text/html" : "text/plain";
+                const contentType = lookup(filePath) || "application/octet-stream";
                 res.setHeader("Content-Type", contentType);
                 res.end(content);
                 return;
@@ -46,23 +75,7 @@ export default defineConfig(async () => ({
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),
-      "@spotlight/core": resolve(__dirname, "./packages/core/src"),
-      "@spotlight/i18n": resolve(__dirname, "./packages/i18n/src"),
-      "@spotlight/api": resolve(__dirname, "./packages/api/src"),
-      "@spotlight/input": resolve(__dirname, "./packages/input/src"),
-      "@spotlight/panel": resolve(__dirname, "./packages/panel/src"),
-      "@spotlight/plugin-registry": resolve(__dirname, "./packages/plugin-registry/src"),
-      "@spotlight/app-search-plugin": resolve(__dirname, "./packages/app-search-plugin/src"),
-      "@spotlight/calculator-plugin": resolve(__dirname, "./packages/calculator-plugin/src"),
-      "@spotlight/settings-plugin": resolve(__dirname, "./packages/settings-plugin/src"),
-      "@spotlight/theme": resolve(__dirname, "./packages/theme"),
-      "@spotlight/components": resolve(__dirname, "./packages/components/src"),
-      "@spotlight/clipboard-plugin": resolve(__dirname, "./packages/clipboard-plugin/src"),
-      "@spotlight/recent-plugin": resolve(__dirname, "./packages/recent-plugin/src"),
-      "@spotlight/logger": resolve(__dirname, "./packages/logger/src"),
-      "@spotlight/chrome-bookmarks-plugin": resolve(__dirname, "./packages/chrome-bookmarks-plugin/src"),
-      "@spotlight/qrcode-plugin": resolve(__dirname, "./packages/qrcode-plugin/src"),
-      "@spotlight/json-plugin": resolve(__dirname, "./packages/json-plugin/src"),
+      ...packageAliases,
     },
   },
 

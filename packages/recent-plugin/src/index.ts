@@ -49,9 +49,14 @@ function generateId(): string {
 }
 
 export class RecentPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['recent'] ?? 'Recent';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.recent'];
+  }
+  pluginId = 'recent-plugin';
   version = '1.0.0';
-  description = 'Recent items tracker';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
@@ -121,7 +126,7 @@ export class RecentPlugin extends BasePlugin {
       return [
         {
           icon: Clock,
-          title: translations[getLocale()]['recent'] ?? 'Recent',
+          title: this.name,
           desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
           score: 900,
           sourcePlugin: PLUGIN_NAME,

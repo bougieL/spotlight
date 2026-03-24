@@ -1,1 +1,11 @@
-{"name": "@spotlight/theme", "version": "1.0.0", "type": "module", "main": "./variables.css", "exports": {".": "./variables.css"}}
+{
+  "name": "@spotlight/theme",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./variables.css",
+  "exports": {
+    ".": "./variables.css",
+    "./variables.css": "./variables.css",
+    "./global.css": "./global.css"
+  }
+}

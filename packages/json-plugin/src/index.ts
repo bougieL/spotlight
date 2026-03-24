@@ -16,7 +16,13 @@ const PLUGIN_NAME = 'json';
 const ACTION_OPEN = 'open-json-editor';
 
 export class JsonPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['json'] ?? 'JSON Editor';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.json'];
+  }
+  pluginId = 'json-plugin';
   version = '1.0.0';
 
   constructor() {
@@ -38,7 +44,7 @@ export class JsonPlugin extends BasePlugin {
     if (query.includes('json') || query.includes('{') || query === '{}') {
       return [
         {
-          title: translations[getLocale()]['json'] ?? 'JSON Editor',
+          title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
           score: 900,
           sourcePlugin: PLUGIN_NAME,

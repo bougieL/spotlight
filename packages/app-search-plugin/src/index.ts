@@ -4,7 +4,7 @@ import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
-import { registerTranslations } from '@spotlight/i18n';
+import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -49,9 +49,14 @@ interface CachedApp {
 }
 
 export class AppSearchPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['plugin.app-search'] ?? 'App Search';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.appSearch'];
+  }
+  pluginId = 'app-search-plugin';
   version = '1.0.0';
-  description = 'Search for installed applications';
   author = 'Spotlight Team';
 
   private cachedApps: CachedApp[] = [];

@@ -40,9 +40,14 @@ function generateId(): string {
 }
 
 export class ClipboardPlugin extends BasePlugin {
-  name = PLUGIN_NAME;
+  get name(): string {
+    return translations[getLocale()]['clipboard'] ?? 'Clipboard';
+  }
+  get description(): string | undefined {
+    return translations[getLocale()]['plugin.description.clipboard'];
+  }
+  pluginId = 'clipboard-plugin';
   version = '1.0.0';
-  description = 'Clipboard history manager';
   author = 'Spotlight Team';
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
@@ -234,7 +239,7 @@ export class ClipboardPlugin extends BasePlugin {
       {
         icon: Clipboard,
         iconComponentName: 'Clipboard',
-        title: translations[getLocale()]['clipboard'] ?? 'Clipboard',
+        title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,
         actionId: ACTION_OPEN,
