@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
+import { hslToHex, hslToRgbString, hexToHsl } from '../utils/colorUtils';
 
 const STORAGE_KEY = 'color-palette-favorites';
 
@@ -30,48 +31,6 @@ const RADIUS = WHEEL_SIZE / 2 - INDICATOR_SIZE / 2;
 const mouseX = ref(CENTER);
 const mouseY = ref(CENTER - RADIUS);
 
-// Convert hex to HSL and set initial position
-function setColorFromHex(hex: string) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return;
-
-  const r = parseInt(result[1], 16) / 255;
-  const g = parseInt(result[2], 16) / 255;
-  const b = parseInt(result[3], 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-
-  const hueDegrees = Math.round(h * 360);
-  const sat = Math.round(s * 100);
-
-  // Set position based on hue and saturation
-  const angle = ((hueDegrees - 90) * Math.PI) / 180;
-  const dist = (sat / 100) * RADIUS;
-  mouseX.value = CENTER + dist * Math.cos(angle);
-  mouseY.value = CENTER + dist * Math.sin(angle);
-}
-
 // Calculate hue from angle (0-360, top = 0)
 const hue = computed(() => {
   const dx = mouseX.value - CENTER;
@@ -91,7 +50,7 @@ const saturation = computed(() => {
 
 // Current color based on hue and saturation
 const selectedColor = computed(() => {
-  return hslToHex(hue.value, saturation.value, 50);
+  return hslToHex({ h: hue.value, s: saturation.value, l: 50 });
 });
 
 // Indicator position
@@ -162,32 +121,6 @@ async function copyToClipboard(text: string, colorKey: string) {
   }
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-  s /= 100;
-  l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
-}
-
-function hslToRgbStr(h: number, s: number, l: number): string {
-  s /= 100;
-  l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color);
-  };
-  return `rgb(${f(0)}, ${f(8)}, ${f(4)})`;
-}
-
 function drawColorWheel(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -196,7 +129,6 @@ function drawColorWheel(canvas: HTMLCanvasElement) {
   const centerY = canvas.height / 2;
   const radius = Math.min(centerX, centerY) - 2;
 
-  // Draw hue wheel
   for (let angle = 0; angle < 360; angle++) {
     const startAngle = ((angle - 1) * Math.PI) / 180;
     const endAngle = ((angle + 1) * Math.PI) / 180;
@@ -244,6 +176,16 @@ function getPositionFromEvent(canvas: HTMLCanvasElement, event: MouseEvent | Tou
   }
 
   return { x, y };
+}
+
+function setColorFromHex(hex: string) {
+  const hsl = hexToHsl(hex);
+  if (!hsl) return;
+
+  const angle = ((hsl.h - 90) * Math.PI) / 180;
+  const dist = (hsl.s / 100) * RADIUS;
+  mouseX.value = CENTER + dist * Math.cos(angle);
+  mouseY.value = CENTER + dist * Math.sin(angle);
 }
 
 function handlePointerDown(event: MouseEvent | TouchEvent) {
@@ -337,10 +279,10 @@ defineExpose({
           </div>
           <div
             class="color-value-item"
-            @click="copyToClipboard(hslToRgbStr(hue, saturation, 50), 'rgb')"
+            @click="copyToClipboard(hslToRgbString({ h: hue, s: saturation, l: 50 }), 'rgb')"
           >
             <span class="value-label">RGB</span>
-            <span class="value-text">{{ hslToRgbStr(hue, saturation, 50) }}</span>
+            <span class="value-text">{{ hslToRgbString({ h: hue, s: saturation, l: 50 }) }}</span>
           </div>
         </div>
         <div class="picker-actions">
