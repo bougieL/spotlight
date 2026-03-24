@@ -16,6 +16,7 @@ import { qrcodePlugin } from "@spotlight/qrcode-plugin";
 import { jsonPlugin } from "@spotlight/json-plugin";
 import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
 import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
+import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
@@ -36,6 +37,7 @@ pluginRegistry.register(qrcodePlugin);
 pluginRegistry.register(jsonPlugin);
 pluginRegistry.register(aiChatPlugin);
 pluginRegistry.register(colorPickerPlugin);
+pluginRegistry.register(colorPalettePlugin);
 
 const query = ref('');
 const files = ref<FileItem[]>([]);

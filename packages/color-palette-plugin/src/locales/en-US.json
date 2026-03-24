@@ -1,0 +1,15 @@
+{
+  "colorPalette": "Color Palette",
+  "colorPalette.description": "Quick access to color palettes",
+  "colorPalette.favorites": "Favorites",
+  "colorPalette.noFavorites": "No favorite colors yet",
+  "colorPalette.addToFavorites": "Add to favorites",
+  "colorPalette.removeFromFavorites": "Remove from favorites",
+  "colorPalette.copied": "Copied!",
+  "colorPalette.copyHex": "Copy HEX",
+  "colorPalette.copyRgb": "Copy RGB",
+  "colorPalette.basic": "Basic Colors",
+  "colorPalette.gradient": "Gradient Colors",
+  "colorPalette.web": "Web Colors",
+  "colorPalette.picker": "Color Picker"
+}

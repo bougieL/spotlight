@@ -1,0 +1,15 @@
+{
+  "colorPalette": "色盘",
+  "colorPalette.description": "快速访问色板",
+  "colorPalette.favorites": "收藏",
+  "colorPalette.noFavorites": "暂无收藏颜色",
+  "colorPalette.addToFavorites": "添加到收藏",
+  "colorPalette.removeFromFavorites": "从收藏中移除",
+  "colorPalette.copied": "已复制！",
+  "colorPalette.copyHex": "复制 HEX",
+  "colorPalette.copyRgb": "复制 RGB",
+  "colorPalette.basic": "基础颜色",
+  "colorPalette.gradient": "渐变颜色",
+  "colorPalette.web": "网页颜色",
+  "colorPalette.picker": "取色器"
+}
