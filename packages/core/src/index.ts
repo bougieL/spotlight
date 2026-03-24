@@ -3,8 +3,7 @@ import type { InjectionKey, Ref } from 'vue';
 import { inject } from 'vue';
 
 export interface SearchResultItemContext {
-  setPanel: (component: Component, pluginName?: string) => void;
-  clearQuery: () => void;
+  setPanel: (component: Component, pluginName: string) => string;
 }
 
 export interface PanelContext {

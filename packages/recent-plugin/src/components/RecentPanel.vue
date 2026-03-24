@@ -31,7 +31,7 @@ async function handleItemClick(item: RecentItem) {
     sourcePlugin: item.sourcePlugin,
     actionId: item.actionId,
     data: item.actionData,
-    ctx: { setPanel: () => {}, clearQuery: () => {} },
+    ctx: { setPanel: (_, name) => name },
   });
   emit('close');
 }

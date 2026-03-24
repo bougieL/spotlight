@@ -129,6 +129,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 onMounted(async () => {
+  clearQuery();
   await loadItems();
   unlistenClipboard = await on.clipboardChanged(async () => {
     await loadItems();

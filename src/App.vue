@@ -44,16 +44,23 @@ const query = ref('');
 const files = ref<FileItem[]>([]);
 const searchResults = ref<SearchResultItem[]>([]);
 const activePanelComponent = ref<Component | null>(null);
-const activePluginNameKey = ref<string | null>(null);
-const activePanelOnReady = ref<(() => void) | undefined>(undefined);
+const activePluginName = ref<string | undefined>(undefined);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
+
+const setPanel = (component: Component, pluginName: string) => {
+  activePanelComponent.value = component;
+  activePluginName.value = pluginName;
+  return pluginName;
+};
+
+const clearQuery = () => {
+  query.value = '';
+};
 
 provide(panelContext, {
   query,
   files,
-  clearQuery: () => {
-    query.value = '';
-  },
+  clearQuery,
 } as PanelContext);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
@@ -69,16 +76,7 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 const handleSelect = async (item: SearchResultItem) => {
   logger.info(`[App] handleSelect called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
   const ctx: SearchResultItemContext = {
-    setPanel: (component: Component, pluginNameKey?: string) => {
-      activePanelComponent.value = component;
-      activePluginNameKey.value = pluginNameKey ?? null;
-      activePanelOnReady.value = () => {
-        query.value = '';
-      };
-    },
-    clearQuery: () => {
-      query.value = '';
-    },
+    setPanel,
   };
 
   if (item.sourcePlugin && item.actionId !== undefined) {
@@ -103,8 +101,7 @@ const handleSelect = async (item: SearchResultItem) => {
 
 const handleClosePanel = () => {
   activePanelComponent.value = null;
-  activePluginNameKey.value = null;
-  activePanelOnReady.value = undefined;
+  activePluginName.value = undefined;
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -166,7 +163,7 @@ onUnmounted(() => {
       v-model="query"
       v-model:files="files"
       :is-panel-mode="!!activePanelComponent"
-      :plugin-name-key="activePluginNameKey"
+      :plugin-name="activePluginName"
       @search="handleSearch"
       @back="handleClosePanel"
     />
@@ -180,8 +177,6 @@ onUnmounted(() => {
     <PluginPanel
       v-else
       :component="activePanelComponent"
-      :query="query"
-      :on-ready="activePanelOnReady"
       @close="handleClosePanel"
     />
   </main>

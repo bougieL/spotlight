@@ -2,7 +2,6 @@
 import { Search, X, FileText, ArrowLeft } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
-import { useI18n, translations } from '@spotlight/i18n';
 import type { FileItem } from '@spotlight/core';
 
 export type { FileItem };
@@ -11,19 +10,12 @@ interface Props {
   modelValue: string;
   files: FileItem[];
   isPanelMode?: boolean;
-  pluginNameKey?: string | null;
+  pluginName?: string;
 }
 
 const props = defineProps<Props>();
 
-const { locale } = useI18n();
-
-const displayPluginName = computed(() => {
-  if (!props.pluginNameKey) return '';
-  // Access translations with locale to create reactive dependency
-  const translation = translations[locale.value][props.pluginNameKey] ?? props.pluginNameKey;
-  return translation;
-});
+const displayPluginName = computed(() => props.pluginName ?? '');
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
