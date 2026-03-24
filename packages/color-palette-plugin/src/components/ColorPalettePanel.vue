@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import { usePanelContext } from '@spotlight/core';
-import { hslToHex, hslToRgbString, hexToHsl } from '../utils/colorUtils';
+import { hslToHex, hslToRgbString, hexToHsl, isColorString, normalizeColor } from '../utils/colorUtils';
 
 const STORAGE_KEY = 'color-palette-favorites';
 
@@ -19,6 +19,13 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const favorites = ref<string[]>([]);
 const copiedColor = ref<string | null>(null);
+
+// Input state
+const hexInput = ref('');
+const rgbInput = ref('');
+const hslInput = ref('');
+// Store lightness from user input for display when saturation is low
+const inputLightness = ref(50);
 
 const WHEEL_SIZE = 180;
 const INDICATOR_SIZE = 16;
@@ -47,8 +54,15 @@ const saturation = computed(() => {
 });
 
 // Current color based on hue and saturation
+// When saturation is low (achromatic), use input lightness to preserve white/black/gray
 const selectedColor = computed(() => {
-  return hslToHex({ h: hue.value, s: saturation.value, l: 50 });
+  const l = saturation.value < 5 ? inputLightness.value / 100 : 50 / 100;
+  return hslToHex({ h: hue.value, s: saturation.value / 100, l });
+});
+
+// Display lightness for RGB string - uses input lightness when saturation is low
+const displayLightness = computed(() => {
+  return saturation.value < 5 ? inputLightness.value : 50;
 });
 
 // Indicator position
@@ -119,6 +133,11 @@ async function copyToClipboard(text: string, colorKey: string) {
   }
 }
 
+async function selectFavoriteColor(hex: string) {
+  setColorFromHex(hex);
+  await copyToClipboard(hex, hex);
+}
+
 function drawColorWheel(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -138,7 +157,7 @@ function drawColorWheel(canvas: HTMLCanvasElement) {
 
     const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
     gradient.addColorStop(0, 'white');
-    gradient.addColorStop(1, `hsl(${angle}, 100%, 50%)`);
+    gradient.addColorStop(1, `hsl(${(angle + 90) % 360}, 100%, 50%)`);
     ctx.fillStyle = gradient;
     ctx.fill();
   }
@@ -176,14 +195,76 @@ function getPositionFromEvent(canvas: HTMLCanvasElement, event: MouseEvent | Tou
   return { x, y };
 }
 
+function refreshInputValues() {
+  hexInput.value = selectedColor.value;
+  rgbInput.value = hslToRgbString({ h: hue.value, s: saturation.value, l: displayLightness.value });
+  hslInput.value = `hsl(${hue.value}, ${saturation.value}%, ${displayLightness.value}%)`;
+}
+
 function setColorFromHex(hex: string) {
   const hsl = hexToHsl(hex);
-  if (!hsl) return;
+  if (!hsl) {
+    logger.info(`[ColorPalette] hexToHsl returned null for: ${hex}`);
+    return;
+  }
+
+  // Store lightness for display when saturation is low
+  inputLightness.value = hsl.l;
+
+  // Update input values
+  refreshInputValues();
 
   const angle = ((hsl.h - 90) * Math.PI) / 180;
   const dist = (hsl.s / 100) * RADIUS;
   mouseX.value = CENTER + dist * Math.cos(angle);
   mouseY.value = CENTER + dist * Math.sin(angle);
+  logger.info(`[ColorPalette] setColorFromHex: hex=${hex}, hsl=${JSON.stringify(hsl)}, mouseX=${mouseX.value}, mouseY=${mouseY.value}`);
+}
+
+function setColorFromQuery() {
+  if (query.value && isColorString(query.value)) {
+    setColorFromHex(normalizeColor(query.value));
+  }
+}
+
+function setColorFromRgb(rgbString: string) {
+  const normalized = normalizeColor(rgbString);
+  if (normalized && normalized.startsWith('#')) {
+    setColorFromHex(normalized);
+  }
+}
+
+function handleHexEdit() {
+  const normalized = normalizeColor(hexInput.value);
+  if (normalized && normalized.startsWith('#')) {
+    setColorFromHex(normalized);
+    logger.info(`[ColorPalette] hex input updated: ${normalized}`);
+  }
+  // Refresh input with current value
+  hexInput.value = selectedColor.value;
+}
+
+function handleRgbEdit() {
+  setColorFromRgb(rgbInput.value);
+  // Refresh input with current value
+  rgbInput.value = hslToRgbString({ h: hue.value, s: saturation.value, l: displayLightness.value });
+}
+
+function setColorFromHsl(hslString: string) {
+  const hslMatch = hslString.match(/^hsl\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})%?\s*,\s*(\d{1,3})%?\s*\)$/i);
+  if (hslMatch) {
+    const h = parseInt(hslMatch[1], 10);
+    const s = parseInt(hslMatch[2], 10);
+    const l = parseInt(hslMatch[3], 10);
+    const hex = hslToHex({ h, s, l });
+    setColorFromHex(hex);
+  }
+}
+
+function handleHslEdit() {
+  setColorFromHsl(hslInput.value);
+  // Refresh input with current value
+  hslInput.value = `hsl(${hue.value}, ${saturation.value}%, ${displayLightness.value}%)`;
 }
 
 function handlePointerDown(event: MouseEvent | TouchEvent) {
@@ -218,13 +299,9 @@ onMounted(() => {
   }
 
   // Set initial color from query
-  if (query.value && /^#[a-f\d]{6}$/i.test(query.value.trim())) {
-    setColorFromHex(query.value.trim());
-  } else {
-    // Initialize mouse position to top of wheel
-    mouseX.value = CENTER;
-    mouseY.value = CENTER - RADIUS;
-  }
+  setColorFromQuery();
+  // Initialize input values
+  refreshInputValues();
 
   document.addEventListener('mouseup', handlePointerUp);
   document.addEventListener('touchend', handlePointerUp);
@@ -266,19 +343,35 @@ defineExpose({
           :style="{ backgroundColor: selectedColor }"
         />
         <div class="color-values">
-          <div
-            class="color-value-item"
-            @click="copyToClipboard(selectedColor, 'hex')"
-          >
+          <div class="color-value-item">
             <span class="value-label">HEX</span>
-            <span class="value-text">{{ selectedColor }}</span>
+            <input
+              v-model="hexInput"
+              type="text"
+              class="value-input"
+              @keydown.enter="handleHexEdit"
+              @blur="handleHexEdit"
+            >
           </div>
-          <div
-            class="color-value-item"
-            @click="copyToClipboard(hslToRgbString({ h: hue, s: saturation, l: 50 }), 'rgb')"
-          >
+          <div class="color-value-item">
             <span class="value-label">RGB</span>
-            <span class="value-text">{{ hslToRgbString({ h: hue, s: saturation, l: 50 }) }}</span>
+            <input
+              v-model="rgbInput"
+              type="text"
+              class="value-input"
+              @keydown.enter="handleRgbEdit"
+              @blur="handleRgbEdit"
+            >
+          </div>
+          <div class="color-value-item">
+            <span class="value-label">HSL</span>
+            <input
+              v-model="hslInput"
+              type="text"
+              class="value-input"
+              @keydown.enter="handleHslEdit"
+              @blur="handleHslEdit"
+            >
           </div>
         </div>
         <div class="picker-actions">
@@ -312,7 +405,7 @@ defineExpose({
           :class="{ active: copiedColor === color }"
           :style="{ backgroundColor: color }"
           :title="color"
-          @click="copyToClipboard(color, color)"
+          @click="selectFavoriteColor(color)"
         />
       </div>
     </div>
@@ -407,6 +500,20 @@ defineExpose({
   font-size: 13px;
   color: var(--spotlight-text);
   font-family: monospace;
+}
+
+.value-input {
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--spotlight-text);
+  width: 100%;
+  padding: 0;
+}
+
+.color-value-item.editing {
+  background: var(--spotlight-item-hover, rgba(0, 0, 0, 0.1));
 }
 
 .picker-actions {
