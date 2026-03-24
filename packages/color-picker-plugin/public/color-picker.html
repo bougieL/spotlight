@@ -13,7 +13,6 @@
       height: 100%;
       cursor: crosshair;
       overflow: hidden;
-      background: rgba(255, 0, 0, 0.3);
       outline: none;
     }
     body {
@@ -53,33 +52,16 @@
     #info.show {
       display: block;
     }
-    #test-btn {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      padding: 20px;
-      background: blue;
-      color: white;
-      font-size: 24px;
-      border: none;
-      cursor: pointer;
-      z-index: 10001;
-    }
-  </style>
+    </style>
 </head>
 <body>
   <div id="overlay"></div>
   <div id="crosshair"></div>
   <div id="info">Loading...</div>
-  <button id="test-btn">TEST CLICK</button>
   <script>
-    console.log('Color picker HTML loaded');
-    console.log('window.__TAURI__:', window.__TAURI__);
-
     const crosshair = document.getElementById('crosshair');
     const info = document.getElementById('info');
     const overlay = document.getElementById('overlay');
-    const testBtn = document.getElementById('test-btn');
     let lastColor = '#000000';
 
     // Get invoke from Tauri
@@ -87,17 +69,6 @@
 
     // Ensure window has focus
     window.focus();
-
-    // Test button click
-    testBtn.addEventListener('click', () => {
-      console.log('Test button clicked!');
-      alert('Test button works!');
-    });
-
-    // Overlay click
-    overlay.addEventListener('click', () => {
-      console.log('Overlay clicked!');
-    });
 
     async function closePicker() {
       if (!invoke) {
@@ -134,7 +105,6 @@
 
     // Handle click on entire window
     document.addEventListener('click', async (e) => {
-      console.log('Document clicked!');
       e.preventDefault();
       e.stopPropagation();
       if (invoke) {
@@ -149,7 +119,6 @@
 
     // Handle escape key
     document.addEventListener('keydown', async (e) => {
-      console.log('Key pressed:', e.key);
       if (e.key === 'Escape') {
         await closePicker();
       }
