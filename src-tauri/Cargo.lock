@@ -3871,6 +3871,7 @@ dependencies = [
  "image",
  "percent-encoding",
  "plist",
+ "raw-window-handle",
  "regex-lite",
  "serde",
  "serde_json",

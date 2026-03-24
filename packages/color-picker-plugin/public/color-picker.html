@@ -9,23 +9,24 @@
       box-sizing: border-box;
     }
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       cursor: crosshair;
       overflow: hidden;
       outline: none;
+      background: transparent;
     }
     body {
       tab-index: -1;
     }
-    #overlay {
-      position: fixed;
+    #canvas {
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
+      width: 100%;
+      height: 100%;
       cursor: crosshair;
+      background: transparent;
     }
     #crosshair {
       position: fixed;
@@ -48,21 +49,40 @@
       border-radius: 4px;
       pointer-events: none;
       z-index: 10000;
+      display: none;
     }
     #info.show {
       display: block;
     }
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-family: monospace;
+      font-size: 16px;
+      z-index: 10001;
+    }
     </style>
 </head>
 <body>
-  <div id="overlay"></div>
+  <canvas id="canvas"></canvas>
   <div id="crosshair"></div>
-  <div id="info">Loading...</div>
+  <div id="info"></div>
+  <div id="loading">Capturing...</div>
   <script>
+    const canvas = document.getElementById('canvas');
+    // Use physical screen dimensions for canvas
+    canvas.width = window.screen.width;
+    canvas.height = window.screen.height;
+    let ctx = canvas.getContext('2d', { alpha: true });
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     const crosshair = document.getElementById('crosshair');
     const info = document.getElementById('info');
-    const overlay = document.getElementById('overlay');
+    const loading = document.getElementById('loading');
     let lastColor = '#000000';
+    let imgElement = null;
 
     // Get invoke from Tauri
     const invoke = window.__TAURI__?.core?.invoke;
@@ -82,42 +102,75 @@
       }
     }
 
-    document.addEventListener('mousemove', async (e) => {
+    async function captureScreen() {
+      if (!invoke) {
+        console.error('Invoke not available');
+        return;
+      }
+      try {
+        const capture = await invoke('capture_full_screen');
+        // Canvas is already sized to screen.width/screen.height
+        // Re-get context after resize to ensure alpha channel
+        ctx = canvas.getContext('2d', { alpha: true });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        imgElement = new Image();
+        imgElement.onload = () => {
+          ctx.drawImage(imgElement, 0, 0);
+          loading.style.display = 'none';
+        };
+        imgElement.onerror = () => {
+          loading.textContent = 'Failed to load capture';
+        };
+        imgElement.src = capture.image_data;
+      } catch (err) {
+        console.error('Failed to capture screen:', err);
+        loading.textContent = 'Failed: ' + err;
+      }
+    }
+
+    function getColorAtPosition(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const x = Math.floor((clientX - rect.left) * scaleX);
+      const y = Math.floor((clientY - rect.top) * scaleY);
+
+      if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) {
+        return null;
+      }
+
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      return '#' + [pixel[0], pixel[1], pixel[2]].map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+
+    document.addEventListener('mousemove', (e) => {
       crosshair.style.left = e.clientX + 'px';
       crosshair.style.top = e.clientY + 'px';
       info.style.left = (e.clientX + 15) + 'px';
       info.style.top = (e.clientY + 15) + 'px';
 
-      if (!invoke) return;
-
-      try {
-        const color = await invoke('get_color_at_position', { x: e.screenX, y: e.screenY });
-        if (color) {
-          lastColor = color;
-          info.textContent = color;
-          info.classList.add('show');
-          crosshair.style.borderColor = isLightColor(color) ? '#000' : '#fff';
-        }
-      } catch (err) {
-        console.error('Failed to get color:', err);
+      const color = getColorAtPosition(e.clientX, e.clientY);
+      if (color) {
+        lastColor = color;
+        info.textContent = color;
+        info.classList.add('show');
+        crosshair.style.borderColor = isLightColor(color) ? '#000' : '#fff';
       }
     });
 
-    // Handle click on entire window
     document.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (invoke) {
-        try {
-          await invoke('copy_color_to_clipboard', { color: lastColor });
-        } catch (err) {
-          console.error('Failed to copy color:', err);
-        }
+      try {
+        await navigator.clipboard.writeText(lastColor);
+      } catch (err) {
+        console.error('Failed to copy color:', err);
       }
       await closePicker();
     });
 
-    // Handle escape key
     document.addEventListener('keydown', async (e) => {
       if (e.key === 'Escape') {
         await closePicker();
@@ -132,6 +185,9 @@
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       return brightness > 128;
     }
+
+    // Capture screen on load
+    captureScreen();
   </script>
 </body>
 </html>

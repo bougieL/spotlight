@@ -18,7 +18,7 @@ pub use clipboard::{
 pub use file::{save_pasted_file, save_temp_image};
 pub use launcher::launch_app;
 pub use log::write_log;
-pub use screen::{copy_color_to_clipboard, get_color_at_position};
+pub use screen::{capture_full_screen};
 pub use shortcut::{get_global_shortcut, register_global_shortcut};
 pub use storage::{get_plugin_storage_dir, read_plugin_settings, write_plugin_settings};
 pub use window::{close_overlay_window, create_overlay_window, resize_window};

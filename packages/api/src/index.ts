@@ -39,6 +39,17 @@ export interface TauriApi {
   convertFileSrc: typeof convertFileSrc;
 }
 
+export interface ScreenCapture {
+  image_data: string;
+  width: number;
+  height: number;
+  offset_x: number;
+  offset_y: number;
+}
+
+export const captureFullScreen = (): Promise<ScreenCapture> =>
+  invoke<ScreenCapture>('capture_full_screen');
+
 export const tauriApi: TauriApi = {
   resizeWindow: (height: number) => invoke('resize_window', { height }),
 
