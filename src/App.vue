@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, provide, onMounted, onUnmounted } from 'vue';
 import { SearchInput } from "@spotlight/input";
 import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry } from "@spotlight/plugin-registry";
@@ -19,7 +19,8 @@ import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
 import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
-import type { SearchResultItem, SearchResultItemContext } from "@spotlight/core";
+import type { SearchResultItem, SearchResultItemContext, PanelContext } from "@spotlight/core";
+import { panelContext } from "@spotlight/core";
 import type { Component } from 'vue';
 import logger from '@spotlight/logger';
 
@@ -46,6 +47,14 @@ const activePanelComponent = ref<Component | null>(null);
 const activePluginNameKey = ref<string | null>(null);
 const activePanelOnReady = ref<(() => void) | undefined>(undefined);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
+
+provide(panelContext, {
+  query,
+  files,
+  clearQuery: () => {
+    query.value = '';
+  },
+} as PanelContext);
 
 const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
   if (!searchQuery.trim()) {

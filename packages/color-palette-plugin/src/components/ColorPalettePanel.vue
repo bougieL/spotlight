@@ -2,16 +2,14 @@
 import { ref, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
+import { usePanelContext } from '@spotlight/core';
 import { hslToHex, hslToRgbString, hexToHsl } from '../utils/colorUtils';
 
 const STORAGE_KEY = 'color-palette-favorites';
 
-interface Props {
-  query: string;
-  onReady?: () => void;
-}
 
-const props = defineProps<Props>();
+
+const { query } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -220,15 +218,13 @@ onMounted(() => {
   }
 
   // Set initial color from query
-  if (props.query && /^#[a-f\d]{6}$/i.test(props.query.trim())) {
-    setColorFromHex(props.query.trim());
+  if (query.value && /^#[a-f\d]{6}$/i.test(query.value.trim())) {
+    setColorFromHex(query.value.trim());
   } else {
     // Initialize mouse position to top of wheel
     mouseX.value = CENTER;
     mouseY.value = CENTER - RADIUS;
   }
-
-  props.onReady?.();
 
   document.addEventListener('mouseup', handlePointerUp);
   document.addEventListener('touchend', handlePointerUp);

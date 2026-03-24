@@ -1,8 +1,26 @@
 import type { Component } from 'vue';
+import type { InjectionKey, Ref } from 'vue';
+import { inject } from 'vue';
 
 export interface SearchResultItemContext {
   setPanel: (component: Component, pluginName?: string) => void;
   clearQuery: () => void;
+}
+
+export interface PanelContext {
+  query: Ref<string>;
+  files: Ref<FileItem[]>;
+  clearQuery: () => void;
+}
+
+export const panelContext = Symbol('panelContext') as InjectionKey<PanelContext>;
+
+export function usePanelContext(): PanelContext {
+  const ctx = inject(panelContext);
+  if (!ctx) {
+    throw new Error('PanelContext not provided');
+  }
+  return ctx;
 }
 
 export interface SearchResultItem {

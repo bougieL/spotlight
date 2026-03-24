@@ -3,16 +3,12 @@ import { ref, watch, onMounted } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import QRCode from 'qrcode';
+import { usePanelContext } from '@spotlight/core';
 
 const STORAGE_KEY = 'qrcode-history';
 const MAX_HISTORY = 50;
 
-interface Props {
-  query: string;
-  onReady?: () => void;
-}
-
-const props = defineProps<Props>();
+const { query } = usePanelContext();
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -71,11 +67,10 @@ function selectHistory(text: string) {
 
 onMounted(() => {
   history.value = loadHistory();
-  if (props.query && props.query.trim()) {
-    inputText.value = props.query.trim();
+  if (query.value && query.value.trim()) {
+    inputText.value = query.value.trim();
     generateQRCode();
   }
-  props.onReady?.();
 });
 
 watch(inputText, (newValue) => {

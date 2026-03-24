@@ -6,18 +6,14 @@ import { formatTime } from '@spotlight/utils';
 import { clipboardPlugin, type ClipboardItem, type ClipboardItemType } from '../index';
 import { on, type UnlistenFn } from '@spotlight/api';
 import logger from '@spotlight/logger';
-
-interface Props {
-  query: string;
-}
-
-const props = defineProps<Props>();
+import { usePanelContext } from '@spotlight/core';
 
 const emit = defineEmits<{
   (e: 'close'): void;
 }>();
 
 const { t } = useI18n();
+const { query, clearQuery } = usePanelContext();
 
 const items = ref<ClipboardItem[]>([]);
 const favorites = ref<ClipboardItem[]>([]);
@@ -33,9 +29,9 @@ const filteredItems = computed(() => {
     return sourceItems.filter(item => item.type === selectedType.value);
   }
 
-  if (props.query.trim()) {
-    const query = props.query.toLowerCase();
-    return sourceItems.filter(item => item.content.toLowerCase().includes(query));
+  if (query.value.trim()) {
+    const q = query.value.toLowerCase();
+    return sourceItems.filter(item => item.content.toLowerCase().includes(q));
   }
 
   return sourceItems;
@@ -126,6 +122,7 @@ async function handleCopy(item: ClipboardItem) {
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
+    clearQuery();
     emit('close');
     return;
   }

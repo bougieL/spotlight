@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { calculatorPlugin } from '../index';
+import { usePanelContext } from '@spotlight/core';
 
-interface Props {
-  query: string;
-  onReady?: () => void;
-}
-
-const props = defineProps<Props>();
+const { query } = usePanelContext();
 
 const emit = defineEmits<{
   (e: 'close'): void;
@@ -19,8 +15,8 @@ onMounted(async () => {
   let loadedExpressions = await calculatorPlugin.getExpressions();
 
   // If query is a math expression, prepend it as a new expression at the top
-  if (props.query && isMathExpression(props.query)) {
-    const queryExpr = props.query.startsWith('=') ? props.query.slice(1).trim() : props.query.trim();
+  if (query.value && isMathExpression(query.value)) {
+    const queryExpr = query.value.startsWith('=') ? query.value.slice(1).trim() : query.value.trim();
     // Only prepend if the expression is not already in the list
     if (queryExpr && !loadedExpressions.includes(queryExpr)) {
       loadedExpressions = [queryExpr, ...loadedExpressions];
@@ -28,7 +24,6 @@ onMounted(async () => {
   }
 
   expressions.value = loadedExpressions;
-  props.onReady?.();
 });
 
 function isMathExpression(query: string): boolean {
