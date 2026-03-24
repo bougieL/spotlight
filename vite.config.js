@@ -43,14 +43,42 @@ try {
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
+  build: {
+    rollupOptions: {
+      input: {
+        colorPicker: resolve(__dirname, "packages/color-picker-plugin/public/color-picker.html"),
+      },
+    },
+  },
+
   plugins: [
     vue(),
-    // Custom plugin to serve plugin public files
+    // Custom plugin to serve plugin public files and handle plugin scripts
     {
       name: "plugin-public-files",
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           const url = req.url.split("?")[0];
+
+          // Handle /src/plugins/{plugin}/ path -> transform TS via Vite
+          if (url.startsWith("/src/plugins/")) {
+            const relativePath = url.replace("/src/plugins/", "");
+            const parts = relativePath.split("/");
+            const pluginName = parts[0];
+            const filePath = join(__dirname, "packages", pluginName, "src", parts.slice(1).join("/"));
+
+            if (existsSync(filePath) && filePath.endsWith(".ts")) {
+              server.transformRequest(filePath).then((result) => {
+                if (result) {
+                  res.setHeader("Content-Type", "application/javascript");
+                  res.end(result.code);
+                } else {
+                  next();
+                }
+              });
+              return;
+            }
+          }
 
           for (const plugin of pluginPublicDirs) {
             if (url.startsWith(`/plugins/${plugin.name}/`)) {
