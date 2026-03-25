@@ -2,22 +2,9 @@
 import { ref, provide, onMounted, onUnmounted } from 'vue';
 import { SearchInput } from "@spotlight/input";
 import { SearchList, PluginPanel } from "@spotlight/panel";
-import { pluginRegistry } from "@spotlight/plugin-registry";
+import { pluginRegistry, registerAllPlugins, recentPlugin } from "./plugins";
 import { provideI18n, setLocale } from "@spotlight/i18n";
-import { appSearchPlugin } from "@spotlight/app-search-plugin";
-import { chromeBookmarksPlugin } from "@spotlight/chrome-bookmarks-plugin";
-import { calculatorPlugin } from "@spotlight/calculator-plugin";
-import { notesPlugin } from "@spotlight/notes-plugin";
-import { calendarPlugin } from "@spotlight/calendar-plugin";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
-import { shortcutsPlugin } from "@spotlight/shortcuts-plugin";
-import { clipboardPlugin } from "@spotlight/clipboard-plugin";
-import { recentPlugin } from "@spotlight/recent-plugin";
-import { qrcodePlugin } from "@spotlight/qrcode-plugin";
-import { jsonPlugin } from "@spotlight/json-plugin";
-import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
-import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
-import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, SearchResultItemContext, PanelContext } from "@spotlight/core";
@@ -27,20 +14,7 @@ import logger from '@spotlight/logger';
 
 provideI18n();
 
-pluginRegistry.register(appSearchPlugin);
-pluginRegistry.register(chromeBookmarksPlugin);
-pluginRegistry.register(calculatorPlugin);
-pluginRegistry.register(notesPlugin);
-pluginRegistry.register(calendarPlugin);
-pluginRegistry.register(settingsPlugin);
-pluginRegistry.register(shortcutsPlugin);
-pluginRegistry.register(clipboardPlugin);
-pluginRegistry.register(recentPlugin);
-pluginRegistry.register(qrcodePlugin);
-pluginRegistry.register(jsonPlugin);
-pluginRegistry.register(aiChatPlugin);
-pluginRegistry.register(colorPickerPlugin);
-pluginRegistry.register(colorPalettePlugin);
+registerAllPlugins();
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
