@@ -14,11 +14,14 @@ export function getPanelRouteName(pluginId: string): string {
   return pluginId;
 }
 
+export interface ActionContext {
+  router: Router;
+}
+
 export interface PanelContext {
   query: Ref<string>;
   files: Ref<FileItem[]>;
   clearQuery: () => void;
-  router: Router;
 }
 
 export const panelContext = Symbol('panelContext') as InjectionKey<PanelContext>;
@@ -85,7 +88,7 @@ export abstract class BasePlugin implements PluginMetadata {
 
   abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
 
-  abstract registerAction(): PluginActions;
+  abstract registerAction(ctx: ActionContext): PluginActions;
 
   /**
    * Returns the panel component loader for this plugin.

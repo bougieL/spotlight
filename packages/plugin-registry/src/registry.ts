@@ -1,4 +1,4 @@
-import type { BasePlugin, SearchResultItem, SearchParams } from '@spotlight/core';
+import type { BasePlugin, SearchResultItem, SearchParams, ActionContext } from '@spotlight/core';
 import { getPanelRouteName } from '@spotlight/core';
 import type { Router, RouteRecordRaw } from 'vue-router';
 import logger from '@spotlight/logger';
@@ -14,8 +14,13 @@ interface ScoredResult {
   pluginIndex: number;
 }
 
+interface RegisteredPlugin {
+  plugin: BasePlugin;
+  actions: ReturnType<BasePlugin['registerAction']>;
+}
+
 export class PluginRegistry {
-  private plugins: BasePlugin[] = [];
+  private plugins: RegisteredPlugin[] = [];
   private disabledPlugins: Set<string> = new Set();
   private router: Router | null = null;
 
@@ -24,10 +29,18 @@ export class PluginRegistry {
   }
 
   register(plugin: BasePlugin): void {
-    this.plugins.push(plugin);
+    if (!this.router) {
+      logger.warn('[PluginRegistry] Router not set, cannot register plugin');
+      return;
+    }
+
+    const ctx: ActionContext = { router: this.router };
+    const actions = plugin.registerAction(ctx);
+
+    this.plugins.push({ plugin, actions });
 
     // Dynamically register the plugin's panel route if it has one
-    if (this.router && plugin.getPanelComponentLoader) {
+    if (plugin.getPanelComponentLoader) {
       const loader = plugin.getPanelComponentLoader();
       if (loader) {
         const route: RouteRecordRaw = {
@@ -42,7 +55,7 @@ export class PluginRegistry {
   }
 
   unregister(name: string): void {
-    this.plugins = this.plugins.filter((p) => p.name !== name);
+    this.plugins = this.plugins.filter((p) => p.plugin.name !== name);
   }
 
   async setDisabledPlugins(pluginIds: string[], skipLifecycle = false): Promise<void> {
@@ -52,20 +65,20 @@ export class PluginRegistry {
     // Find plugins that were disabled but are now enabled
     const newlyEnabled = [...oldDisabledSet].filter((id) => !newDisabledSet.has(id));
     for (const pluginId of newlyEnabled) {
-      const plugin = this.getPluginById(pluginId);
-      if (plugin && !skipLifecycle) {
-        logger.info(`[PluginRegistry] Enabling plugin: ${plugin.name}`);
-        await plugin.onMount?.();
+      const entry = this.getPluginEntryById(pluginId);
+      if (entry && !skipLifecycle) {
+        logger.info(`[PluginRegistry] Enabling plugin: ${entry.plugin.name}`);
+        await entry.plugin.onMount?.();
       }
     }
 
     // Find plugins that were enabled but are now disabled
     const newlyDisabled = [...newDisabledSet].filter((id) => !oldDisabledSet.has(id));
     for (const pluginId of newlyDisabled) {
-      const plugin = this.getPluginById(pluginId);
-      if (plugin && !skipLifecycle) {
-        logger.info(`[PluginRegistry] Disabling plugin: ${plugin.name}`);
-        await plugin.onUnmount?.();
+      const entry = this.getPluginEntryById(pluginId);
+      if (entry && !skipLifecycle) {
+        logger.info(`[PluginRegistry] Disabling plugin: ${entry.plugin.name}`);
+        await entry.plugin.onUnmount?.();
       }
     }
 
@@ -76,8 +89,12 @@ export class PluginRegistry {
     return Array.from(this.disabledPlugins);
   }
 
+  private getPluginEntryById(pluginId: string): RegisteredPlugin | undefined {
+    return this.plugins.find((p) => p.plugin.pluginId === pluginId);
+  }
+
   private getPluginById(pluginId: string): BasePlugin | undefined {
-    return this.plugins.find((p) => p.pluginId === pluginId);
+    return this.getPluginEntryById(pluginId)?.plugin;
   }
 
   getPlugin(pluginId: string): BasePlugin | undefined {
@@ -89,14 +106,13 @@ export class PluginRegistry {
   }
 
   async executeAction(params: { pluginId: string; actionId: string; data: unknown }): Promise<void> {
-    const plugin = this.getPluginById(params.pluginId);
-    if (!plugin) {
+    const entry = this.getPluginEntryById(params.pluginId);
+    if (!entry) {
       logger.warn(`[PluginRegistry] Plugin not found: ${params.pluginId}`);
       return;
     }
 
-    const actions = plugin.registerAction();
-    const handler = actions[params.actionId];
+    const handler = entry.actions[params.actionId];
     if (handler) {
       logger.info(`[PluginRegistry] Executing action: ${params.pluginId}:${params.actionId}`);
       await handler(params.data);
@@ -110,14 +126,14 @@ export class PluginRegistry {
       return [];
     }
 
-    const enabledPlugins = this.plugins.filter((p) => !this.isPluginDisabled(p.pluginId));
+    const enabledPlugins = this.plugins.filter((p) => !this.isPluginDisabled(p.plugin.pluginId));
 
     const pluginResults = await Promise.all(
-      enabledPlugins.map(async (plugin) => {
+      enabledPlugins.map(async (entry) => {
         try {
-          return await plugin.search(params);
+          return await entry.plugin.search(params);
         } catch (error) {
-          logger.error(`[PluginRegistry] Plugin "${plugin.name}" search failed:`, error);
+          logger.error(`[PluginRegistry] Plugin "${entry.plugin.name}" search failed:`, error);
           return [];
         }
       })
@@ -135,7 +151,7 @@ export class PluginRegistry {
         const finalScore = pluginBaseScore + detailedScore.total;
         const itemWithSource: SearchResultItem = {
           ...item,
-          pluginId: item.pluginId ?? enabledPlugins[pluginIndex].pluginId,
+          pluginId: item.pluginId ?? enabledPlugins[pluginIndex].plugin.pluginId,
           score: finalScore,
         };
         scoredResults.push({ item: itemWithSource, score: finalScore, pluginIndex });
@@ -168,7 +184,7 @@ export class PluginRegistry {
   }
 
   getPlugins(): BasePlugin[] {
-    return [...this.plugins];
+    return this.plugins.map((p) => p.plugin);
   }
 }
 

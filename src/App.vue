@@ -13,17 +13,22 @@ import logger from '@spotlight/logger';
 
 provideI18n();
 
-registerAllPlugins();
-
 const router = useRouter();
 const route = useRoute();
+
+registerAllPlugins();
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
-const isPanelMode = computed(() => !!route.params.pluginId);
-const activePluginName = computed(() => route.params.pluginId as string | undefined);
+const isPanelMode = computed(() => route.path.startsWith('/panel'));
+const activePluginName = computed(() => {
+  const match = route.path.match(/^\/panel\/(.+)$/);
+  if (!match) return undefined;
+  const plugin = pluginRegistry.getPlugin(match[1]);
+  return plugin?.name;
+});
 
 const clearQuery = () => {
   query.value = '';
@@ -33,7 +38,6 @@ provide(panelContext, {
   query,
   files,
   clearQuery,
-  router,
 } as PanelContext);
 
 const handleSelect = async (item: SearchResultItem) => {
@@ -137,7 +141,11 @@ onUnmounted(async () => {
       :plugin-name="activePluginName"
       @back="handleClosePanel"
     />
-    <RouterView @select="handleSelect" />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive>
+        <component :is="Component" @select="handleSelect" />
+      </KeepAlive>
+    </RouterView>
   </main>
 </template>
 

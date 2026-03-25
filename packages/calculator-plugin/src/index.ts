@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin, usePanelContext } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
+import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -32,10 +32,11 @@ export class CalculatorPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(this.pluginId);
 
-  registerAction(): PluginActions {
+  registerAction(ctx: ActionContext): PluginActions {
+    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        usePanelContext().router.push({ name: this.pluginId });
+        router.push({ name: this.pluginId });
       },
       [ACTION_CALCULATE]: async (data) => {
         if (typeof data !== 'string') return;
@@ -45,7 +46,7 @@ export class CalculatorPlugin extends BasePlugin {
         } catch (error) {
           logger.error('Failed to copy to clipboard:', error);
         }
-        usePanelContext().router.push({ name: this.pluginId });
+        router.push({ name: this.pluginId });
       },
     };
   }

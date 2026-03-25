@@ -131,7 +131,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background-color: var(--spotlight-bg);
-  border-top: 1px solid var(--spotlight-border);
 }
 
 .search-list-content {

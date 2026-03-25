@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin, usePanelContext } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
+import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -26,10 +26,11 @@ export class QrCodePlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  registerAction(): PluginActions {
+  registerAction(ctx: ActionContext): PluginActions {
+    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        usePanelContext().router.push({ name: this.pluginId });
+        router.push({ name: this.pluginId });
       },
     };
   }

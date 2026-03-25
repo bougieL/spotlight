@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin, usePanelContext } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
+import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -52,10 +52,11 @@ export class AIChatPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(this.pluginId);
 
-  registerAction(): PluginActions {
+  registerAction(ctx: ActionContext): PluginActions {
+    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        usePanelContext().router.push({ name: this.pluginId });
+        router.push({ name: this.pluginId });
       },
     };
   }
