@@ -58,13 +58,16 @@ pub fn run() {
             // Hide window on startup, show only when tray icon is clicked
             let _ = window.hide();
 
-            // Hide window when it loses focus
-            let window_clone = window.clone();
-            window.on_window_event(move |event| {
-                if let tauri::WindowEvent::Focused(false) = event {
-                    let _ = window_clone.hide();
-                }
-            });
+            // Hide window when it loses focus (only in release mode)
+            #[cfg(not(debug_assertions))]
+            {
+                let window_clone = window.clone();
+                window.on_window_event(move |event| {
+                    if let tauri::WindowEvent::Focused(false) = event {
+                        let _ = window_clone.hide();
+                    }
+                });
+            }
 
             if let Ok(Some(monitor)) = window.current_monitor() {
                 let scale_factor = window.scale_factor().unwrap_or(1.0);

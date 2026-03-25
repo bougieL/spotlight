@@ -165,6 +165,7 @@ async function selectSession(session: Session) {
     temperature: 0.7,
     maxTokens: 4096,
   });
+  scrollToBottom();
 }
 
 async function selectModel(modelId: string) {
@@ -243,6 +244,9 @@ function cancelEditingSystemPrompt() {
 async function sendMessage() {
   if (!inputText.value.trim() || isStreaming.value || !activeSession.value || !activeModel.value) return;
 
+  // Set streaming state immediately to prevent double-send during async operations
+  isStreaming.value = true;
+
   const userMessage: ChatMessage = {
     id: Date.now().toString(36) + Math.random().toString(36).substring(2, 9),
     role: 'user',
@@ -290,6 +294,7 @@ async function processStream() {
       if (chunk.done) break;
       fullContent += chunk.content;
       streamedContent.value = fullContent;
+      scrollToBottom();
     }
 
     const assistantMessage: ChatMessage = {
@@ -401,13 +406,13 @@ function handleKeydown(event: KeyboardEvent) {
             @contextmenu.prevent="openContextMenu($event, session)"
           >
             <div class="session-info">
-              <Pin :size="14" class="pin-icon" :class="{ pinned: session.isPinned }" />
               <MessageSquare :size="14" class="session-icon" />
               <div class="session-details">
                 <span class="session-title">{{ session.title || t('aiChat.newSession') }}</span>
                 <span class="session-date">{{ formatDate(session.updatedAt) }}</span>
               </div>
             </div>
+            <Pin v-if="session.isPinned" :size="14" class="pin-icon-right" />
           </div>
 
           <div v-if="sortedSessions.length === 0" class="empty-sessions">
@@ -634,6 +639,10 @@ function handleKeydown(event: KeyboardEvent) {
   background-color: var(--spotlight-item-hover);
 }
 
+.session-item {
+  border-left: 3px solid transparent;
+}
+
 .session-item.active {
   background-color: var(--spotlight-primary-light, rgba(100, 100, 100, 0.15));
   border-left: 3px solid var(--spotlight-primary, var(--spotlight-icon, #666));
@@ -647,6 +656,11 @@ function handleKeydown(event: KeyboardEvent) {
   font-weight: 600;
 }
 
+.pin-icon-right {
+  color: var(--spotlight-primary, var(--spotlight-icon, #666));
+  flex-shrink: 0;
+}
+
 .session-info {
   display: flex;
   align-items: center;
@@ -657,27 +671,6 @@ function handleKeydown(event: KeyboardEvent) {
 .session-icon {
   color: var(--spotlight-icon, #666);
   flex-shrink: 0;
-}
-
-.pin-icon {
-  color: var(--spotlight-placeholder);
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.pin-icon.pinned {
-  color: var(--spotlight-primary, var(--spotlight-icon, #666));
-  opacity: 1;
-}
-
-.session-item:hover .pin-icon {
-  opacity: 1;
-}
-
-.pin-active {
-  color: var(--spotlight-primary, var(--spotlight-icon, #666));
-  fill: var(--spotlight-primary, var(--spotlight-icon, #666));
 }
 
 .session-details {
