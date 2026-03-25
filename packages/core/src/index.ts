@@ -27,9 +27,7 @@ export type ActionHandler = (data: unknown, ctx: SearchResultItemContext) => voi
 export type PluginActions = Record<string, ActionHandler>;
 
 export interface SearchResultItem {
-  icon?: Component;
   iconUrl?: string;
-  iconComponentName?: string;
   title: string;
   desc?: string;
   score?: number;

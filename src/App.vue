@@ -86,7 +86,6 @@ const handleSelect = async (item: SearchResultItem) => {
         title: item.title,
         desc: item.desc,
         iconUrl: item.iconUrl,
-        iconComponentName: item.iconComponentName,
       },
       pluginId: item.pluginId,
       actionId: item.actionId,

@@ -23,7 +23,6 @@ export interface RecentItem {
   title: string;
   desc?: string;
   iconUrl?: string;
-  iconComponentName?: string;
   pluginId: string;
   actionId: string;
   actionData: unknown;

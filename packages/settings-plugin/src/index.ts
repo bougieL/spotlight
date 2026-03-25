@@ -95,7 +95,8 @@ export class SettingsPlugin extends BasePlugin {
   }
 
   async getThemeMode(): Promise<ThemeMode> {
-    return await this.storage.get<ThemeMode>('theme.mode', 'system');
+    const setting = await this.storage.get<ThemeSetting>('theme', { mode: 'system' });
+    return setting.mode;
   }
 
   async getLanguage(): Promise<Locale> {

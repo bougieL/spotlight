@@ -92,14 +92,8 @@ onUnmounted(() => {
         @click="selectItem(item)"
         @mouseenter="selectedIndex = index"
       >
-        <component
-          v-if="item.icon"
-          :is="item.icon"
-          class="result-icon"
-          :size="20"
-        />
         <img
-          v-else-if="item.iconUrl"
+          v-if="item.iconUrl"
           :src="item.iconUrl"
           class="result-icon-img"
         />
