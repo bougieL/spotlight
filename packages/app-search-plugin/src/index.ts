@@ -1,5 +1,4 @@
-import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
@@ -243,10 +242,6 @@ export class AppSearchPlugin extends BasePlugin {
       actionId: ACTION_LAUNCH,
       actionData: app.info.path,
     }));
-  }
-
-  async render(_params: RenderParams): Promise<Component | null> {
-    return null;
   }
 }
 

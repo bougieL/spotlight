@@ -1,15 +1,24 @@
 import type { Component } from 'vue';
+import type { Router } from 'vue-router';
 import type { InjectionKey, Ref } from 'vue';
 import { inject } from 'vue';
 
-export interface SearchResultItemContext {
-  setPanel: (component: Component, pluginName: string) => string;
+// Route name constants to avoid magic strings
+export const ROUTE_NAMES = {
+  SEARCH: 'search',
+} as const;
+
+export type RouteName = typeof ROUTE_NAMES[keyof typeof ROUTE_NAMES];
+
+export function getPanelRouteName(pluginId: string): string {
+  return pluginId;
 }
 
 export interface PanelContext {
   query: Ref<string>;
   files: Ref<FileItem[]>;
   clearQuery: () => void;
+  router: Router;
 }
 
 export const panelContext = Symbol('panelContext') as InjectionKey<PanelContext>;
@@ -22,7 +31,7 @@ export function usePanelContext(): PanelContext {
   return ctx;
 }
 
-export type ActionHandler = (data: unknown, ctx: SearchResultItemContext) => void | Promise<void>;
+export type ActionHandler = (data: unknown) => void | Promise<void>;
 
 export type PluginActions = Record<string, ActionHandler>;
 
@@ -60,10 +69,6 @@ export interface FileItem {
   type: 'image' | 'file';
 }
 
-export interface RenderParams {
-  query: string;
-}
-
 export interface PluginMetadata {
   name: string;
   version: string;
@@ -80,9 +85,14 @@ export abstract class BasePlugin implements PluginMetadata {
 
   abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
 
-  abstract render(_params: RenderParams): Promise<Component | null>;
-
   abstract registerAction(): PluginActions;
+
+  /**
+   * Returns the panel component loader for this plugin.
+   * Used for dynamic route registration.
+   * Override this to provide a panel component.
+   */
+  getPanelComponentLoader?(): () => Promise<Component>;
 
   /**
    * Called when the plugin is registered and the app is ready.

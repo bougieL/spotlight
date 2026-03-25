@@ -1,33 +1,29 @@
 <script setup lang="ts">
-import { ref, provide, onMounted, onUnmounted } from 'vue';
+import { ref, provide, onMounted, onUnmounted, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { SearchInput } from "@spotlight/input";
-import { SearchList, PluginPanel } from "@spotlight/panel";
 import { pluginRegistry, registerAllPlugins, recentPlugin } from "./plugins";
 import { provideI18n, setLocale } from "@spotlight/i18n";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
-import type { SearchResultItem, SearchResultItemContext, PanelContext } from "@spotlight/core";
-import { panelContext } from "@spotlight/core";
-import type { Component } from 'vue';
+import type { SearchResultItem, PanelContext } from "@spotlight/core";
+import { panelContext, ROUTE_NAMES } from "@spotlight/core";
 import logger from '@spotlight/logger';
 
 provideI18n();
 
 registerAllPlugins();
 
+const router = useRouter();
+const route = useRoute();
+
 const query = ref('');
 const files = ref<FileItem[]>([]);
-const searchResults = ref<SearchResultItem[]>([]);
-const activePanelComponent = ref<Component | null>(null);
-const activePluginName = ref<string | undefined>(undefined);
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 
-const setPanel = (component: Component, pluginName: string) => {
-  activePanelComponent.value = component;
-  activePluginName.value = pluginName;
-  return pluginName;
-};
+const isPanelMode = computed(() => !!route.params.pluginId);
+const activePluginName = computed(() => route.params.pluginId as string | undefined);
 
 const clearQuery = () => {
   query.value = '';
@@ -37,23 +33,11 @@ provide(panelContext, {
   query,
   files,
   clearQuery,
+  router,
 } as PanelContext);
-
-const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
-  if (!searchQuery.trim()) {
-    const results = await recentPlugin.search({ query: searchQuery, files: searchFiles });
-    searchResults.value = results;
-  } else {
-    const results = await pluginRegistry.search({ query: searchQuery, files: searchFiles });
-    searchResults.value = results;
-  }
-};
 
 const handleSelect = async (item: SearchResultItem) => {
   logger.info(`[App] handleSelect called for: ${item.title}, pluginId: ${item.pluginId}, actionId: ${item.actionId}`);
-  const ctx: SearchResultItemContext = {
-    setPanel,
-  };
 
   if (item.pluginId && item.actionId !== undefined) {
     logger.info(`[App] Recording selection for recent: ${item.title}`);
@@ -73,15 +57,13 @@ const handleSelect = async (item: SearchResultItem) => {
       pluginId: item.pluginId,
       actionId: item.actionId,
       data: item.actionData,
-      ctx,
     });
     logger.info(`[App] executeAction completed for: ${item.title}`);
   }
 };
 
 const handleClosePanel = () => {
-  activePanelComponent.value = null;
-  activePluginName.value = undefined;
+  router.push({ name: ROUTE_NAMES.SEARCH });
 };
 
 let resizeObserver: ResizeObserver | null = null;
@@ -121,10 +103,6 @@ onMounted(async () => {
   const enabledPlugins = plugins.filter((p) => !disabledPlugins.includes(p.pluginId));
   await Promise.all(enabledPlugins.map((plugin) => plugin.onMount?.()));
 
-  // Initial search with recent items
-  const initialResults = await recentPlugin.search({ query: '', files: [] });
-  searchResults.value = initialResults;
-
   resizeObserver = new ResizeObserver(() => {
     if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = setTimeout(performResize, 16);
@@ -155,23 +133,11 @@ onUnmounted(async () => {
       ref="searchInputRef"
       v-model="query"
       v-model:files="files"
-      :is-panel-mode="!!activePanelComponent"
+      :is-panel-mode="isPanelMode"
       :plugin-name="activePluginName"
-      @search="handleSearch"
       @back="handleClosePanel"
     />
-    <SearchList
-      v-if="!activePanelComponent"
-      :query="query"
-      :files="files"
-      :search-results="searchResults"
-      @select="handleSelect"
-    />
-    <PluginPanel
-      v-else
-      :component="activePanelComponent"
-      @close="handleClosePanel"
-    />
+    <RouterView @select="handleSelect" />
   </main>
 </template>
 

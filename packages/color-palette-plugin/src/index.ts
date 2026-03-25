@@ -1,7 +1,6 @@
-import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
+import { BasePlugin, usePanelContext } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { isColorString, normalizeColor } from './utils/colorUtils';
@@ -32,11 +31,8 @@ export class ColorPalettePlugin extends BasePlugin {
 
   registerAction(): PluginActions {
     return {
-      [ACTION_OPEN]: async (_data, ctx) => {
-        const component = await this.render({ query: '' });
-        if (component) {
-          ctx.setPanel(component, this.name);
-        }
+      [ACTION_OPEN]: async () => {
+        usePanelContext().router.push({ name: this.pluginId });
       },
     };
   }
@@ -81,8 +77,8 @@ export class ColorPalettePlugin extends BasePlugin {
     ];
   }
 
-  async render(_params: RenderParams): Promise<Component | null> {
-    return defineAsyncComponent(() => import('./components/ColorPalettePanel.vue'));
+  getPanelComponentLoader(): () => Promise<Component> {
+    return () => import('./components/ColorPalettePanel.vue');
   }
 }
 

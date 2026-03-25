@@ -1,5 +1,6 @@
-import type { BasePlugin, SearchResultItem, SearchParams, RenderParams, SearchResultItemContext } from '@spotlight/core';
-import type { Component } from 'vue';
+import type { BasePlugin, SearchResultItem, SearchParams } from '@spotlight/core';
+import { getPanelRouteName } from '@spotlight/core';
+import type { Router, RouteRecordRaw } from 'vue-router';
 import logger from '@spotlight/logger';
 import { calculateDetailedScore } from './scorer';
 
@@ -16,9 +17,28 @@ interface ScoredResult {
 export class PluginRegistry {
   private plugins: BasePlugin[] = [];
   private disabledPlugins: Set<string> = new Set();
+  private router: Router | null = null;
+
+  setRouter(router: Router): void {
+    this.router = router;
+  }
 
   register(plugin: BasePlugin): void {
     this.plugins.push(plugin);
+
+    // Dynamically register the plugin's panel route if it has one
+    if (this.router && plugin.getPanelComponentLoader) {
+      const loader = plugin.getPanelComponentLoader();
+      if (loader) {
+        const route: RouteRecordRaw = {
+          path: `/panel/${plugin.pluginId}`,
+          name: getPanelRouteName(plugin.pluginId),
+          component: loader,
+        };
+        this.router.addRoute(route);
+        logger.info(`[PluginRegistry] Registered route for plugin: ${plugin.pluginId}`);
+      }
+    }
   }
 
   unregister(name: string): void {
@@ -60,11 +80,15 @@ export class PluginRegistry {
     return this.plugins.find((p) => p.pluginId === pluginId);
   }
 
+  getPlugin(pluginId: string): BasePlugin | undefined {
+    return this.getPluginById(pluginId);
+  }
+
   private isPluginDisabled(pluginId: string): boolean {
     return this.disabledPlugins.has(pluginId);
   }
 
-  async executeAction(params: { pluginId: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
+  async executeAction(params: { pluginId: string; actionId: string; data: unknown }): Promise<void> {
     const plugin = this.getPluginById(params.pluginId);
     if (!plugin) {
       logger.warn(`[PluginRegistry] Plugin not found: ${params.pluginId}`);
@@ -75,7 +99,7 @@ export class PluginRegistry {
     const handler = actions[params.actionId];
     if (handler) {
       logger.info(`[PluginRegistry] Executing action: ${params.pluginId}:${params.actionId}`);
-      await handler(params.data, params.ctx);
+      await handler(params.data);
     } else {
       logger.warn(`[PluginRegistry] No handler found for action: ${params.pluginId}:${params.actionId}`);
     }
@@ -141,11 +165,6 @@ export class PluginRegistry {
     }
 
     return uniqueResults;
-  }
-
-  async render(pluginName: string, params: RenderParams): Promise<Component | null> {
-    const plugin = this.plugins.find((p) => p.name === pluginName);
-    return plugin?.render(params) ?? null;
   }
 
   getPlugins(): BasePlugin[] {

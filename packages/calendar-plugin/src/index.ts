@@ -1,7 +1,6 @@
-import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
+import { BasePlugin, usePanelContext } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -29,11 +28,8 @@ export class CalendarPlugin extends BasePlugin {
 
   registerAction(): PluginActions {
     return {
-      [ACTION_OPEN]: async (_data, ctx) => {
-        const component = await this.render({ query: '' });
-        if (component) {
-          ctx.setPanel(component, this.name);
-        }
+      [ACTION_OPEN]: async () => {
+        usePanelContext().router.push({ name: this.pluginId });
       },
     };
   }
@@ -90,8 +86,8 @@ export class CalendarPlugin extends BasePlugin {
     return [];
   }
 
-  async render(_params: RenderParams): Promise<Component | null> {
-    return defineAsyncComponent(() => import('./components/CalendarPanel.vue'));
+  getPanelComponentLoader(): () => Promise<Component> {
+    return () => import('./components/CalendarPanel.vue');
   }
 }
 

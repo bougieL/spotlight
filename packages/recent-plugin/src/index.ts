@@ -1,5 +1,4 @@
-import { defineAsyncComponent, type Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
@@ -136,10 +135,6 @@ export class RecentPlugin extends BasePlugin {
         actionData: item.actionData,
       };
     });
-  }
-
-  async render(_params: RenderParams): Promise<Component | null> {
-    return defineAsyncComponent(() => import('./components/RecentPanel.vue'));
   }
 }
 

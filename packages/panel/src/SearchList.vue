@@ -2,21 +2,18 @@
 import { FileText, Image, Package } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { translations, useLocale } from '@spotlight/i18n';
-import type { FileItem, SearchResultItem } from '@spotlight/core';
-
-interface Props {
-  query: string;
-  files: FileItem[];
-  searchResults: SearchResultItem[];
-}
-
-const props = defineProps<Props>();
+import type { SearchResultItem } from '@spotlight/core';
+import { usePanelContext } from '@spotlight/core';
+import { recentPlugin } from '@spotlight/recent-plugin';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
   (e: 'select', item: SearchResultItem): void;
 }>();
 
+const { query, files } = usePanelContext();
+const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
 const locale = useLocale();
 
@@ -24,11 +21,29 @@ const translateTitle = (title: string): string => {
   return translations[locale.value][title] ?? title;
 };
 
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+const SEARCH_DEBOUNCE_MS = 150;
+
+const performSearch = async () => {
+  const q = query.value;
+  const f = files.value;
+  if (!q.trim()) {
+    const results = await recentPlugin.search({ query: q, files: f });
+    searchResults.value = results;
+  } else {
+    const results = await pluginRegistry.search({ query: q, files: f });
+    searchResults.value = results;
+  }
+};
+
 watch(
-  () => props.searchResults,
+  () => query.value,
   () => {
     selectedIndex.value = 0;
-  }
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(performSearch, SEARCH_DEBOUNCE_MS);
+  },
+  { immediate: true }
 );
 
 const selectItem = (item: SearchResultItem) => {
@@ -36,29 +51,29 @@ const selectItem = (item: SearchResultItem) => {
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (props.searchResults.length === 0) return;
+  if (searchResults.value.length === 0) return;
 
   // Handle Ctrl+1-9 shortcuts
   if (event.ctrlKey && event.key >= '1' && event.key <= '9') {
     const index = parseInt(event.key) - 1;
-    if (index < props.searchResults.length) {
+    if (index < searchResults.value.length) {
       event.preventDefault();
-      selectItem(props.searchResults[index]);
+      selectItem(searchResults.value[index]);
     }
     return;
   }
 
   if (event.key === 'ArrowDown') {
     event.preventDefault();
-    selectedIndex.value = (selectedIndex.value + 1) % props.searchResults.length;
+    selectedIndex.value = (selectedIndex.value + 1) % searchResults.value.length;
   } else if (event.key === 'ArrowUp') {
     event.preventDefault();
     selectedIndex.value = selectedIndex.value === 0
-      ? props.searchResults.length - 1
+      ? searchResults.value.length - 1
       : selectedIndex.value - 1;
   } else if (event.key === 'Enter') {
     event.preventDefault();
-    const selectedItem = props.searchResults[selectedIndex.value];
+    const selectedItem = searchResults.value[selectedIndex.value];
     if (selectedItem) {
       selectItem(selectedItem);
     }
@@ -71,6 +86,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+  if (searchTimer) clearTimeout(searchTimer);
 });
 </script>
 

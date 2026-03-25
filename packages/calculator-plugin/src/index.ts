@@ -1,7 +1,6 @@
-import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
+import { BasePlugin, usePanelContext } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -35,13 +34,10 @@ export class CalculatorPlugin extends BasePlugin {
 
   registerAction(): PluginActions {
     return {
-      [ACTION_OPEN]: async (_data, ctx) => {
-        const component = await this.render({ query: '' });
-        if (component) {
-          ctx.setPanel(component, this.name);
-        }
+      [ACTION_OPEN]: async () => {
+        usePanelContext().router.push({ name: this.pluginId });
       },
-      [ACTION_CALCULATE]: async (data, ctx) => {
+      [ACTION_CALCULATE]: async (data) => {
         if (typeof data !== 'string') return;
         try {
           await navigator.clipboard.writeText(data);
@@ -49,10 +45,7 @@ export class CalculatorPlugin extends BasePlugin {
         } catch (error) {
           logger.error('Failed to copy to clipboard:', error);
         }
-        const component = await this.render({ query: data });
-        if (component) {
-          ctx.setPanel(component, this.name);
-        }
+        usePanelContext().router.push({ name: this.pluginId });
       },
     };
   }
@@ -189,8 +182,8 @@ export class CalculatorPlugin extends BasePlugin {
     ];
   }
 
-  async render(_params: RenderParams): Promise<Component | null> {
-    return defineAsyncComponent(() => import('./components/CalculatorPanel.vue'));
+  getPanelComponentLoader(): () => Promise<Component> {
+    return () => import('./components/CalculatorPanel.vue');
   }
 }
 

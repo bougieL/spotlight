@@ -1,5 +1,4 @@
-import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
@@ -242,10 +241,6 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       actionId: ACTION_OPEN,
       actionData: cb.bookmark.url,
     }));
-  }
-
-  async render(_params: RenderParams): Promise<Component | null> {
-    return null;
   }
 }
 

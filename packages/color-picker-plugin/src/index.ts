@@ -1,5 +1,4 @@
-import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { tauriApi } from '@spotlight/api';
@@ -58,10 +57,6 @@ export class ColorPickerPlugin extends BasePlugin {
     }
 
     return [];
-  }
-
-  async render(_params: RenderParams): Promise<Component | null> {
-    return null;
   }
 
   async startColorPicker(): Promise<void> {

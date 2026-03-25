@@ -22,8 +22,8 @@
     "@spotlight/calendar-plugin": "*",
     "@spotlight/chrome-bookmarks-plugin": "*",
     "@spotlight/clipboard-plugin": "*",
-    "@spotlight/color-picker-plugin": "*",
     "@spotlight/color-palette-plugin": "*",
+    "@spotlight/color-picker-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",
     "@spotlight/i18n": "*",
@@ -38,7 +38,8 @@
     "@tauri-apps/plugin-http": "^2.5.7",
     "lucide-vue-next": "^0.577.0",
     "pinyin-pro": "^3.24.0",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
