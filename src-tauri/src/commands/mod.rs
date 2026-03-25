@@ -1,4 +1,5 @@
 pub mod apps;
+pub mod autostart;
 pub mod chrome;
 pub mod clipboard;
 pub mod file;
@@ -11,6 +12,7 @@ pub mod storage;
 pub mod window;
 
 pub use apps::{get_app_icon, get_installed_applications};
+pub use autostart::{get_autostart_enabled, set_autostart_enabled};
 pub use chrome::get_chrome_bookmarks;
 pub use clipboard::{
     get_clipboard_file_paths, get_clipboard_image, get_clipboard_text, set_clipboard_files,

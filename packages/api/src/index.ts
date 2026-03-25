@@ -37,6 +37,8 @@ export interface TauriApi {
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   executeShellCommand: (command: string) => Promise<void>;
+  getAutostartEnabled: () => Promise<boolean>;
+  setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
 }
 
@@ -93,6 +95,10 @@ export const tauriApi: TauriApi = {
   getChromeBookmarks: () => invoke<ChromeBookmark[]>('get_chrome_bookmarks'),
 
   executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
+
+  getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
+
+  setAutostartEnabled: (enabled: boolean) => invoke<void>('set_autostart_enabled', { enabled }),
 
   convertFileSrc,
 };

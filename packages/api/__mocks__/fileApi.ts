@@ -63,6 +63,16 @@ export async function getChromeBookmarks(): Promise<ChromeBookmark[]> {
   ];
 }
 
+let mockAutostartEnabled = false;
+
+export async function getAutostartEnabled(): Promise<boolean> {
+  return mockAutostartEnabled;
+}
+
+export async function setAutostartEnabled(enabled: boolean): Promise<void> {
+  mockAutostartEnabled = enabled;
+}
+
 const MOCK_SETTINGS_PREFIX = 'mock_plugin_settings_';
 
 export async function invokeCommand(command: string, args?: Record<string, unknown>) {
@@ -91,6 +101,10 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'write_plugin_settings':
       localStorage.setItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`, args?.settings as string);
       return Promise.resolve();
+    case 'get_autostart_enabled':
+      return getAutostartEnabled();
+    case 'set_autostart_enabled':
+      return setAutostartEnabled(args?.enabled as boolean);
     default:
       return invoke(command, args);
   }

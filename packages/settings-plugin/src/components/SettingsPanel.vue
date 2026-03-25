@@ -25,6 +25,7 @@ const currentLanguage = ref<Locale>('en-US');
 const currentHotkey = ref('Alt+Space');
 const hotkeyError = ref<string | null>(null);
 const disabledPlugins = ref<Set<string>>(new Set());
+const autostartEnabled = ref(false);
 
 const allPlugins = computed(() => pluginRegistry.getPlugins());
 
@@ -42,6 +43,11 @@ async function togglePlugin(pluginId: string, disabled: boolean): Promise<void> 
   const newDisabledList = await settingsPlugin.getDisabledPlugins();
   await pluginRegistry.setDisabledPlugins(newDisabledList);
   disabledPlugins.value = new Set(newDisabledList);
+}
+
+async function toggleAutostart(enabled: boolean): Promise<void> {
+  await settingsPlugin.setAutostartEnabled(enabled);
+  autostartEnabled.value = enabled;
 }
 
 const themeOptions: { value: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
@@ -99,6 +105,9 @@ onMounted(async () => {
   // Load disabled plugins
   const disabled = await settingsPlugin.getDisabledPlugins();
   disabledPlugins.value = new Set(disabled);
+
+  // Load autostart setting
+  autostartEnabled.value = await settingsPlugin.getAutostartEnabled();
 });
 </script>
 
@@ -140,6 +149,19 @@ onMounted(async () => {
       <HotkeyPicker v-model="currentHotkey" :error="hotkeyError" @update:model-value="updateHotkey" />
       <p v-if="hotkeyError" class="shortcut-error">{{ hotkeyError }}</p>
       <p v-else class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
+    </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">{{ t('settings.autostart') }}</h3>
+      <div class="autostart-item">
+        <div class="autostart-info">
+          <span class="autostart-name">{{ t('settings.autostart.enable') }}</span>
+        </div>
+        <BaseSwitch
+          :model-value="autostartEnabled"
+          @update:model-value="toggleAutostart($event as boolean)"
+        />
+      </div>
     </section>
 
     <section class="settings-section">
@@ -278,5 +300,27 @@ onMounted(async () => {
 .plugin-description {
   font-size: 12px;
   color: var(--spotlight-placeholder);
+}
+
+.autostart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--spotlight-border);
+  border-radius: 8px;
+  background-color: var(--spotlight-item-hover);
+}
+
+.autostart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.autostart-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--spotlight-text);
 }
 </style>

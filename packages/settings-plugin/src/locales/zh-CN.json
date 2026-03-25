@@ -13,6 +13,8 @@
   "settings.shortcut.pressKeys": "请按下组合键...",
   "settings.shortcut.altSpaceError": "Alt+Space 在 Windows 上无法使用",
   "settings.shortcut.reset": "重置为 Alt+Space",
+  "settings.autostart": "开机自启",
+  "settings.autostart.enable": "开机时启动 Spotlight",
   "settings.plugins": "插件管理",
   "settings.plugins.description": "启用或禁用插件"
 }

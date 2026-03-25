@@ -60,9 +60,9 @@ export default defineConfig(async () => ({
         server.middlewares.use((req, res, next) => {
           const url = req.url.split("?")[0];
 
-          // Handle /src/plugins/{plugin}/ path -> transform TS via Vite
-          if (url.startsWith("/src/plugins/")) {
-            const relativePath = url.replace("/src/plugins/", "");
+          // Handle /plugins/{plugin}/ path -> transform TS via Vite
+          if (url.startsWith("/plugins/") && !url.startsWith("/plugins-public/")) {
+            const relativePath = url.replace("/plugins/", "");
             const parts = relativePath.split("/");
             const pluginName = parts[0];
             const filePath = join(__dirname, "packages", pluginName, "src", parts.slice(1).join("/"));

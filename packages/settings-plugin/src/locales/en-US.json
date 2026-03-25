@@ -13,6 +13,8 @@
   "settings.shortcut.pressKeys": "Press keys...",
   "settings.shortcut.altSpaceError": "Alt+Space cannot be used on Windows",
   "settings.shortcut.reset": "Reset to Alt+Space",
+  "settings.autostart": "Auto Start",
+  "settings.autostart.enable": "Launch on system startup",
   "settings.plugins": "Plugins",
   "settings.plugins.description": "Enable or disable plugins"
 }

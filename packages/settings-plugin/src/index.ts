@@ -129,6 +129,15 @@ export class SettingsPlugin extends BasePlugin {
     return await this.storage.get<string[]>(DISABLED_PLUGINS_KEY, []);
   }
 
+  async getAutostartEnabled(): Promise<boolean> {
+    return await this.storage.get<boolean>('autostart', false);
+  }
+
+  async setAutostartEnabled(enabled: boolean): Promise<void> {
+    await this.storage.set<boolean>('autostart', enabled);
+    await tauriApi.setAutostartEnabled(enabled);
+  }
+
   async setPluginDisabled(pluginId: string, disabled: boolean): Promise<void> {
     const disabledPlugins = await this.getDisabledPlugins();
     if (disabled) {
