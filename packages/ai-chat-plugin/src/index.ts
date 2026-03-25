@@ -1,6 +1,5 @@
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import { MessageSquare } from 'lucide-vue-next';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
@@ -8,6 +7,8 @@ import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
+
+const aiChatIconUrl = new URL('./assets/icons/message-square.svg', import.meta.url).href;
 
 import type {
   ModelConfig,
@@ -188,8 +189,7 @@ export class AIChatPlugin extends BasePlugin {
 
     return [
       {
-        icon: MessageSquare,
-        iconComponentName: 'MessageSquare',
+        iconUrl: aiChatIconUrl,
         title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,

@@ -1,4 +1,3 @@
-import { Pipette } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
@@ -13,6 +12,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const colorPickerIconUrl = new URL('./assets/icons/pipette.svg', import.meta.url).href;
 
 const ACTION_PICK = 'pick';
 const OVERLAY_WINDOW_LABEL = 'color-picker-overlay';
@@ -50,8 +51,7 @@ export class ColorPickerPlugin extends BasePlugin {
     if (isKeywordMatch) {
       return [
         {
-          icon: Pipette,
-          iconComponentName: 'Pipette',
+          iconUrl: colorPickerIconUrl,
           title: this.name,
           score: 900,
           sourcePlugin: this.pluginId,

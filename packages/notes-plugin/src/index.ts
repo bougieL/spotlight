@@ -1,4 +1,3 @@
-import { FileText } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -13,6 +12,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const notesIconUrl = new URL('./assets/icons/file-text.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'notes_data';
 const PLUGIN_NAME = 'notes';
@@ -175,8 +176,7 @@ export class NotesPlugin extends BasePlugin {
 
     return [
       {
-        icon: FileText,
-        iconComponentName: 'FileText',
+        iconUrl: notesIconUrl,
         title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,

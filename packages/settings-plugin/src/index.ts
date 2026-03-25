@@ -1,4 +1,3 @@
-import { Settings } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -17,6 +16,8 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export interface ThemeSetting {
   mode: ThemeMode;
 }
+
+const settingsIconUrl = new URL('./assets/icons/settings.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'settings';
 const ACTION_OPEN = 'open';
@@ -106,8 +107,7 @@ export class SettingsPlugin extends BasePlugin {
 
     return [
       {
-        icon: Settings,
-        iconComponentName: 'Settings',
+        iconUrl: settingsIconUrl,
         title: this.name,
         score: 1000,
         sourcePlugin: PLUGIN_NAME,

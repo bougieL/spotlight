@@ -1,4 +1,3 @@
-import { Calculator } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -14,6 +13,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const calculatorIconUrl = new URL('./assets/icons/calculator.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'calculator_expressions';
 const PLUGIN_NAME = 'calculator';
@@ -149,8 +150,7 @@ export class CalculatorPlugin extends BasePlugin {
     if (isKeywordMatch) {
       return [
         {
-          icon: Calculator,
-          iconComponentName: 'Calculator',
+          iconUrl: calculatorIconUrl,
           title: this.name,
           score: 900,
           sourcePlugin: PLUGIN_NAME,
@@ -185,8 +185,7 @@ export class CalculatorPlugin extends BasePlugin {
 
     return [
       {
-        icon: Calculator,
-        iconComponentName: 'Calculator',
+        iconUrl: calculatorIconUrl,
         title: `${displayExpression} = ${formattedResult}`,
         score: 1000,
         sourcePlugin: PLUGIN_NAME,

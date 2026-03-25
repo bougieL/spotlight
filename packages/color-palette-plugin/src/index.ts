@@ -1,4 +1,3 @@
-import { Palette } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -13,6 +12,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const paletteIconUrl = new URL('./assets/icons/palette.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'colorPalette';
 const ACTION_OPEN = 'open';
@@ -68,8 +69,7 @@ export class ColorPalettePlugin extends BasePlugin {
 
     return [
       {
-        icon: Palette,
-        iconComponentName: 'Palette',
+        iconUrl: paletteIconUrl,
         title,
         score: isColorMatch ? 950 : 900,
         sourcePlugin: PLUGIN_NAME,

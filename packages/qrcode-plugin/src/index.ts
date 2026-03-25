@@ -1,4 +1,3 @@
-import { QrCode } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -12,6 +11,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const qrcodeIconUrl = new URL('./assets/icons/qr-code.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'qrcode';
 const ACTION_OPEN = 'open';
@@ -55,8 +56,7 @@ export class QrCodePlugin extends BasePlugin {
 
     return [
       {
-        icon: QrCode,
-        iconComponentName: 'QrCode',
+        iconUrl: qrcodeIconUrl,
         title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,

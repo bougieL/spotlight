@@ -1,4 +1,3 @@
-import { Clipboard } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -14,6 +13,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const clipboardIconUrl = new URL('./assets/icons/clipboard.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'clipboard_data';
 const PLUGIN_NAME = 'clipboard';
@@ -237,8 +238,7 @@ export class ClipboardPlugin extends BasePlugin {
 
     return [
       {
-        icon: Clipboard,
-        iconComponentName: 'Clipboard',
+        iconUrl: clipboardIconUrl,
         title: this.name,
         score: 900,
         sourcePlugin: PLUGIN_NAME,

@@ -1,4 +1,3 @@
-import { Clock, Calculator, Clipboard, Calendar, Settings, FileText, Search } from 'lucide-vue-next';
 import { defineAsyncComponent, type Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
@@ -14,15 +13,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const ICON_COMPONENTS: Record<string, Component> = {
-  Clock,
-  Calculator,
-  Clipboard,
-  Calendar,
-  Settings,
-  FileText,
-  Search,
-};
+const recentIconUrl = new URL('./assets/icons/clock.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'recent_items';
 const PLUGIN_NAME = 'recent';
@@ -125,7 +116,7 @@ export class RecentPlugin extends BasePlugin {
     if (items.length === 0) {
       return [
         {
-          icon: Clock,
+          iconUrl: recentIconUrl,
           title: this.name,
           desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
           score: 900,
@@ -138,9 +129,7 @@ export class RecentPlugin extends BasePlugin {
     }
 
     return items.map((item): SearchResultItem => {
-      const icon = item.iconUrl ? undefined : (item.iconComponentName ? ICON_COMPONENTS[item.iconComponentName] : undefined);
       return {
-        icon,
         iconUrl: item.iconUrl,
         title: item.title,
         desc: item.desc || formatTime(item.timestamp),

@@ -1,4 +1,3 @@
-import { Calendar } from 'lucide-vue-next';
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
 import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
@@ -12,6 +11,8 @@ registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const calendarIconUrl = new URL('./assets/icons/calendar.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'calendar';
 const ACTION_OPEN = 'open';
@@ -57,8 +58,7 @@ export class CalendarPlugin extends BasePlugin {
     if (isKeywordMatch) {
       return [
         {
-          icon: Calendar,
-          iconComponentName: 'Calendar',
+          iconUrl: calendarIconUrl,
           title: this.name,
           score: 900,
           sourcePlugin: PLUGIN_NAME,
@@ -79,8 +79,7 @@ export class CalendarPlugin extends BasePlugin {
     if (datePattern.test(params.query.trim())) {
       return [
         {
-          icon: Calendar,
-          iconComponentName: 'Calendar',
+          iconUrl: calendarIconUrl,
           title: `${params.query}`,
           desc: this.name,
           score: 800,
