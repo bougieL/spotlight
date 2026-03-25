@@ -153,7 +153,7 @@ export class ShortcutsPlugin extends BasePlugin {
         iconUrl: shortcutsIconUrl,
         title: item.name,
         desc: item.description || item.command,
-        score: 850,
+        score: 900,
         pluginId: this.pluginId,
         actionId: ACTION_EXECUTE,
         actionData: item,

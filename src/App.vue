@@ -112,6 +112,10 @@ onMounted(async () => {
     logger.warn('Failed to register global shortcut:', error);
   }
 
+  // Mount all plugins (start background tasks)
+  const plugins = pluginRegistry.getPlugins();
+  await Promise.all(plugins.map((plugin) => plugin.onMount?.()));
+
   // Initial search with recent items
   const initialResults = await recentPlugin.search({ query: '', files: [] });
   searchResults.value = initialResults;
@@ -129,10 +133,14 @@ onMounted(async () => {
   });
 });
 
-onUnmounted(() => {
+onUnmounted(async () => {
   resizeObserver?.disconnect();
   if (resizeTimer) clearTimeout(resizeTimer);
   unlistenWindowFocus?.();
+
+  // Unmount all plugins (stop background tasks)
+  const plugins = pluginRegistry.getPlugins();
+  await Promise.all(plugins.map((plugin) => plugin.onUnmount?.()));
 });
 </script>
 

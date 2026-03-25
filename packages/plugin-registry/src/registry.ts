@@ -1,8 +1,11 @@
 import type { BasePlugin, SearchResultItem, SearchParams, RenderParams, SearchResultItemContext } from '@spotlight/core';
 import type { Component } from 'vue';
 import logger from '@spotlight/logger';
+import { calculateDetailedScore } from './scorer';
 
 const MAX_RESULTS_PER_PLUGIN = 5;
+
+const PLUGIN_BASE_SCORE = 500;
 
 interface ScoredResult {
   item: SearchResultItem;
@@ -48,7 +51,14 @@ export class PluginRegistry {
     }
 
     const pluginResults = await Promise.all(
-      this.plugins.map((plugin) => plugin.search(params))
+      this.plugins.map(async (plugin) => {
+        try {
+          return await plugin.search(params);
+        } catch (error) {
+          logger.error(`[PluginRegistry] Plugin "${plugin.name}" search failed:`, error);
+          return [];
+        }
+      })
     );
 
     const scoredResults: ScoredResult[] = [];
@@ -58,19 +68,24 @@ export class PluginRegistry {
       const limit = params.limit ?? MAX_RESULTS_PER_PLUGIN;
 
       for (const item of results.slice(0, limit)) {
-        const score = item.score ?? this.calculateGlobalScore(item, params.query);
-        // Attach pluginId to each item
+        const pluginBaseScore = item.score ?? PLUGIN_BASE_SCORE;
+        const detailedScore = calculateDetailedScore(item, params.query);
+        const finalScore = pluginBaseScore + detailedScore.total;
         const itemWithSource: SearchResultItem = {
           ...item,
           pluginId: item.pluginId ?? this.plugins[pluginIndex].pluginId,
+          score: finalScore,
         };
-        scoredResults.push({ item: itemWithSource, score, pluginIndex });
+        scoredResults.push({ item: itemWithSource, score: finalScore, pluginIndex });
       }
     }
 
     scoredResults.sort((a, b) => {
       if (Math.abs(b.score - a.score) > 0.01) {
         return b.score - a.score;
+      }
+      if (a.item.title.length !== b.item.title.length) {
+        return a.item.title.length - b.item.title.length;
       }
       return a.pluginIndex - b.pluginIndex;
     });
@@ -88,24 +103,6 @@ export class PluginRegistry {
     }
 
     return uniqueResults;
-  }
-
-  private calculateGlobalScore(item: SearchResultItem, query: string): number {
-    const queryLower = query.toLowerCase().trim();
-    const titleLower = item.title.toLowerCase();
-    let score: number;
-
-    if (titleLower === queryLower) {
-      score = 1000;
-    } else if (titleLower.startsWith(queryLower)) {
-      score = 900;
-    } else if (titleLower.includes(queryLower)) {
-      score = 800;
-    } else {
-      score = 700;
-    }
-
-    return score;
   }
 
   async render(pluginName: string, params: RenderParams): Promise<Component | null> {

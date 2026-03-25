@@ -30,6 +30,17 @@ export interface SearchResultItem {
   iconUrl?: string;
   title: string;
   desc?: string;
+  /**
+   * Relevance score for ranking search results.
+   * Higher scores appear higher in results.
+   * - 1000: Exact match (title equals query)
+   * - 900: Prefix match (title starts with query)
+   * - 800: Contains match (title includes query)
+   * - 700: Fallback score (default when not specified)
+   *
+   * If not provided, PluginRegistry will calculate a default score
+   * based on query/title fuzzy matching.
+   */
   score?: number;
   pluginId?: string;
   actionId: string;
@@ -72,6 +83,18 @@ export abstract class BasePlugin implements PluginMetadata {
   abstract render(_params: RenderParams): Promise<Component | null>;
 
   abstract registerAction(): PluginActions;
+
+  /**
+   * Called when the plugin is registered and the app is ready.
+   * Override this to start background tasks or initialize resources.
+   */
+  onMount?(): void | Promise<void>;
+
+  /**
+   * Called when the app is shutting down or the plugin is being unloaded.
+   * Override this to stop background tasks and clean up resources.
+   */
+  onUnmount?(): void | Promise<void>;
 
   getPublicUrl(filePath: string): string {
     const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;

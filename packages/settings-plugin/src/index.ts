@@ -82,7 +82,7 @@ export class SettingsPlugin extends BasePlugin {
       {
         iconUrl: settingsIconUrl,
         title: this.name,
-        score: 1000,
+        score: 900,
         pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,

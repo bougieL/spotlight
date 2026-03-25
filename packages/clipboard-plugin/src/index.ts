@@ -54,11 +54,14 @@ export class ClipboardPlugin extends BasePlugin {
   private unlisten: UnlistenFn | null = null;
   private monitoring = false;
 
-  constructor() {
-    super();
+  onMount(): void {
     this.startMonitoring().catch((err: unknown) => {
       logger.error('Failed to start clipboard monitoring:', err);
     });
+  }
+
+  onUnmount?(): void {
+    this.stopMonitoring();
   }
 
   registerAction(): PluginActions {

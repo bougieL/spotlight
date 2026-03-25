@@ -49,7 +49,8 @@ pub fn run() {
             write_log,
             create_overlay_window,
             close_overlay_window,
-            capture_full_screen
+            capture_full_screen,
+            execute_shell_command
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

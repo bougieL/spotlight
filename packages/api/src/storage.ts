@@ -6,6 +6,7 @@ export interface PluginStorage {
   set<T>(key: string, value: T): Promise<void>;
   remove(key: string): Promise<void>;
   clear(): Promise<void>;
+  flush(): Promise<void>;
 }
 
 async function readSettings(pluginName: string): Promise<string> {
@@ -16,52 +17,78 @@ async function writeSettings(pluginName: string, settings: string): Promise<void
   return invoke<void>('write_plugin_settings', { pluginName, settings });
 }
 
+/**
+ * Creates a cached storage instance that batches writes to reduce I/O.
+ * Changes are kept in memory and flushed to disk periodically or on flush().
+ */
 export function createPluginStorage(pluginName: string): PluginStorage {
+  let cache: Record<string, unknown> | null = null;
+  let cacheLoaded = false;
+  let flushTimer: ReturnType<typeof setTimeout> | null = null;
+  const PENDING_WRITE_DELAY_MS = 1000;
+
+  const loadCache = async (): Promise<void> => {
+    if (cacheLoaded) return;
+    try {
+      const data = await readSettings(pluginName);
+      cache = data ? JSON.parse(data) : {};
+    } catch {
+      cache = {};
+    }
+    cacheLoaded = true;
+  };
+
+  const scheduleFlush = (): void => {
+    if (flushTimer) return;
+    flushTimer = setTimeout(async () => {
+      flushTimer = null;
+      try {
+        await flush();
+      } catch (error) {
+        logger.error(`[Storage] Failed to flush for ${pluginName}:`, error);
+      }
+    }, PENDING_WRITE_DELAY_MS);
+  };
+
+  const flush = async (): Promise<void> => {
+    if (!cacheLoaded || cache === null) return;
+    try {
+      await writeSettings(pluginName, JSON.stringify(cache));
+    } catch (error) {
+      logger.error(`Failed to flush settings for ${pluginName}:`, error);
+    }
+  };
+
   return {
     async get<T>(key: string, defaultValue: T): Promise<T> {
-      try {
-        const data = await readSettings(pluginName);
-        if (!data) {
-          return defaultValue;
-        }
-        const parsed = JSON.parse(data);
-        return parsed[key] ?? defaultValue;
-      } catch {
-        return defaultValue;
-      }
+      await loadCache();
+      return (cache?.[key] as T) ?? defaultValue;
     },
 
     async set<T>(key: string, value: T): Promise<void> {
-      try {
-        const data = await readSettings(pluginName);
-        const parsed = data ? JSON.parse(data) : {};
-        parsed[key] = value;
-        await writeSettings(pluginName, JSON.stringify(parsed));
-      } catch (error) {
-        logger.error(`Failed to save setting for ${pluginName}.${key}:`, error);
-      }
+      await loadCache();
+      cache![key] = value;
+      scheduleFlush();
     },
 
     async remove(key: string): Promise<void> {
-      try {
-        const data = await readSettings(pluginName);
-        if (!data) {
-          return;
-        }
-        const parsed = JSON.parse(data);
-        delete parsed[key];
-        await writeSettings(pluginName, JSON.stringify(parsed));
-      } catch (error) {
-        logger.error(`Failed to remove setting for ${pluginName}.${key}:`, error);
-      }
+      await loadCache();
+      delete cache![key];
+      scheduleFlush();
     },
 
     async clear(): Promise<void> {
-      try {
-        await writeSettings(pluginName, JSON.stringify({}));
-      } catch (_error) {
-        logger.error(`Failed to clear settings for ${pluginName}`);
+      await loadCache();
+      cache = {};
+      scheduleFlush();
+    },
+
+    async flush(): Promise<void> {
+      if (flushTimer) {
+        clearTimeout(flushTimer);
+        flushTimer = null;
       }
+      await flush();
     },
   };
 }

@@ -68,7 +68,7 @@ export class JsonPlugin extends BasePlugin {
           iconUrl: jsonIconUrl,
           title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
-          score: 850,
+          score: 900,
           pluginId: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,

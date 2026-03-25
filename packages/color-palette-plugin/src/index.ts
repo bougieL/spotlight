@@ -73,7 +73,7 @@ export class ColorPalettePlugin extends BasePlugin {
       {
         iconUrl: paletteIconUrl,
         title,
-        score: isColorMatch ? 950 : 900,
+        score: 900,
         pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: normalizedColor,
