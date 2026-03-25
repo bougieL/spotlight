@@ -46,6 +46,7 @@ export default defineConfig(async () => ({
   build: {
     rollupOptions: {
       input: {
+        main: resolve(__dirname, "index.html"),
         colorPicker: resolve(__dirname, "packages/color-picker-plugin/public/color-picker.html"),
       },
     },
