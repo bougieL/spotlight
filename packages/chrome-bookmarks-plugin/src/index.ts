@@ -16,7 +16,6 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const PLUGIN_NAME = 'chrome-bookmarks';
 const ACTION_OPEN = 'open';
 const ACTION_COPY_URL = 'copy-url';
 
@@ -65,7 +64,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
 
   private registerActions(): void {
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (data, _ctx) => {
         logger.info(`[ChromeBookmarksPlugin] Open handler called with data: ${data}`);
@@ -78,7 +77,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
     });
 
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_COPY_URL,
       handler: async (data, _ctx) => {
         logger.info(`[ChromeBookmarksPlugin] Copy URL handler called with data: ${data}`);
@@ -156,7 +155,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         title: query,
         desc: translations[locale]?.['plugin.chrome-bookmarks.open'] ?? 'Open in Chrome',
         iconUrl: chromeIconUrl,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: query,
         action: async (_ctx: SearchResultItemContext) => this.openUrl(query),
@@ -173,7 +172,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         title: cb.bookmark.name,
         desc: cb.bookmark.url,
         iconUrl: chromeIconUrl,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: cb.bookmark.url,
         action: async (_ctx: SearchResultItemContext) => this.openUrl(cb.bookmark.url),
@@ -254,7 +253,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       desc: `${cb.bookmark.folder_path.join(' > ')} (${cb.bookmark.profile})`,
       score,
       iconUrl: chromeIconUrl,
-      sourcePlugin: PLUGIN_NAME,
+      sourcePlugin: this.pluginId,
       actionId: ACTION_OPEN,
       actionData: cb.bookmark.url,
       action: async (_ctx: SearchResultItemContext) => this.openUrl(cb.bookmark.url),

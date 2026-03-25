@@ -4,6 +4,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -14,7 +15,6 @@ registerTranslations({
 
 const calendarIconUrl = new URL('./assets/calendar.svg', import.meta.url).href;
 
-const PLUGIN_NAME = 'calendar';
 const ACTION_OPEN = 'open';
 
 export class CalendarPlugin extends BasePlugin {
@@ -31,7 +31,7 @@ export class CalendarPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -46,22 +46,29 @@ export class CalendarPlugin extends BasePlugin {
     const query = params.query.trim().toLowerCase();
 
     const keywords = [
-      'calendar', 'cal', 'rilian', 'rili',
-      '日历', '日期', '时间', '今天', '明天', '昨天',
-      '节日', '假期', 'holiday', 'date', 'time', 'today',
+      { keyword: 'calendar', normalized: normalizeForSearch('calendar') },
+      { keyword: 'cal', normalized: normalizeForSearch('cal') },
+      { keyword: '日历', normalized: normalizeForSearch('日历'), pinyinInitials: toPinyinInitials('日历') },
+      { keyword: '日期', normalized: normalizeForSearch('日期'), pinyinInitials: toPinyinInitials('日期') },
+      { keyword: '时间', normalized: normalizeForSearch('时间'), pinyinInitials: toPinyinInitials('时间') },
+      { keyword: '今天', normalized: normalizeForSearch('今天'), pinyinInitials: toPinyinInitials('今天') },
+      { keyword: '明天', normalized: normalizeForSearch('明天'), pinyinInitials: toPinyinInitials('明天') },
+      { keyword: '昨天', normalized: normalizeForSearch('昨天'), pinyinInitials: toPinyinInitials('昨天') },
+      { keyword: '节日', normalized: normalizeForSearch('节日'), pinyinInitials: toPinyinInitials('节日') },
+      { keyword: '假期', normalized: normalizeForSearch('假期'), pinyinInitials: toPinyinInitials('假期') },
+      { keyword: 'holiday', normalized: normalizeForSearch('holiday') },
+      { keyword: 'date', normalized: normalizeForSearch('date') },
+      { keyword: 'time', normalized: normalizeForSearch('time') },
+      { keyword: 'today', normalized: normalizeForSearch('today') },
     ];
 
-    const isKeywordMatch = keywords.some(
-      (kw) => kw.toLowerCase().includes(query) || query.includes(kw.toLowerCase())
-    );
-
-    if (isKeywordMatch) {
+    if (matchKeyword(query, keywords)) {
       return [
         {
           iconUrl: calendarIconUrl,
           title: this.name,
           score: 900,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
           action: async (ctx: SearchResultItemContext) => {
@@ -83,7 +90,7 @@ export class CalendarPlugin extends BasePlugin {
           title: `${params.query}`,
           desc: this.name,
           score: 800,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: params.query,
           action: async (ctx: SearchResultItemContext) => {

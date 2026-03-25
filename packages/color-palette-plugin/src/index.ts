@@ -4,6 +4,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { isColorString, normalizeColor } from './utils/colorUtils';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -15,7 +16,6 @@ registerTranslations({
 
 const paletteIconUrl = new URL('./assets/palette.svg', import.meta.url).href;
 
-const PLUGIN_NAME = 'colorPalette';
 const ACTION_OPEN = 'open';
 
 export class ColorPalettePlugin extends BasePlugin {
@@ -34,7 +34,7 @@ export class ColorPalettePlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -52,11 +52,17 @@ export class ColorPalettePlugin extends BasePlugin {
     }
 
     const queryLower = query.toLowerCase();
-    const keywords = ['color', 'palette', 'colour', '色盘', '颜色', 'colors'];
 
-    const isKeywordMatch = keywords.some(
-      (kw) => kw.includes(queryLower) || queryLower.includes(kw)
-    );
+    const keywords = [
+      { keyword: 'color', normalized: normalizeForSearch('color') },
+      { keyword: 'palette', normalized: normalizeForSearch('palette') },
+      { keyword: 'colour', normalized: normalizeForSearch('colour') },
+      { keyword: 'colors', normalized: normalizeForSearch('colors') },
+      { keyword: '色盘', normalized: normalizeForSearch('色盘'), pinyinInitials: toPinyinInitials('色盘') },
+      { keyword: '颜色', normalized: normalizeForSearch('颜色'), pinyinInitials: toPinyinInitials('颜色') },
+    ];
+
+    const isKeywordMatch = matchKeyword(queryLower, keywords);
 
     const isColorMatch = isColorString(query);
 
@@ -72,7 +78,7 @@ export class ColorPalettePlugin extends BasePlugin {
         iconUrl: paletteIconUrl,
         title,
         score: isColorMatch ? 950 : 900,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: normalizedColor,
         action: async (ctx: SearchResultItemContext) => {

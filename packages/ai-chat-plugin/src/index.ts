@@ -57,7 +57,7 @@ export class AIChatPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -192,7 +192,7 @@ export class AIChatPlugin extends BasePlugin {
         iconUrl: aiChatIconUrl,
         title: this.name,
         score: 900,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
         action: async (ctx: SearchResultItemContext) => {

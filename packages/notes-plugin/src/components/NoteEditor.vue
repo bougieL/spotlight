@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { marked } from 'marked';
+import { ref, watch } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import type { Note, Category } from '../index';
 
@@ -40,13 +39,6 @@ watch([title, content, categoryId], () => {
       categoryId: categoryId.value,
     });
   }
-});
-
-const renderedContent = computed(() => {
-  if (!content.value.trim()) {
-    return '<p class="empty-hint">' + t('notes.placeholder') + '</p>';
-  }
-  return marked(content.value);
 });
 </script>
 

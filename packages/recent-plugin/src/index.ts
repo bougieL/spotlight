@@ -5,6 +5,7 @@ import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { formatTime } from '@spotlight/utils';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -101,11 +102,14 @@ export class RecentPlugin extends BasePlugin {
     const query = params.query.trim();
 
     if (query.length > 0) {
-      const keywords = ['recent', 'recently', '最近', '最近使用'];
-      const isKeywordMatch = keywords.some(
-        kw => kw.includes(query.toLowerCase()) || query.toLowerCase().includes(kw)
-      );
-      if (!isKeywordMatch) {
+      const keywords = [
+        { keyword: 'recent', normalized: normalizeForSearch('recent') },
+        { keyword: 'recently', normalized: normalizeForSearch('recently') },
+        { keyword: '最近', normalized: normalizeForSearch('最近'), pinyinInitials: toPinyinInitials('最近') },
+        { keyword: '最近使用', normalized: normalizeForSearch('最近使用'), pinyinInitials: toPinyinInitials('最近使用') },
+      ];
+
+      if (!matchKeyword(query.toLowerCase(), keywords)) {
         return [];
       }
     }
@@ -120,7 +124,7 @@ export class RecentPlugin extends BasePlugin {
           title: this.name,
           desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
           score: 900,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: 'noop',
           actionData: null,
           action: async () => {},

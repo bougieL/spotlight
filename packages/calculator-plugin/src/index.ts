@@ -5,6 +5,7 @@ import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -17,7 +18,6 @@ registerTranslations({
 const calculatorIconUrl = new URL('./assets/calculator.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'calculator_expressions';
-const PLUGIN_NAME = 'calculator';
 const ACTION_OPEN = 'open';
 const ACTION_CALCULATE = 'calculate';
 
@@ -37,7 +37,7 @@ export class CalculatorPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -47,7 +47,7 @@ export class CalculatorPlugin extends BasePlugin {
       },
     });
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_CALCULATE,
       handler: async (data, ctx) => {
         if (typeof data !== 'string') return;
@@ -136,24 +136,27 @@ export class CalculatorPlugin extends BasePlugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
-    const queryLower = query.toLowerCase();
 
-    // Keywords for finding the calculator plugin
+    // Keywords with pinyin support
     const keywords = [
-      'calculator', 'calcul', 'calc', 'jisuan', 'jisuanqi',
-      '计算', '计算器', '数学', 'math', '表达式', 'expression'
+      { keyword: 'calculator', normalized: normalizeForSearch('calculator') },
+      { keyword: 'calcul', normalized: normalizeForSearch('calcul') },
+      { keyword: 'calc', normalized: normalizeForSearch('calc') },
+      { keyword: '计算器', normalized: normalizeForSearch('计算器'), pinyinInitials: toPinyinInitials('计算器') },
+      { keyword: '计算', normalized: normalizeForSearch('计算'), pinyinInitials: toPinyinInitials('计算') },
+      { keyword: '数学', normalized: normalizeForSearch('数学'), pinyinInitials: toPinyinInitials('数学') },
+      { keyword: 'math', normalized: normalizeForSearch('math') },
+      { keyword: 'expression', normalized: normalizeForSearch('expression') },
+      { keyword: '表达式', normalized: normalizeForSearch('表达式'), pinyinInitials: toPinyinInitials('表达式') },
     ];
 
-    // Check if query matches keywords to show the plugin
-    const isKeywordMatch = keywords.some(kw => kw.toLowerCase().includes(queryLower) || queryLower.includes(kw.toLowerCase()));
-
-    if (isKeywordMatch) {
+    if (matchKeyword(query, keywords)) {
       return [
         {
           iconUrl: calculatorIconUrl,
           title: this.name,
           score: 900,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
           action: async (ctx: SearchResultItemContext) => {
@@ -188,7 +191,7 @@ export class CalculatorPlugin extends BasePlugin {
         iconUrl: calculatorIconUrl,
         title: `${displayExpression} = ${formattedResult}`,
         score: 1000,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_CALCULATE,
         actionData: formattedResult,
         action: async (ctx: SearchResultItemContext) => {

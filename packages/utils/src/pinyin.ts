@@ -77,3 +77,28 @@ export function fuzzyMatch(query: string, target: string): number {
 
   return score;
 }
+
+export interface KeywordSearchItem {
+  keyword: string;
+  normalized?: string;
+  pinyinInitials?: string;
+}
+
+export function matchKeyword(query: string, keywords: KeywordSearchItem[]): boolean {
+  const lowerQuery = query.toLowerCase();
+  return keywords.some(({ keyword, normalized, pinyinInitials }) => {
+    if (keyword.toLowerCase().includes(lowerQuery) || lowerQuery.includes(keyword.toLowerCase())) {
+      return true;
+    }
+    if (normalized && normalized.includes(lowerQuery)) {
+      return true;
+    }
+    if (pinyinInitials && pinyinInitials.toLowerCase().includes(lowerQuery)) {
+      return true;
+    }
+    if (pinyinInitials && fuzzyMatch(lowerQuery, pinyinInitials) > 0) {
+      return true;
+    }
+    return false;
+  });
+}

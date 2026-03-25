@@ -32,7 +32,7 @@ export class ColorPickerPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: this.pluginId,
+      pluginId: this.pluginId,
       actionId: ACTION_PICK,
       handler: async () => {
         await this.startColorPicker();

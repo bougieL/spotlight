@@ -4,6 +4,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -14,7 +15,6 @@ registerTranslations({
 
 const qrcodeIconUrl = new URL('./assets/qrcode.svg', import.meta.url).href;
 
-const PLUGIN_NAME = 'qrcode';
 const ACTION_OPEN = 'open';
 
 export class QrCodePlugin extends BasePlugin {
@@ -31,7 +31,7 @@ export class QrCodePlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -44,13 +44,15 @@ export class QrCodePlugin extends BasePlugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
-    const keywords = ['qr', 'qrcode', 'qr code', '二维码', 'erweima'];
 
-    const isKeywordMatch = keywords.some(
-      (kw) => kw.includes(query) || query.includes(kw)
-    );
+    const keywords = [
+      { keyword: 'qr', normalized: normalizeForSearch('qr') },
+      { keyword: 'qrcode', normalized: normalizeForSearch('qrcode') },
+      { keyword: 'qr code', normalized: normalizeForSearch('qr code') },
+      { keyword: '二维码', normalized: normalizeForSearch('二维码'), pinyinInitials: toPinyinInitials('二维码') },
+    ];
 
-    if (!isKeywordMatch && query.length > 0) {
+    if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];
     }
 
@@ -59,7 +61,7 @@ export class QrCodePlugin extends BasePlugin {
         iconUrl: qrcodeIconUrl,
         title: this.name,
         score: 900,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
         action: async (ctx: SearchResultItemContext) => {

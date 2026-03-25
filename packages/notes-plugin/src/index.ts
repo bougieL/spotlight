@@ -5,6 +5,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -60,7 +61,7 @@ export class NotesPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -162,15 +163,16 @@ export class NotesPlugin extends BasePlugin {
     const query = params.query.trim().toLowerCase();
 
     const keywords = [
-      'note', 'notes', '笔记', 'note',
-      'markdown', 'md', '文档', 'document'
+      { keyword: 'note', normalized: normalizeForSearch('note') },
+      { keyword: 'notes', normalized: normalizeForSearch('notes') },
+      { keyword: '笔记', normalized: normalizeForSearch('笔记'), pinyinInitials: toPinyinInitials('笔记') },
+      { keyword: 'markdown', normalized: normalizeForSearch('markdown') },
+      { keyword: 'md', normalized: normalizeForSearch('md') },
+      { keyword: '文档', normalized: normalizeForSearch('文档'), pinyinInitials: toPinyinInitials('文档') },
+      { keyword: 'document', normalized: normalizeForSearch('document') },
     ];
 
-    const isKeywordMatch = keywords.some(
-      kw => kw.includes(query) || query.includes(kw)
-    );
-
-    if (!isKeywordMatch && query.length > 0) {
+    if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];
     }
 
@@ -179,7 +181,7 @@ export class NotesPlugin extends BasePlugin {
         iconUrl: notesIconUrl,
         title: this.name,
         score: 900,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
         action: async (ctx: SearchResultItemContext) => {

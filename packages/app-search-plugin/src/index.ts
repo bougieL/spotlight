@@ -14,7 +14,6 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const PLUGIN_NAME = 'app-search';
 const ACTION_LAUNCH = 'launch';
 
 const CHINESE_APP_NAMES: Record<string, string> = {
@@ -66,7 +65,7 @@ export class AppSearchPlugin extends BasePlugin {
     super();
     // Register action handlers
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_LAUNCH,
       handler: async (data, _ctx) => {
         logger.info(`[AppSearchPlugin] Launch handler called with data: ${data}`);
@@ -168,7 +167,7 @@ export class AppSearchPlugin extends BasePlugin {
       return apps.slice(0, limit).map((app) => ({
         title: app.info.name,
         desc: app.info.path,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_LAUNCH,
         actionData: app.info.path,
         action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
@@ -246,7 +245,7 @@ export class AppSearchPlugin extends BasePlugin {
       title: app.info.name,
       desc: app.info.path,
       score,
-      sourcePlugin: PLUGIN_NAME,
+      sourcePlugin: this.pluginId,
       actionId: ACTION_LAUNCH,
       actionData: app.info.path,
       action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),

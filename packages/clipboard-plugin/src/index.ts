@@ -5,6 +5,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
 import { pluginRegistry } from '@spotlight/plugin-registry';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -58,7 +59,7 @@ export class ClipboardPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -226,13 +227,15 @@ export class ClipboardPlugin extends BasePlugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = ['clipboard', 'copy', '粘贴', '剪贴板'];
+    const keywords = [
+      { keyword: 'clipboard', normalized: normalizeForSearch('clipboard') },
+      { keyword: 'copy', normalized: normalizeForSearch('copy') },
+      { keyword: 'paste', normalized: normalizeForSearch('paste') },
+      { keyword: '剪贴板', normalized: normalizeForSearch('剪贴板'), pinyinInitials: toPinyinInitials('剪贴板') },
+      { keyword: '粘贴', normalized: normalizeForSearch('粘贴'), pinyinInitials: toPinyinInitials('粘贴') },
+    ];
 
-    const isKeywordMatch = keywords.some(
-      kw => kw.includes(query) || query.includes(kw)
-    );
-
-    if (!isKeywordMatch && query.length > 0) {
+    if (!matchKeyword(query, keywords) && query.length > 0) {
       return [];
     }
 
@@ -241,7 +244,7 @@ export class ClipboardPlugin extends BasePlugin {
         iconUrl: clipboardIconUrl,
         title: this.name,
         score: 900,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
         action: async (ctx: SearchResultItemContext) => {

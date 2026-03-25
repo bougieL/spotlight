@@ -55,7 +55,7 @@ export class SettingsPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -110,7 +110,7 @@ export class SettingsPlugin extends BasePlugin {
         iconUrl: settingsIconUrl,
         title: this.name,
         score: 1000,
-        sourcePlugin: PLUGIN_NAME,
+        sourcePlugin: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
         action: async (ctx: SearchResultItemContext) => {

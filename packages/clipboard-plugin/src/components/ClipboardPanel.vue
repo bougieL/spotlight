@@ -83,8 +83,8 @@ function formatContent(item: ClipboardItem): string {
     return `${files.length} files`;
   }
   const text = item.content;
-  if (text.length > 100) {
-    return text.substring(0, 100) + '...';
+  if (text.length > 200) {
+    return text.substring(0, 200) + '...';
   }
   return text;
 }

@@ -4,6 +4,7 @@ import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderPar
 import { BasePlugin } from '@spotlight/core';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -14,7 +15,6 @@ registerTranslations({
 
 const jsonIconUrl = new URL('./assets/JSON.svg', import.meta.url).href;
 
-const PLUGIN_NAME = 'json';
 const ACTION_OPEN = 'open-json-editor';
 
 export class JsonPlugin extends BasePlugin {
@@ -30,7 +30,7 @@ export class JsonPlugin extends BasePlugin {
   constructor() {
     super();
     pluginRegistry.registerAction({
-      pluginName: PLUGIN_NAME,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       handler: async (_data, ctx) => {
         const component = await this.render({ query: '' });
@@ -43,6 +43,15 @@ export class JsonPlugin extends BasePlugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.toLowerCase().trim();
+
+    const keywords = [
+      { keyword: 'json', normalized: normalizeForSearch('json') },
+      { keyword: 'JSON 编辑器', normalized: normalizeForSearch('JSON 编辑器'), pinyinInitials: toPinyinInitials('JSON 编辑器') },
+    ];
+
+    const isKeywordMatch = matchKeyword(query, keywords);
+
+    // Also match JSON syntax patterns
     if (query.includes('json') || query.includes('{') || query === '{}') {
       return [
         {
@@ -50,7 +59,7 @@ export class JsonPlugin extends BasePlugin {
           title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
           score: 900,
-          sourcePlugin: PLUGIN_NAME,
+          sourcePlugin: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
           action: async (ctx: SearchResultItemContext) => {
@@ -62,6 +71,27 @@ export class JsonPlugin extends BasePlugin {
         },
       ];
     }
+
+    if (isKeywordMatch) {
+      return [
+        {
+          iconUrl: jsonIconUrl,
+          title: this.name,
+          desc: 'View and edit JSON with syntax highlighting and collapsible objects',
+          score: 850,
+          sourcePlugin: this.pluginId,
+          actionId: ACTION_OPEN,
+          actionData: null,
+          action: async (ctx: SearchResultItemContext) => {
+            const component = await this.render({ query: '' });
+            if (component) {
+              ctx.setPanel(component, this.name);
+            }
+          },
+        },
+      ];
+    }
+
     return [];
   }
 

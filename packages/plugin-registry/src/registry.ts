@@ -30,8 +30,8 @@ export class PluginRegistry {
     }
   }
 
-  registerAction(params: { pluginName: string; actionId: string; handler: ActionHandler }): void {
-    this.actionHandlers.set(`${params.pluginName}:${params.actionId}`, params.handler);
+  registerAction(params: { pluginId: string; actionId: string; handler: ActionHandler }): void {
+    this.actionHandlers.set(`${params.pluginId}:${params.actionId}`, params.handler);
   }
 
   async executeAction(params: { sourcePlugin: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
