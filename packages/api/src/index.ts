@@ -36,6 +36,7 @@ export interface TauriApi {
   registerGlobalShortcut: (shortcut: string) => Promise<void>;
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
+  executeShellCommand: (command: string) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
 }
 
@@ -49,6 +50,9 @@ export interface ScreenCapture {
 
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
+
+export const executeShellCommand = (command: string): Promise<void> =>
+  invoke<void>('execute_shell_command', { command });
 
 export const tauriApi: TauriApi = {
   resizeWindow: (height: number) => invoke('resize_window', { height }),
@@ -87,6 +91,8 @@ export const tauriApi: TauriApi = {
   getGlobalShortcut: () => invoke<string>('get_global_shortcut'),
 
   getChromeBookmarks: () => invoke<ChromeBookmark[]>('get_chrome_bookmarks'),
+
+  executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
 
   convertFileSrc,
 };

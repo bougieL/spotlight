@@ -1,0 +1,21 @@
+{
+  "shortcuts": "快捷命令",
+  "shortcuts.placeholder": "搜索快捷命令...",
+  "shortcuts.add": "添加命令",
+  "shortcuts.edit": "编辑",
+  "shortcuts.delete": "删除",
+  "shortcuts.name": "名称",
+  "shortcuts.command": "命令",
+  "shortcuts.description": "描述",
+  "shortcuts.namePlaceholder": "例如：打开 VS Code",
+  "shortcuts.commandPlaceholder": "例如：code",
+  "shortcuts.descriptionPlaceholder": "可选描述",
+  "shortcuts.empty": "暂无快捷命令",
+  "shortcuts.save": "保存",
+  "shortcuts.cancel": "取消",
+  "shortcuts.running": "运行中...",
+  "shortcuts.success": "执行成功",
+  "shortcuts.error": "执行失败",
+  "shortcuts.confirmDelete": "确定删除此命令？",
+  "plugin.description.shortcuts": "执行自定义 shell 命令"
+}

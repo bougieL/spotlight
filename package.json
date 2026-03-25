@@ -33,6 +33,7 @@
     "@spotlight/qrcode-plugin": "*",
     "@spotlight/recent-plugin": "*",
     "@spotlight/settings-plugin": "*",
+    "@spotlight/shortcuts-plugin": "*",
     "@spotlight/utils": "*",
     "@tauri-apps/plugin-http": "^2.5.7",
     "lucide-vue-next": "^0.577.0",

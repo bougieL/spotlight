@@ -38,6 +38,11 @@ export async function setClipboardText(_text: string): Promise<void> {
   // In mock mode, do nothing
 }
 
+export async function executeShellCommand(_command: string): Promise<void> {
+  // In mock mode, do nothing
+  console.log('Mock executeShellCommand:', _command);
+}
+
 export async function getInstalledApplications(): Promise<AppInfo[]> {
   // In mock mode, return sample apps for testing
   return [
@@ -79,6 +84,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return Promise.resolve();
     case 'get_chrome_bookmarks':
       return getChromeBookmarks();
+    case 'execute_shell_command':
+      return executeShellCommand(args?.command as string);
     case 'read_plugin_settings':
       return localStorage.getItem(`${MOCK_SETTINGS_PREFIX}${args?.pluginName}`) || '';
     case 'write_plugin_settings':

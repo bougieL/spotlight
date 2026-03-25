@@ -1,0 +1,21 @@
+{
+  "shortcuts": "Shortcuts",
+  "shortcuts.placeholder": "Search shortcuts...",
+  "shortcuts.add": "Add Shortcut",
+  "shortcuts.edit": "Edit",
+  "shortcuts.delete": "Delete",
+  "shortcuts.name": "Name",
+  "shortcuts.command": "Command",
+  "shortcuts.description": "Description",
+  "shortcuts.namePlaceholder": "e.g. Open VS Code",
+  "shortcuts.commandPlaceholder": "e.g. code",
+  "shortcuts.descriptionPlaceholder": "Optional description",
+  "shortcuts.empty": "No shortcuts yet",
+  "shortcuts.save": "Save",
+  "shortcuts.cancel": "Cancel",
+  "shortcuts.running": "Running...",
+  "shortcuts.success": "Executed successfully",
+  "shortcuts.error": "Execution failed",
+  "shortcuts.confirmDelete": "Delete this shortcut?",
+  "plugin.description.shortcuts": "Execute custom shell commands"
+}
