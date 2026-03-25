@@ -1,4 +1,7 @@
 {
   "time.justNow": "Just now",
-  "time.yesterday": "Yesterday"
+  "time.yesterday": "Yesterday",
+  "time.minutesAgo": "{n}m ago",
+  "time.hoursAgo": "{n}h ago",
+  "time.daysAgo": "{n}d ago"
 }

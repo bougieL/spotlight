@@ -19,14 +19,21 @@ export function formatTime(timestamp: number): string {
   }
   if (diff < 3600000) {
     const mins = Math.floor(diff / 60000);
-    return `${mins}m ago`;
+    const template = translations[locale]['time.minutesAgo'] ?? '{n}m ago';
+    return template.replace('{n}', String(mins));
   }
   if (diff < 86400000) {
     const hours = Math.floor(diff / 3600000);
-    return `${hours}h ago`;
+    const template = translations[locale]['time.hoursAgo'] ?? '{n}h ago';
+    return template.replace('{n}', String(hours));
   }
   if (diff < 172800000) {
     return translations[locale]['time.yesterday'] ?? 'Yesterday';
   }
-  return date.toLocaleDateString();
+  if (diff < 604800000) {
+    const days = Math.floor(diff / 86400000);
+    const template = translations[locale]['time.daysAgo'] ?? '{n}d ago';
+    return template.replace('{n}', String(days));
+  }
+  return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }

@@ -65,6 +65,7 @@ onMounted(async () => {
   currentTheme.value = await settingsPlugin.getThemeMode();
   currentLanguage.value = await settingsPlugin.getLanguage();
   await settingsPlugin.updateTheme(currentTheme.value);
+  setLocale(currentLanguage.value);
 
   // Load and register hotkey
   currentHotkey.value = await settingsPlugin.getHotkey();
