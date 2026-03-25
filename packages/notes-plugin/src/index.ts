@@ -16,7 +16,6 @@ registerTranslations({
 const notesIconUrl = new URL('./assets/notes.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'notes_data';
-const PLUGIN_NAME = 'notes';
 const ACTION_OPEN = 'open';
 
 export interface Note {
@@ -55,7 +54,7 @@ export class NotesPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+  private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(): PluginActions {
     return {

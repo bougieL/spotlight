@@ -16,7 +16,6 @@ registerTranslations({
 const recentIconUrl = new URL('./assets/clock.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'recent_items';
-const PLUGIN_NAME = 'recent';
 const MAX_RECENT_ITEMS = 10;
 
 export interface RecentItem {
@@ -50,7 +49,7 @@ export class RecentPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+  private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction() {
     return {};

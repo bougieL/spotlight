@@ -17,7 +17,6 @@ registerTranslations({
 const clipboardIconUrl = new URL('./assets/clipboard.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'clipboard_data';
-const PLUGIN_NAME = 'clipboard';
 const ACTION_OPEN = 'open';
 const MAX_ITEMS = 50;
 
@@ -51,7 +50,7 @@ export class ClipboardPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+  private storage: PluginStorage = createPluginStorage(this.pluginId);
   private unlisten: UnlistenFn | null = null;
   private monitoring = false;
 

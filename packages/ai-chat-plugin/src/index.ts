@@ -4,6 +4,7 @@ import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -27,7 +28,6 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const PLUGIN_NAME = 'aiChat';
 const ACTION_OPEN = 'open';
 
 const STORAGE_KEYS = {
@@ -51,7 +51,7 @@ export class AIChatPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+  private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(): PluginActions {
     return {
@@ -173,13 +173,17 @@ export class AIChatPlugin extends BasePlugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = ['chat', 'ai', 'ai chat', 'gpt', 'claude', '聊天', 'ai聊天'];
+    const keywords = [
+      { keyword: 'chat', normalized: normalizeForSearch('chat') },
+      { keyword: 'ai', normalized: normalizeForSearch('ai') },
+      { keyword: 'ai chat', normalized: normalizeForSearch('ai chat') },
+      { keyword: 'gpt', normalized: normalizeForSearch('gpt') },
+      { keyword: 'claude', normalized: normalizeForSearch('claude') },
+      { keyword: '聊天', normalized: normalizeForSearch('聊天'), pinyinInitials: toPinyinInitials('聊天') },
+      { keyword: 'ai聊天', normalized: normalizeForSearch('ai聊天'), pinyinInitials: toPinyinInitials('ai聊天') },
+    ];
 
-    const isKeywordMatch = keywords.some(
-      kw => kw.includes(query) || query.includes(kw)
-    );
-
-    if (!isKeywordMatch && query.length > 0) {
+    if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];
     }
 

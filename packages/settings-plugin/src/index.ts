@@ -4,9 +4,9 @@ import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
+import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
-import { normalizeForSearch, toPinyinInitials, fuzzyMatch } from '@spotlight/utils/pinyin';
 
 const DEFAULT_HOTKEY = 'Alt+Space';
 
@@ -18,7 +18,6 @@ export interface ThemeSetting {
 
 const settingsIconUrl = new URL('./assets/settings.svg', import.meta.url).href;
 
-const PLUGIN_NAME = 'settings';
 const ACTION_OPEN = 'open';
 
 export function applyTheme(mode: ThemeMode): void {
@@ -26,7 +25,6 @@ export function applyTheme(mode: ThemeMode): void {
   root.removeAttribute('data-theme');
 
   if (mode === 'system') {
-    // System preference is handled by CSS media query
     return;
   }
 
@@ -49,7 +47,7 @@ export class SettingsPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
+  private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(): PluginActions {
     return {
@@ -65,8 +63,7 @@ export class SettingsPlugin extends BasePlugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    // Pre-compute search normalized versions for each keyword
-    const keywordSearchData = [
+    const keywords = [
       { keyword: 'settings', normalized: normalizeForSearch('settings') },
       { keyword: '设置', normalized: normalizeForSearch('设置'), pinyinInitials: toPinyinInitials('设置') },
       { keyword: 'theme', normalized: normalizeForSearch('theme') },
@@ -77,27 +74,7 @@ export class SettingsPlugin extends BasePlugin {
       { keyword: '外观', normalized: normalizeForSearch('外观'), pinyinInitials: toPinyinInitials('外观') },
     ];
 
-    const matches = keywordSearchData.some(({ keyword, normalized, pinyinInitials }) => {
-      // Direct substring match
-      if (keyword.toLowerCase().includes(query) || query.includes(keyword.toLowerCase())) {
-        return true;
-      }
-      // Pinyin normalized match (e.g., "sz" matches "设置")
-      if (normalized.includes(query)) {
-        return true;
-      }
-      // Pinyin initials match (e.g., "yt" matches "主题")
-      if (pinyinInitials && pinyinInitials.toLowerCase().includes(query)) {
-        return true;
-      }
-      // Fuzzy match on pinyin
-      if (pinyinInitials && fuzzyMatch(query, pinyinInitials) > 0) {
-        return true;
-      }
-      return false;
-    });
-
-    if (!matches && query.length > 0) {
+    if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];
     }
 
@@ -140,13 +117,11 @@ export class SettingsPlugin extends BasePlugin {
 
   async updateHotkey(hotkey: string): Promise<void> {
     await this.storage.set<string>('hotkey', hotkey);
-    // Let errors propagate to UI
     await this.registerHotkey(hotkey);
   }
 
   async registerHotkey(hotkey?: string): Promise<void> {
     const shortcut = hotkey ?? (await this.getHotkey());
-    // Don't catch errors - let them propagate to UI
     await tauriApi.registerGlobalShortcut(shortcut);
   }
 }
