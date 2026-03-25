@@ -12,6 +12,8 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
+const jsonIconUrl = new URL('./assets/JSON.svg', import.meta.url).href;
+
 const PLUGIN_NAME = 'json';
 const ACTION_OPEN = 'open-json-editor';
 
@@ -44,6 +46,7 @@ export class JsonPlugin extends BasePlugin {
     if (query.includes('json') || query.includes('{') || query === '{}') {
       return [
         {
+          iconUrl: jsonIconUrl,
           title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
           score: 900,

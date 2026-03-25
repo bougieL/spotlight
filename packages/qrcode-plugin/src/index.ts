@@ -12,7 +12,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const qrcodeIconUrl = new URL('./assets/qr-code.svg', import.meta.url).href;
+const qrcodeIconUrl = new URL('./assets/qrcode.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'qrcode';
 const ACTION_OPEN = 'open';

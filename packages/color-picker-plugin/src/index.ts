@@ -13,7 +13,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const colorPickerIconUrl = new URL('./assets/pipette.svg', import.meta.url).href;
+const colorPickerIconUrl = new URL('./assets/color-picker.svg', import.meta.url).href;
 
 const ACTION_PICK = 'pick';
 const OVERLAY_WINDOW_LABEL = 'color-picker-overlay';

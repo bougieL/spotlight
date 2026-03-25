@@ -8,7 +8,7 @@ import { pluginRegistry } from '@spotlight/plugin-registry';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
-const aiChatIconUrl = new URL('./assets/message-square.svg', import.meta.url).href;
+const aiChatIconUrl = new URL('./assets/chat.svg', import.meta.url).href;
 
 import type {
   ModelConfig,

@@ -274,6 +274,7 @@ function isFavorite(item: ClipboardItem): boolean {
 .clipboard-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .empty-state {
@@ -377,7 +378,9 @@ function isFavorite(item: ClipboardItem): boolean {
 .item-text {
   font-size: 14px;
   color: var(--spotlight-text);
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
