@@ -2,5 +2,6 @@
   "colorPicker": "Color Picker",
   "pickColor": "Pick a color from screen",
   "colorCopied": "Color copied to clipboard",
-  "pressEscToCancel": "Press ESC to cancel"
+  "pressEscToCancel": "Press ESC to cancel",
+  "plugin.description.colorPicker": "Pick colors from screen"
 }

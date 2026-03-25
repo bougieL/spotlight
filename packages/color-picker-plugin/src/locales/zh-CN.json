@@ -2,5 +2,6 @@
   "colorPicker": "取色器",
   "pickColor": "从屏幕取色",
   "colorCopied": "颜色已复制到剪贴板",
-  "pressEscToCancel": "按 ESC 取消"
+  "pressEscToCancel": "按 ESC 取消",
+  "plugin.description.colorPicker": "从屏幕拾取颜色"
 }

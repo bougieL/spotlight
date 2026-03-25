@@ -12,5 +12,6 @@
   "national_day": "国庆节",
   "new_year": "元旦",
   "lantern_festival": "元宵节",
-  "double_ninth": "重阳节"
+  "double_ninth": "重阳节",
+  "plugin.description.calendar": "查看日历和节假日"
 }

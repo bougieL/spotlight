@@ -7,5 +7,6 @@
   "json.copy": "复制",
   "json.clear": "清空",
   "json.format": "格式化",
-  "json.minify": "压缩"
+  "json.minify": "压缩",
+  "plugin.description.json": "查看和编辑 JSON，支持语法高亮"
 }

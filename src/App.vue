@@ -105,6 +105,10 @@ onMounted(async () => {
   applyTheme(savedTheme);
   setLocale(savedLanguage);
 
+  // Load disabled plugins (skip lifecycle events during init, will be handled by mount below)
+  const disabledPlugins = await settingsPlugin.getDisabledPlugins();
+  await pluginRegistry.setDisabledPlugins(disabledPlugins, true);
+
   // Register global hotkey on startup (non-blocking)
   try {
     await settingsPlugin.registerHotkey();
@@ -112,9 +116,10 @@ onMounted(async () => {
     logger.warn('Failed to register global shortcut:', error);
   }
 
-  // Mount all plugins (start background tasks)
+  // Mount all enabled plugins (start background tasks)
   const plugins = pluginRegistry.getPlugins();
-  await Promise.all(plugins.map((plugin) => plugin.onMount?.()));
+  const enabledPlugins = plugins.filter((p) => !disabledPlugins.includes(p.pluginId));
+  await Promise.all(enabledPlugins.map((plugin) => plugin.onMount?.()));
 
   // Initial search with recent items
   const initialResults = await recentPlugin.search({ query: '', files: [] });

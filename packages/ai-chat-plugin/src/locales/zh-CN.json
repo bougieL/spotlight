@@ -48,5 +48,6 @@
   "aiChat.sessionNamePlaceholder": "输入会话名称...",
   "aiChat.apiUrlPlaceholder": "https://api.openai.com/v1",
   "aiChat.apiKeyPlaceholder": "sk-...",
-  "aiChat.maxContextPlaceholder": "4096"
+  "aiChat.maxContextPlaceholder": "4096",
+  "plugin.description.aiChat": "与 AI 模型对话"
 }

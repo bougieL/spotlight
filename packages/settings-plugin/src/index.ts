@@ -16,6 +16,8 @@ export interface ThemeSetting {
   mode: ThemeMode;
 }
 
+const DISABLED_PLUGINS_KEY = 'disabledPlugins';
+
 const settingsIconUrl = new URL('./assets/settings.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
@@ -124,6 +126,25 @@ export class SettingsPlugin extends BasePlugin {
   async registerHotkey(hotkey?: string): Promise<void> {
     const shortcut = hotkey ?? (await this.getHotkey());
     await tauriApi.registerGlobalShortcut(shortcut);
+  }
+
+  async getDisabledPlugins(): Promise<string[]> {
+    return await this.storage.get<string[]>(DISABLED_PLUGINS_KEY, []);
+  }
+
+  async setPluginDisabled(pluginId: string, disabled: boolean): Promise<void> {
+    const disabledPlugins = await this.getDisabledPlugins();
+    if (disabled) {
+      if (!disabledPlugins.includes(pluginId)) {
+        disabledPlugins.push(pluginId);
+      }
+    } else {
+      const index = disabledPlugins.indexOf(pluginId);
+      if (index > -1) {
+        disabledPlugins.splice(index, 1);
+      }
+    }
+    await this.storage.set<string[]>(DISABLED_PLUGINS_KEY, disabledPlugins);
   }
 }
 

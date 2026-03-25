@@ -7,5 +7,6 @@
   "qrcode.empty": "Please enter text first",
   "qrcode.error": "Failed to generate QR code",
   "qrcode.history": "History",
-  "qrcode.noHistory": "No history yet"
+  "qrcode.noHistory": "No history yet",
+  "plugin.description.qrcode": "Generate and decode QR codes"
 }

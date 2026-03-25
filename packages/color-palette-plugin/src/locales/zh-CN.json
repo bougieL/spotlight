@@ -11,5 +11,6 @@
   "colorPalette.basic": "基础颜色",
   "colorPalette.gradient": "渐变颜色",
   "colorPalette.web": "网页颜色",
-  "colorPalette.picker": "取色器"
+  "colorPalette.picker": "取色器",
+  "plugin.description.colorPalette": "快速访问色板"
 }

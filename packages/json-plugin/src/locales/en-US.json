@@ -7,5 +7,6 @@
   "json.copy": "Copy",
   "json.clear": "Clear",
   "json.format": "Format",
-  "json.minify": "Minify"
+  "json.minify": "Minify",
+  "plugin.description.json": "View and edit JSON with syntax highlighting"
 }

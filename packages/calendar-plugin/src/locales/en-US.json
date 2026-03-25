@@ -12,5 +12,6 @@
   "national_day": "National Day",
   "new_year": "New Year's Day",
   "lantern_festival": "Lantern Festival",
-  "double_ninth": "Double Ninth Festival"
+  "double_ninth": "Double Ninth Festival",
+  "plugin.description.calendar": "View calendar and holidays"
 }

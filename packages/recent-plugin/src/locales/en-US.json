@@ -2,5 +2,6 @@
   "recent": "Recent",
   "recent.placeholder": "No recent items",
   "recent.clear": "Clear recent",
-  "recent.empty": "No recent items to display"
+  "recent.empty": "No recent items to display",
+  "plugin.description.recent": "Quick access to recently used items"
 }

@@ -15,6 +15,7 @@ interface ScoredResult {
 
 export class PluginRegistry {
   private plugins: BasePlugin[] = [];
+  private disabledPlugins: Set<string> = new Set();
 
   register(plugin: BasePlugin): void {
     this.plugins.push(plugin);
@@ -24,8 +25,43 @@ export class PluginRegistry {
     this.plugins = this.plugins.filter((p) => p.name !== name);
   }
 
+  async setDisabledPlugins(pluginIds: string[], skipLifecycle = false): Promise<void> {
+    const newDisabledSet = new Set(pluginIds);
+    const oldDisabledSet = this.disabledPlugins;
+
+    // Find plugins that were disabled but are now enabled
+    const newlyEnabled = [...oldDisabledSet].filter((id) => !newDisabledSet.has(id));
+    for (const pluginId of newlyEnabled) {
+      const plugin = this.getPluginById(pluginId);
+      if (plugin && !skipLifecycle) {
+        logger.info(`[PluginRegistry] Enabling plugin: ${plugin.name}`);
+        await plugin.onMount?.();
+      }
+    }
+
+    // Find plugins that were enabled but are now disabled
+    const newlyDisabled = [...newDisabledSet].filter((id) => !oldDisabledSet.has(id));
+    for (const pluginId of newlyDisabled) {
+      const plugin = this.getPluginById(pluginId);
+      if (plugin && !skipLifecycle) {
+        logger.info(`[PluginRegistry] Disabling plugin: ${plugin.name}`);
+        await plugin.onUnmount?.();
+      }
+    }
+
+    this.disabledPlugins = newDisabledSet;
+  }
+
+  getDisabledPlugins(): string[] {
+    return Array.from(this.disabledPlugins);
+  }
+
   private getPluginById(pluginId: string): BasePlugin | undefined {
     return this.plugins.find((p) => p.pluginId === pluginId);
+  }
+
+  private isPluginDisabled(pluginId: string): boolean {
+    return this.disabledPlugins.has(pluginId);
   }
 
   async executeAction(params: { pluginId: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
@@ -50,8 +86,10 @@ export class PluginRegistry {
       return [];
     }
 
+    const enabledPlugins = this.plugins.filter((p) => !this.isPluginDisabled(p.pluginId));
+
     const pluginResults = await Promise.all(
-      this.plugins.map(async (plugin) => {
+      enabledPlugins.map(async (plugin) => {
         try {
           return await plugin.search(params);
         } catch (error) {
@@ -63,7 +101,7 @@ export class PluginRegistry {
 
     const scoredResults: ScoredResult[] = [];
 
-    for (let pluginIndex = 0; pluginIndex < this.plugins.length; pluginIndex++) {
+    for (let pluginIndex = 0; pluginIndex < enabledPlugins.length; pluginIndex++) {
       const results = pluginResults[pluginIndex];
       const limit = params.limit ?? MAX_RESULTS_PER_PLUGIN;
 
@@ -73,7 +111,7 @@ export class PluginRegistry {
         const finalScore = pluginBaseScore + detailedScore.total;
         const itemWithSource: SearchResultItem = {
           ...item,
-          pluginId: item.pluginId ?? this.plugins[pluginIndex].pluginId,
+          pluginId: item.pluginId ?? enabledPlugins[pluginIndex].pluginId,
           score: finalScore,
         };
         scoredResults.push({ item: itemWithSource, score: finalScore, pluginIndex });

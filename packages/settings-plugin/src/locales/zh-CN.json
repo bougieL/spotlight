@@ -12,5 +12,7 @@
   "settings.shortcut.recording": "录制中",
   "settings.shortcut.pressKeys": "请按下组合键...",
   "settings.shortcut.altSpaceError": "Alt+Space 在 Windows 上无法使用",
-  "settings.shortcut.reset": "重置为 Alt+Space"
+  "settings.shortcut.reset": "重置为 Alt+Space",
+  "settings.plugins": "插件管理",
+  "settings.plugins.description": "启用或禁用插件"
 }

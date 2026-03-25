@@ -12,5 +12,7 @@
   "settings.shortcut.recording": "Recording",
   "settings.shortcut.pressKeys": "Press keys...",
   "settings.shortcut.altSpaceError": "Alt+Space cannot be used on Windows",
-  "settings.shortcut.reset": "Reset to Alt+Space"
+  "settings.shortcut.reset": "Reset to Alt+Space",
+  "settings.plugins": "Plugins",
+  "settings.plugins.description": "Enable or disable plugins"
 }

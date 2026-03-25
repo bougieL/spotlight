@@ -7,5 +7,6 @@
   "qrcode.empty": "请先输入文本",
   "qrcode.error": "生成二维码失败",
   "qrcode.history": "历史记录",
-  "qrcode.noHistory": "暂无历史记录"
+  "qrcode.noHistory": "暂无历史记录",
+  "plugin.description.qrcode": "生成和解码二维码"
 }

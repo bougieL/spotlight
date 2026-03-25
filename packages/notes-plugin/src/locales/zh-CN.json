@@ -17,5 +17,6 @@
   "notes.noCategory": "无分类",
   "notes.selectNoteOrCreate": "选择一个笔记或创建新笔记",
   "notes.untitled": "无标题",
-  "notes.categoryNamePrompt": "输入分类名称："
+  "notes.categoryNamePrompt": "输入分类名称：",
+  "plugin.description.notes": "创建和管理 Markdown 笔记"
 }

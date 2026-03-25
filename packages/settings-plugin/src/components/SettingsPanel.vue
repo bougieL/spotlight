@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { Sun, Moon, Monitor } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
+import { BaseSwitch } from '@spotlight/components';
+import { pluginRegistry } from '@spotlight/plugin-registry';
 import { settingsPlugin, type ThemeMode } from '../index';
 import HotkeyPicker from './HotkeyPicker.vue';
 import type { Locale } from '@spotlight/i18n';
@@ -22,6 +24,25 @@ const currentTheme = ref<ThemeMode>('system');
 const currentLanguage = ref<Locale>('en-US');
 const currentHotkey = ref('Alt+Space');
 const hotkeyError = ref<string | null>(null);
+const disabledPlugins = ref<Set<string>>(new Set());
+
+const allPlugins = computed(() => pluginRegistry.getPlugins());
+
+const pluginList = computed(() => {
+  return allPlugins.value
+    .filter((plugin) => plugin.pluginId !== 'settings-plugin')
+    .map((plugin) => ({
+      plugin,
+      isDisabled: disabledPlugins.value.has(plugin.pluginId),
+    }));
+});
+
+async function togglePlugin(pluginId: string, disabled: boolean): Promise<void> {
+  await settingsPlugin.setPluginDisabled(pluginId, disabled);
+  const newDisabledList = await settingsPlugin.getDisabledPlugins();
+  await pluginRegistry.setDisabledPlugins(newDisabledList);
+  disabledPlugins.value = new Set(newDisabledList);
+}
 
 const themeOptions: { value: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
   { value: 'light', icon: Sun, labelKey: 'settings.theme.light' },
@@ -74,6 +95,10 @@ onMounted(async () => {
   } catch (error) {
     hotkeyError.value = error instanceof Error ? error.message : String(error);
   }
+
+  // Load disabled plugins
+  const disabled = await settingsPlugin.getDisabledPlugins();
+  disabledPlugins.value = new Set(disabled);
 });
 </script>
 
@@ -116,6 +141,27 @@ onMounted(async () => {
       <p v-if="hotkeyError" class="shortcut-error">{{ hotkeyError }}</p>
       <p v-else class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
     </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">{{ t('settings.plugins') }}</h3>
+      <p class="section-description">{{ t('settings.plugins.description') }}</p>
+      <div class="plugin-list">
+        <div
+          v-for="{ plugin, isDisabled } in pluginList"
+          :key="plugin.pluginId"
+          class="plugin-item"
+        >
+          <div class="plugin-info">
+            <span class="plugin-name">{{ plugin.name }}</span>
+            <span v-if="plugin.description" class="plugin-description">{{ plugin.description }}</span>
+          </div>
+          <BaseSwitch
+            :model-value="!isDisabled"
+            @update:model-value="togglePlugin(plugin.pluginId, !($event as boolean))"
+          />
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -124,6 +170,8 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   padding: 16px;
+  max-height: 500px;
+  overflow-y: auto;
   background-color: var(--spotlight-bg);
   outline: none;
 }
@@ -191,5 +239,44 @@ onMounted(async () => {
   margin-top: 8px;
   font-size: 12px;
   color: var(--spotlight-tag-text);
+}
+
+.section-description {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--spotlight-placeholder);
+}
+
+.plugin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plugin-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--spotlight-border);
+  border-radius: 8px;
+  background-color: var(--spotlight-item-hover);
+}
+
+.plugin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plugin-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--spotlight-text);
+}
+
+.plugin-description {
+  font-size: 12px;
+  color: var(--spotlight-placeholder);
 }
 </style>

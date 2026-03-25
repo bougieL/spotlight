@@ -17,5 +17,6 @@
   "notes.noCategory": "No category",
   "notes.selectNoteOrCreate": "Select a note or create a new one",
   "notes.untitled": "Untitled",
-  "notes.categoryNamePrompt": "Enter category name:"
+  "notes.categoryNamePrompt": "Enter category name:",
+  "plugin.description.notes": "Create and manage markdown notes"
 }

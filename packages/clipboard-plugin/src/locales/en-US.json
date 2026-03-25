@@ -10,5 +10,6 @@
   "clipboard.favorites": "Favorites",
   "clipboard.text": "Text",
   "clipboard.image": "Image",
-  "clipboard.files": "Files"
+  "clipboard.files": "Files",
+  "plugin.description.clipboard": "Access and manage clipboard history"
 }

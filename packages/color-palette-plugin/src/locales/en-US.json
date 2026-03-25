@@ -11,5 +11,6 @@
   "colorPalette.basic": "Basic Colors",
   "colorPalette.gradient": "Gradient Colors",
   "colorPalette.web": "Web Colors",
-  "colorPalette.picker": "Color Picker"
+  "colorPalette.picker": "Color Picker",
+  "plugin.description.colorPalette": "Quick access to color palettes"
 }

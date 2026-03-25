@@ -1,4 +1,5 @@
 {
   "calculator": "Calculator",
-  "calculator.placeholder": "e.g. 2+3*4"
+  "calculator.placeholder": "e.g. 2+3*4",
+  "plugin.description.calculator": "Perform math calculations"
 }
