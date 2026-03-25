@@ -14,7 +14,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const clipboardIconUrl = new URL('./assets/icons/clipboard.svg', import.meta.url).href;
+const clipboardIconUrl = new URL('./assets/clipboard.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'clipboard_data';
 const PLUGIN_NAME = 'clipboard';

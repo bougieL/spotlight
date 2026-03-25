@@ -17,7 +17,7 @@ export interface ThemeSetting {
   mode: ThemeMode;
 }
 
-const settingsIconUrl = new URL('./assets/icons/settings.svg', import.meta.url).href;
+const settingsIconUrl = new URL('./assets/settings.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'settings';
 const ACTION_OPEN = 'open';

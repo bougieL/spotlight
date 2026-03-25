@@ -12,7 +12,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const calendarIconUrl = new URL('./assets/icons/calendar.svg', import.meta.url).href;
+const calendarIconUrl = new URL('./assets/calendar.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'calendar';
 const ACTION_OPEN = 'open';

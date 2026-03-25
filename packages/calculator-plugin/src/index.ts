@@ -14,7 +14,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const calculatorIconUrl = new URL('./assets/icons/calculator.svg', import.meta.url).href;
+const calculatorIconUrl = new URL('./assets/calculator.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'calculator_expressions';
 const PLUGIN_NAME = 'calculator';

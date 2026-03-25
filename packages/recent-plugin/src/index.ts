@@ -13,7 +13,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const recentIconUrl = new URL('./assets/icons/clock.svg', import.meta.url).href;
+const recentIconUrl = new URL('./assets/clock.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'recent_items';
 const PLUGIN_NAME = 'recent';

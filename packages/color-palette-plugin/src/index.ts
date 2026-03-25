@@ -13,7 +13,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const paletteIconUrl = new URL('./assets/icons/palette.svg', import.meta.url).href;
+const paletteIconUrl = new URL('./assets/palette.svg', import.meta.url).href;
 
 const PLUGIN_NAME = 'colorPalette';
 const ACTION_OPEN = 'open';

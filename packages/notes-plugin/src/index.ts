@@ -13,7 +13,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const notesIconUrl = new URL('./assets/icons/file-text.svg', import.meta.url).href;
+const notesIconUrl = new URL('./assets/file-text.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'notes_data';
 const PLUGIN_NAME = 'notes';
