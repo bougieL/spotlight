@@ -22,6 +22,10 @@ export function usePanelContext(): PanelContext {
   return ctx;
 }
 
+export type ActionHandler = (data: unknown, ctx: SearchResultItemContext) => void | Promise<void>;
+
+export type PluginActions = Record<string, ActionHandler>;
+
 export interface SearchResultItem {
   icon?: Component;
   iconUrl?: string;
@@ -29,8 +33,7 @@ export interface SearchResultItem {
   title: string;
   desc?: string;
   score?: number;
-  action: (ctx: SearchResultItemContext) => void | Promise<void>;
-  sourcePlugin?: string;
+  pluginId?: string;
   actionId: string;
   actionData?: unknown;
 }
@@ -69,6 +72,8 @@ export abstract class BasePlugin implements PluginMetadata {
   abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
 
   abstract render(_params: RenderParams): Promise<Component | null>;
+
+  abstract registerAction(): PluginActions;
 
   getPublicUrl(filePath: string): string {
     const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;

@@ -1,8 +1,7 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
@@ -57,16 +56,9 @@ export class ChromeBookmarksPlugin extends BasePlugin {
   private cacheTimestamp = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-  constructor() {
-    super();
-    this.registerActions();
-  }
-
-  private registerActions(): void {
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_OPEN,
-      handler: async (data, _ctx) => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_OPEN]: async (data) => {
         logger.info(`[ChromeBookmarksPlugin] Open handler called with data: ${data}`);
         if (typeof data !== 'string') {
           logger.warn('[ChromeBookmarksPlugin] Data is not a string');
@@ -74,12 +66,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         }
         await this.openUrl(data);
       },
-    });
-
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_COPY_URL,
-      handler: async (data, _ctx) => {
+      [ACTION_COPY_URL]: async (data) => {
         logger.info(`[ChromeBookmarksPlugin] Copy URL handler called with data: ${data}`);
         if (typeof data !== 'string') {
           logger.warn('[ChromeBookmarksPlugin] Data is not a string');
@@ -87,7 +74,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         }
         await this.copyUrl(data);
       },
-    });
+    };
   }
 
   private async loadBookmarks(): Promise<CachedBookmark[]> {
@@ -155,10 +142,9 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         title: query,
         desc: translations[locale]?.['plugin.chrome-bookmarks.open'] ?? 'Open in Chrome',
         iconUrl: chromeIconUrl,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: query,
-        action: async (_ctx: SearchResultItemContext) => this.openUrl(query),
       }];
     }
 
@@ -172,10 +158,9 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         title: cb.bookmark.name,
         desc: cb.bookmark.url,
         iconUrl: chromeIconUrl,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: cb.bookmark.url,
-        action: async (_ctx: SearchResultItemContext) => this.openUrl(cb.bookmark.url),
       }));
     }
 
@@ -253,10 +238,9 @@ export class ChromeBookmarksPlugin extends BasePlugin {
       desc: `${cb.bookmark.folder_path.join(' > ')} (${cb.bookmark.profile})`,
       score,
       iconUrl: chromeIconUrl,
-      sourcePlugin: this.pluginId,
+      pluginId: this.pluginId,
       actionId: ACTION_OPEN,
       actionData: cb.bookmark.url,
-      action: async (_ctx: SearchResultItemContext) => this.openUrl(cb.bookmark.url),
     }));
   }
 

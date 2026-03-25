@@ -1,8 +1,7 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
@@ -61,13 +60,9 @@ export class AppSearchPlugin extends BasePlugin {
   private cachedApps: CachedApp[] = [];
   private cacheLoaded = false;
 
-  constructor() {
-    super();
-    // Register action handlers
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_LAUNCH,
-      handler: async (data, _ctx) => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_LAUNCH]: async (data) => {
         logger.info(`[AppSearchPlugin] Launch handler called with data: ${data}`);
         if (typeof data !== 'string') {
           logger.warn('[AppSearchPlugin] Data is not a string');
@@ -83,7 +78,7 @@ export class AppSearchPlugin extends BasePlugin {
           logger.warn(`[AppSearchPlugin] App not found for path: ${data}`);
         }
       },
-    });
+    };
   }
 
   async loadApps(): Promise<CachedApp[]> {
@@ -167,10 +162,9 @@ export class AppSearchPlugin extends BasePlugin {
       return apps.slice(0, limit).map((app) => ({
         title: app.info.name,
         desc: app.info.path,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_LAUNCH,
         actionData: app.info.path,
-        action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
       }));
     }
 
@@ -245,10 +239,9 @@ export class AppSearchPlugin extends BasePlugin {
       title: app.info.name,
       desc: app.info.path,
       score,
-      sourcePlugin: this.pluginId,
+      pluginId: this.pluginId,
       actionId: ACTION_LAUNCH,
       actionData: app.info.path,
-      action: async (_ctx: SearchResultItemContext) => this.launchApp(app.info),
     }));
   }
 

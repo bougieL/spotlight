@@ -1,10 +1,9 @@
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 import { normalizeForSearch, toPinyinInitials, fuzzyMatch } from '@spotlight/utils/pinyin';
@@ -52,18 +51,15 @@ export class SettingsPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
 
-  constructor() {
-    super();
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_OPEN,
-      handler: async (_data, ctx) => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_OPEN]: async (_data, ctx) => {
         const component = await this.render({ query: '' });
         if (component) {
           ctx.setPanel(component, this.name);
         }
       },
-    });
+    };
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -110,15 +106,9 @@ export class SettingsPlugin extends BasePlugin {
         iconUrl: settingsIconUrl,
         title: this.name,
         score: 1000,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
-        action: async (ctx: SearchResultItemContext) => {
-          const component = await this.render({ query: params.query });
-          if (component) {
-            ctx.setPanel(component, this.name);
-          }
-        },
       },
     ];
   }

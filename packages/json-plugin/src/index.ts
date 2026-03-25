@@ -1,8 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -27,18 +26,15 @@ export class JsonPlugin extends BasePlugin {
   pluginId = 'json-plugin';
   version = '1.0.0';
 
-  constructor() {
-    super();
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_OPEN,
-      handler: async (_data, ctx) => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_OPEN]: async (_data, ctx) => {
         const component = await this.render({ query: '' });
         if (component) {
           ctx.setPanel(component, this.name);
         }
       },
-    });
+    };
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -59,15 +55,9 @@ export class JsonPlugin extends BasePlugin {
           title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
           score: 900,
-          sourcePlugin: this.pluginId,
+          pluginId: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
-          action: async (ctx: SearchResultItemContext) => {
-            const component = await this.render({ query: '' });
-            if (component) {
-              ctx.setPanel(component, this.name);
-            }
-          },
         },
       ];
     }
@@ -79,15 +69,9 @@ export class JsonPlugin extends BasePlugin {
           title: this.name,
           desc: 'View and edit JSON with syntax highlighting and collapsible objects',
           score: 850,
-          sourcePlugin: this.pluginId,
+          pluginId: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
-          action: async (ctx: SearchResultItemContext) => {
-            const component = await this.render({ query: '' });
-            if (component) {
-              ctx.setPanel(component, this.name);
-            }
-          },
         },
       ];
     }

@@ -74,12 +74,12 @@ const handleSearch = async (searchQuery: string, searchFiles: FileItem[]) => {
 };
 
 const handleSelect = async (item: SearchResultItem) => {
-  logger.info(`[App] handleSelect called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
+  logger.info(`[App] handleSelect called for: ${item.title}, pluginId: ${item.pluginId}, actionId: ${item.actionId}`);
   const ctx: SearchResultItemContext = {
     setPanel,
   };
 
-  if (item.sourcePlugin && item.actionId !== undefined) {
+  if (item.pluginId && item.actionId !== undefined) {
     logger.info(`[App] Recording selection for recent: ${item.title}`);
     await recentPlugin.recordSelection({
       item: {
@@ -88,15 +88,20 @@ const handleSelect = async (item: SearchResultItem) => {
         iconUrl: item.iconUrl,
         iconComponentName: item.iconComponentName,
       },
-      sourcePlugin: item.sourcePlugin,
+      pluginId: item.pluginId,
       actionId: item.actionId,
       actionData: item.actionData,
     });
-  }
 
-  logger.info(`[App] Calling item.action for: ${item.title}`);
-  await item.action(ctx);
-  logger.info(`[App] item.action completed for: ${item.title}`);
+    logger.info(`[App] Calling executeAction for: ${item.title}`);
+    await pluginRegistry.executeAction({
+      pluginId: item.pluginId,
+      actionId: item.actionId,
+      data: item.actionData,
+      ctx,
+    });
+    logger.info(`[App] executeAction completed for: ${item.title}`);
+  }
 };
 
 const handleClosePanel = () => {

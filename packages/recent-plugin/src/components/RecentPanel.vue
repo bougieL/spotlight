@@ -26,9 +26,9 @@ async function handleClear() {
 }
 
 async function handleItemClick(item: RecentItem) {
-  logger.info(`[RecentPanel] handleItemClick called for: ${item.title}, sourcePlugin: ${item.sourcePlugin}, actionId: ${item.actionId}`);
+  logger.info(`[RecentPanel] handleItemClick called for: ${item.title}, pluginId: ${item.pluginId}, actionId: ${item.actionId}`);
   await pluginRegistry.executeAction({
-    sourcePlugin: item.sourcePlugin,
+    pluginId: item.pluginId,
     actionId: item.actionId,
     data: item.actionData,
     ctx: { setPanel: (_, name) => name },

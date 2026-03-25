@@ -10,11 +10,8 @@ interface ScoredResult {
   pluginIndex: number;
 }
 
-type ActionHandler = (data: unknown, ctx: SearchResultItemContext) => void | Promise<void>;
-
 export class PluginRegistry {
   private plugins: BasePlugin[] = [];
-  private actionHandlers: Map<string, ActionHandler> = new Map();
 
   register(plugin: BasePlugin): void {
     this.plugins.push(plugin);
@@ -22,26 +19,26 @@ export class PluginRegistry {
 
   unregister(name: string): void {
     this.plugins = this.plugins.filter((p) => p.name !== name);
-    // Clean up action handlers for this plugin
-    for (const key of this.actionHandlers.keys()) {
-      if (key.startsWith(name + ':')) {
-        this.actionHandlers.delete(key);
-      }
+  }
+
+  private getPluginById(pluginId: string): BasePlugin | undefined {
+    return this.plugins.find((p) => p.pluginId === pluginId);
+  }
+
+  async executeAction(params: { pluginId: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
+    const plugin = this.getPluginById(params.pluginId);
+    if (!plugin) {
+      logger.warn(`[PluginRegistry] Plugin not found: ${params.pluginId}`);
+      return;
     }
-  }
 
-  registerAction(params: { pluginId: string; actionId: string; handler: ActionHandler }): void {
-    this.actionHandlers.set(`${params.pluginId}:${params.actionId}`, params.handler);
-  }
-
-  async executeAction(params: { sourcePlugin: string; actionId: string; data: unknown; ctx: SearchResultItemContext }): Promise<void> {
-    const key = `${params.sourcePlugin}:${params.actionId}`;
-    const handler = this.actionHandlers.get(key);
+    const actions = plugin.registerAction();
+    const handler = actions[params.actionId];
     if (handler) {
-      logger.info(`[PluginRegistry] Executing action: ${key}`);
+      logger.info(`[PluginRegistry] Executing action: ${params.pluginId}:${params.actionId}`);
       await handler(params.data, params.ctx);
     } else {
-      logger.warn(`[PluginRegistry] No handler found for action: ${key}`);
+      logger.warn(`[PluginRegistry] No handler found for action: ${params.pluginId}:${params.actionId}`);
     }
   }
 
@@ -62,10 +59,10 @@ export class PluginRegistry {
 
       for (const item of results.slice(0, limit)) {
         const score = item.score ?? this.calculateGlobalScore(item, params.query);
-        // Attach source plugin to each item
+        // Attach pluginId to each item
         const itemWithSource: SearchResultItem = {
           ...item,
-          sourcePlugin: item.sourcePlugin ?? this.plugins[pluginIndex].name,
+          pluginId: item.pluginId ?? this.plugins[pluginIndex].pluginId,
         };
         scoredResults.push({ item: itemWithSource, score, pluginIndex });
       }

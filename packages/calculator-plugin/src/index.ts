@@ -1,9 +1,8 @@
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
@@ -34,22 +33,15 @@ export class CalculatorPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(this.name);
 
-  constructor() {
-    super();
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_OPEN,
-      handler: async (_data, ctx) => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_OPEN]: async (_data, ctx) => {
         const component = await this.render({ query: '' });
         if (component) {
           ctx.setPanel(component, this.name);
         }
       },
-    });
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_CALCULATE,
-      handler: async (data, ctx) => {
+      [ACTION_CALCULATE]: async (data, ctx) => {
         if (typeof data !== 'string') return;
         try {
           await navigator.clipboard.writeText(data);
@@ -62,7 +54,7 @@ export class CalculatorPlugin extends BasePlugin {
           ctx.setPanel(component, this.name);
         }
       },
-    });
+    };
   }
 
   async getExpressions(): Promise<string[]> {
@@ -156,15 +148,9 @@ export class CalculatorPlugin extends BasePlugin {
           iconUrl: calculatorIconUrl,
           title: this.name,
           score: 900,
-          sourcePlugin: this.pluginId,
+          pluginId: this.pluginId,
           actionId: ACTION_OPEN,
           actionData: null,
-          action: async (ctx: SearchResultItemContext) => {
-            const component = await this.render({ query: params.query });
-            if (component) {
-              ctx.setPanel(component, this.name);
-            }
-          },
         },
       ];
     }
@@ -191,23 +177,9 @@ export class CalculatorPlugin extends BasePlugin {
         iconUrl: calculatorIconUrl,
         title: `${displayExpression} = ${formattedResult}`,
         score: 1000,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_CALCULATE,
         actionData: formattedResult,
-        action: async (ctx: SearchResultItemContext) => {
-          // Copy result to clipboard
-          try {
-            await navigator.clipboard.writeText(formattedResult);
-            logger.info('Calculator result copied to clipboard:', formattedResult);
-          } catch (error) {
-            logger.error('Failed to copy to clipboard:', error);
-          }
-          // Enter panel mode
-          const component = await this.render({ query: params.query });
-          if (component) {
-            ctx.setPanel(component, this.name);
-          }
-        },
       },
     ];
   }

@@ -1,7 +1,6 @@
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { tauriApi } from '@spotlight/api';
 import logger from '@spotlight/logger';
@@ -29,15 +28,12 @@ export class ColorPickerPlugin extends BasePlugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  constructor() {
-    super();
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_PICK,
-      handler: async () => {
+  registerAction(): PluginActions {
+    return {
+      [ACTION_PICK]: async () => {
         await this.startColorPicker();
       },
-    });
+    };
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -54,12 +50,9 @@ export class ColorPickerPlugin extends BasePlugin {
           iconUrl: colorPickerIconUrl,
           title: this.name,
           score: 900,
-          sourcePlugin: this.pluginId,
+          pluginId: this.pluginId,
           actionId: ACTION_PICK,
           actionData: null,
-          action: async () => {
-            await this.startColorPicker();
-          },
         },
       ];
     }

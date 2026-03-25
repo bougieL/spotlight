@@ -1,10 +1,9 @@
 import { defineAsyncComponent } from 'vue';
 import type { Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -58,20 +57,20 @@ export class ClipboardPlugin extends BasePlugin {
 
   constructor() {
     super();
-    pluginRegistry.registerAction({
-      pluginId: this.pluginId,
-      actionId: ACTION_OPEN,
-      handler: async (_data, ctx) => {
+    this.startMonitoring().catch((err: unknown) => {
+      logger.error('Failed to start clipboard monitoring:', err);
+    });
+  }
+
+  registerAction(): PluginActions {
+    return {
+      [ACTION_OPEN]: async (_data, ctx) => {
         const component = await this.render({ query: '' });
         if (component) {
           ctx.setPanel(component, this.name);
         }
       },
-    });
-
-    this.startMonitoring().catch((err: unknown) => {
-      logger.error('Failed to start clipboard monitoring:', err);
-    });
+    };
   }
 
   async getData(): Promise<ClipboardData> {
@@ -123,13 +122,13 @@ export class ClipboardPlugin extends BasePlugin {
   async toggleFavorite(item: ClipboardItem): Promise<void> {
     const data = await this.getData();
     const existingIndex = data.favorites.findIndex(f => f.content === item.content);
-    
+
     if (existingIndex !== -1) {
       data.favorites.splice(existingIndex, 1);
     } else {
       data.favorites.unshift({ ...item, favorite: true, timestamp: Date.now() });
     }
-    
+
     await this.saveData(data);
   }
 
@@ -244,15 +243,9 @@ export class ClipboardPlugin extends BasePlugin {
         iconUrl: clipboardIconUrl,
         title: this.name,
         score: 900,
-        sourcePlugin: this.pluginId,
+        pluginId: this.pluginId,
         actionId: ACTION_OPEN,
         actionData: null,
-        action: async (ctx: SearchResultItemContext) => {
-          const component = await this.render({ query: params.query });
-          if (component) {
-            ctx.setPanel(component, this.name);
-          }
-        },
       },
     ];
   }

@@ -1,9 +1,8 @@
 import { defineAsyncComponent, type Component } from 'vue';
-import type { SearchResultItem, SearchResultItemContext, SearchParams, RenderParams } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, RenderParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
-import { pluginRegistry } from '@spotlight/plugin-registry';
 import { formatTime } from '@spotlight/utils';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -26,7 +25,7 @@ export interface RecentItem {
   desc?: string;
   iconUrl?: string;
   iconComponentName?: string;
-  sourcePlugin: string;
+  pluginId: string;
   actionId: string;
   actionData: unknown;
   timestamp: number;
@@ -53,6 +52,10 @@ export class RecentPlugin extends BasePlugin {
 
   private storage: PluginStorage = createPluginStorage(PLUGIN_NAME);
 
+  registerAction() {
+    return {};
+  }
+
   async getData(): Promise<RecentData> {
     const data = await this.storage.get<RecentData>(STORAGE_KEY, { items: [] });
     return data;
@@ -63,12 +66,12 @@ export class RecentPlugin extends BasePlugin {
   }
 
   async recordSelection(params: {
-    item: Omit<RecentItem, 'id' | 'timestamp' | 'sourcePlugin' | 'actionId' | 'actionData'>;
-    sourcePlugin: string;
+    item: Omit<RecentItem, 'id' | 'timestamp' | 'pluginId' | 'actionId' | 'actionData'>;
+    pluginId: string;
     actionId: string;
     actionData: unknown;
   }): Promise<void> {
-    const { item, sourcePlugin, actionId, actionData } = params;
+    const { item, pluginId, actionId, actionData } = params;
     const data = await this.getData();
 
     const existingIndex = data.items.findIndex(i => i.title === item.title);
@@ -80,7 +83,7 @@ export class RecentPlugin extends BasePlugin {
       ...item,
       id: generateId(),
       timestamp: Date.now(),
-      sourcePlugin,
+      pluginId,
       actionId,
       actionData,
     };
@@ -124,10 +127,9 @@ export class RecentPlugin extends BasePlugin {
           title: this.name,
           desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
           score: 900,
-          sourcePlugin: this.pluginId,
+          pluginId: this.pluginId,
           actionId: 'noop',
           actionData: null,
-          action: async () => {},
         },
       ];
     }
@@ -138,17 +140,9 @@ export class RecentPlugin extends BasePlugin {
         title: item.title,
         desc: item.desc || formatTime(item.timestamp),
         score: 1000 - (Date.now() - item.timestamp) / 100000,
-        sourcePlugin: item.sourcePlugin,
+        pluginId: item.pluginId,
         actionId: item.actionId,
         actionData: item.actionData,
-        action: async (ctx: SearchResultItemContext) => {
-          await pluginRegistry.executeAction({
-            sourcePlugin: item.sourcePlugin,
-            actionId: item.actionId,
-            data: item.actionData,
-            ctx,
-          });
-        },
       };
     });
   }
