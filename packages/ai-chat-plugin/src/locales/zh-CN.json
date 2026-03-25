@@ -45,5 +45,8 @@
   "aiChat.save": "保存",
   "aiChat.cancel": "取消",
   "aiChat.sessionName": "会话名称",
-  "aiChat.sessionNamePlaceholder": "输入会话名称..."
+  "aiChat.sessionNamePlaceholder": "输入会话名称...",
+  "aiChat.apiUrlPlaceholder": "https://api.openai.com/v1",
+  "aiChat.apiKeyPlaceholder": "sk-...",
+  "aiChat.maxContextPlaceholder": "4096"
 }

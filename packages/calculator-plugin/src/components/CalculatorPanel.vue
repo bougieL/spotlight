@@ -2,7 +2,9 @@
 import { ref, onMounted, watch } from 'vue';
 import { calculatorPlugin } from '../index';
 import { usePanelContext } from '@spotlight/core';
+import { useI18n } from '@spotlight/i18n';
 
+const { t } = useI18n();
 const { query } = usePanelContext();
 
 const emit = defineEmits<{
@@ -159,7 +161,7 @@ function removeExpression(index: number) {
             v-model="expressions[index]"
             type="text"
             class="calculator-input"
-            placeholder="e.g. 2+3*4"
+            :placeholder="t('calculator.placeholder')"
             @input="handleInput(index)"
             @keydown="handleKeydown(index, $event)"
           />

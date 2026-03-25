@@ -1,3 +1,4 @@
 {
-  "calculator": "计算器"
+  "calculator": "计算器",
+  "calculator.placeholder": "例如 2+3*4"
 }

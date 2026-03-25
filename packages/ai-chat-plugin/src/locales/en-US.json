@@ -45,5 +45,8 @@
   "aiChat.save": "Save",
   "aiChat.cancel": "Cancel",
   "aiChat.sessionName": "Session Name",
-  "aiChat.sessionNamePlaceholder": "Enter session name..."
+  "aiChat.sessionNamePlaceholder": "Enter session name...",
+  "aiChat.apiUrlPlaceholder": "https://api.openai.com/v1",
+  "aiChat.apiKeyPlaceholder": "sk-...",
+  "aiChat.maxContextPlaceholder": "4096"
 }

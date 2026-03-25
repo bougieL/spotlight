@@ -2,7 +2,10 @@
 import { Search, X, FileText, ArrowLeft } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
+import { useI18n } from '@spotlight/i18n';
 import type { FileItem } from '@spotlight/core';
+
+const { t } = useI18n();
 
 export type { FileItem };
 
@@ -150,7 +153,7 @@ const handlePaste = async (event: ClipboardEvent) => {
         ref="inputRef"
         type="text"
         class="spotlight-input"
-        placeholder="Search..."
+        :placeholder="t('input.search')"
         :value="modelValue"
         @input="handleInput"
         @paste="handlePaste"

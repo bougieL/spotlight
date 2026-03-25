@@ -169,12 +169,12 @@ function setMaxContextFromString(value: string) {
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.apiUrl') }}</label>
-        <BaseInput v-model="editingModel.apiUrl!" :placeholder="'https://api.openai.com/v1'" />
+        <BaseInput v-model="editingModel.apiUrl!" :placeholder="t('aiChat.apiUrlPlaceholder')" />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.apiKey') }}</label>
-        <BaseInput v-model="editingModel.apiKey!" type="password" :placeholder="'sk-...'" />
+        <BaseInput v-model="editingModel.apiKey!" type="password" :placeholder="t('aiChat.apiKeyPlaceholder')" />
       </div>
 
       <div class="form-group">
@@ -182,7 +182,7 @@ function setMaxContextFromString(value: string) {
         <BaseInput
           :modelValue="getMaxContextString()"
           type="number"
-          placeholder="4096"
+          :placeholder="t('aiChat.maxContextPlaceholder')"
           @update:modelValue="setMaxContextFromString"
         />
       </div>

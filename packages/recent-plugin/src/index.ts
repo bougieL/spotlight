@@ -64,7 +64,7 @@ export class RecentPlugin extends BasePlugin {
   }
 
   async recordSelection(params: {
-    item: Omit<RecentItem, 'id' | 'timestamp' | 'pluginId' | 'actionId' | 'actionData'>;
+    item: Pick<RecentItem, 'title' | 'desc' | 'iconUrl'>;
     pluginId: string;
     actionId: string;
     actionData: unknown;
@@ -72,10 +72,7 @@ export class RecentPlugin extends BasePlugin {
     const { item, pluginId, actionId, actionData } = params;
     const data = await this.getData();
 
-    const existingIndex = data.items.findIndex(i => i.title === item.title);
-    if (existingIndex !== -1) {
-      data.items.splice(existingIndex, 1);
-    }
+    const filteredItems = data.items.filter(i => i.title !== item.title);
 
     const newItem: RecentItem = {
       ...item,
@@ -86,13 +83,9 @@ export class RecentPlugin extends BasePlugin {
       actionData,
     };
 
-    data.items.unshift(newItem);
+    const newItems = [newItem, ...filteredItems].slice(0, MAX_RECENT_ITEMS);
 
-    if (data.items.length > MAX_RECENT_ITEMS) {
-      data.items = data.items.slice(0, MAX_RECENT_ITEMS);
-    }
-
-    await this.saveData(data);
+    await this.saveData({ items: newItems });
   }
 
   async clearItems(): Promise<void> {
