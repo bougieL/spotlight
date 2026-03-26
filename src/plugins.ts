@@ -16,6 +16,7 @@ import { jsonPlugin } from "@spotlight/json-plugin";
 import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
 import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
 import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
+import { translationPlugin } from "@spotlight/translation-plugin";
 
 /**
  * Registers all built-in plugins with the plugin registry.
@@ -36,6 +37,7 @@ export function registerAllPlugins(): void {
   pluginRegistry.register(aiChatPlugin);
   pluginRegistry.register(colorPickerPlugin);
   pluginRegistry.register(colorPalettePlugin);
+  pluginRegistry.register(translationPlugin);
 }
 
 // Re-export plugin instances for direct access

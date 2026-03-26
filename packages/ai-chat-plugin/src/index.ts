@@ -7,25 +7,17 @@ import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/u
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
-const aiChatIconUrl = new URL('./assets/chat.svg', import.meta.url).href;
+import type { ModelConfig, ChatMessage, Session, AIChatSettings } from '@spotlight/ai-core';
+export type { ModelConfig, ChatMessage, Session, AIChatSettings };
 
-import type {
-  ModelConfig,
-  ChatMessage,
-  Session,
-  AIChatSettings,
-  EndpointType,
-} from './types';
-
-export type { ModelConfig, ChatMessage, Session, AIChatSettings, EndpointType };
-
-export { openaiAdapter } from './services/openai-adapter';
-export { anthropicAdapter } from './services/anthropic-adapter';
+export { openaiAdapter, anthropicAdapter } from '@spotlight/ai-core';
 
 registerTranslations({
   'en-US': enUS,
   'zh-CN': zhCN,
 });
+
+const aiChatIconUrl = new URL('./assets/chat.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
 

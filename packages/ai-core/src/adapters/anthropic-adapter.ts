@@ -1,5 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http';
-import type { AIAdapter, ChatOptions, ChatMessage, ModelConfig, StreamChunk } from './ai-service';
+import type { AIAdapter, ChatOptions, ChatMessage, ModelConfig, StreamChunk } from '../service';
 
 export class AnthropicAdapter implements AIAdapter {
   async *streamChat(

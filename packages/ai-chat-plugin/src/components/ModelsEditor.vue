@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import { Settings, Trash2, Edit2, CheckCircle, XCircle } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton, BaseIconButton, BaseInput, BaseSelect } from '@spotlight/components';
-import type { ModelConfig, EndpointType } from '../index';
+import type { ModelConfig, EndpointType } from '@spotlight/ai-core';
+import { openaiAdapter, anthropicAdapter } from '@spotlight/ai-core';
 
 interface Props {
   models: ModelConfig[];
@@ -80,10 +81,7 @@ async function testConnection(model: ModelConfig) {
   testResult.value = null;
 
   try {
-    const { openaiAdapter: oa } = await import('../services/openai-adapter');
-    const { anthropicAdapter: aa } = await import('../services/anthropic-adapter');
-
-    const adapter = model.endpointType === 'anthropic' ? aa : oa;
+    const adapter = model.endpointType === 'anthropic' ? anthropicAdapter : openaiAdapter;
     const testMessages = [
       { id: '1', role: 'user' as const, content: 'Hi', timestamp: Date.now() }
     ];
