@@ -55,12 +55,12 @@
 - Ensure mock functions match the signature and behavior of real IPC handlers
 - Example: When adding `readConfigFile` to `fileApi.ts`, also add it to `src/__mocks__/fileApi.ts`
 
-### 8. CLAUDE.md Updates (Mandatory)
+### 8. Package Dependencies (Mandatory)
 
-- **MUST use agents-md-updater skill** when adding or modifying rules in CLAUDE.md
-- Use the `Skill` tool with `agents-md-updater` to ensure consistent formatting and structure
-- Follow the existing rule format when adding new rules
-- Example: Use `Skill` tool with `skill: "agents-md-updater"` before making any changes
+- **Package-specific dependencies MUST be declared in the package's own package.json**
+- Project-scoped packages (e.g., `@spotlight/logger`, `@spotlight/utils`) should NOT be added to the root `package.json`
+- Each package in `packages/*/` should manage its own dependencies
+- Example: If `@spotlight/color-picker-plugin` needs `mime-types`, add it to `packages/color-picker-plugin/package.json`, not the root
 
 ### 9. Node.js Static Checking (Mandatory)
 
@@ -79,7 +79,7 @@
 - Check for similar patterns or utilities that can be leveraged
 - Example: Before creating a new utility function, search for existing helpers in `src/utils/` or similar directories
 
-### 11. Code Review After Writing (Mandatory)
+### 10. Code Review After Writing (Mandatory)
 
 - **MUST reflect on whether the code is reasonable after writing**
 - Check if the implementation follows best practices and project conventions
@@ -88,7 +88,7 @@
 - Ensure the code is maintainable and readable
 - Consider if the changes could introduce bugs or edge cases
 
-### 12. Light/Dark Theme Adaptation (Mandatory)
+### 11. Light/Dark Theme Adaptation (Mandatory)
 
 - **ALL colors MUST adapt to light and dark themes**
 - Use CSS variables to define colors and their theme variants

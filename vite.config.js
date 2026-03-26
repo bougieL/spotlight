@@ -3,14 +3,13 @@ import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
 import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
-import { lookup } from "mime-types";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // Auto-discover packages and generate aliases
 const packagesDir = resolve(__dirname, "./packages");
 const packageAliases = {};
-const pluginPublicDirs = [];
+const allPackages = [];
 
 try {
   const packages = readdirSync(packagesDir, { withFileTypes: true });
@@ -21,6 +20,8 @@ try {
 
       if (!existsSync(packageJsonPath)) continue;
 
+      allPackages.push(dir.name);
+
       const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
       const packageName = packageJson.name;
 
@@ -30,11 +31,6 @@ try {
         packageAliases[packageName] = srcPath;
       }
 
-      // Auto-detect public directories for plugins
-      const publicPath = join(packagePath, "public");
-      if (existsSync(publicPath)) {
-        pluginPublicDirs.push({ name: dir.name, path: publicPath });
-      }
     }
   }
 } catch (error) {
@@ -47,58 +43,13 @@ export default defineConfig(async () => ({
     rollupOptions: {
       input: {
         main: resolve(__dirname, "index.html"),
-        colorPicker: resolve(__dirname, "packages/color-picker-plugin/public/color-picker.html"),
+        colorPicker: resolve(__dirname, "packages/color-picker-plugin/color-picker.html"),
       },
     },
   },
 
   plugins: [
     vue(),
-    // Custom plugin to serve plugin public files and handle plugin scripts
-    {
-      name: "plugin-public-files",
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = req.url.split("?")[0];
-
-          // Handle /plugins/{plugin}/ path -> transform TS via Vite
-          if (url.startsWith("/plugins/") && !url.startsWith("/plugins-public/")) {
-            const relativePath = url.replace("/plugins/", "");
-            const parts = relativePath.split("/");
-            const pluginName = parts[0];
-            const filePath = join(__dirname, "packages", pluginName, "src", parts.slice(1).join("/"));
-
-            if (existsSync(filePath) && filePath.endsWith(".ts")) {
-              server.transformRequest(filePath).then((result) => {
-                if (result) {
-                  res.setHeader("Content-Type", "application/javascript");
-                  res.end(result.code);
-                } else {
-                  next();
-                }
-              });
-              return;
-            }
-          }
-
-          for (const plugin of pluginPublicDirs) {
-            if (url.startsWith(`/plugins/${plugin.name}/`)) {
-              const filename = url.replace(`/plugins/${plugin.name}/`, "");
-              const filePath = join(plugin.path, filename);
-
-              if (existsSync(filePath)) {
-                const content = readFileSync(filePath);
-                const contentType = lookup(filePath) || "application/octet-stream";
-                res.setHeader("Content-Type", contentType);
-                res.end(content);
-                return;
-              }
-            }
-          }
-          next();
-        });
-      },
-    },
   ],
 
   resolve: {

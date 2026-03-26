@@ -111,7 +111,7 @@ export abstract class BasePlugin implements PluginMetadata {
 
   getPublicUrl(filePath: string): string {
     const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
-    const path = `/plugins/${this.pluginId}/${normalizedPath}`;
+    const path = `/packages/${this.pluginId}/${normalizedPath}`;
     return `${window.location.protocol}//${window.location.host}${path}`;
   }
 }
