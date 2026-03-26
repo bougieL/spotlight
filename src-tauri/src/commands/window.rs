@@ -99,6 +99,7 @@ pub async fn create_overlay_window(
     .inner_size(screen_width, screen_height)
     .decorations(false)
     .transparent(true)
+    .shadow(false)
     .skip_taskbar(true)
     .always_on_top(true);
 
