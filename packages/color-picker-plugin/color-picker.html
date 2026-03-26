@@ -38,6 +38,10 @@
       transform: translate(-50%, -50%);
       box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
       z-index: 9999;
+      display: none;
+    }
+    #crosshair.show {
+      display: block;
     }
     #info {
       position: fixed;
@@ -53,6 +57,72 @@
     }
     #info.show {
       display: block;
+    }
+    #magnifier {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      display: none;
+      text-align: center;
+    }
+    #magnifier.show {
+      display: block;
+    }
+    #magnifier-circle {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      margin: 0 auto;
+      background: #000;
+    }
+    #magnifier-canvas {
+      width: 120px;
+      height: 120px;
+      image-rendering: pixelated;
+    }
+    #magnifier-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    #magnifier-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1px;
+      height: 1px;
+      background: #f00;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    #magnifier-info {
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      border-radius: 4px;
+      display: inline-block;
+      min-width: 100px;
+    }
+    #magnifier-color {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      vertical-align: middle;
+      margin-right: 6px;
     }
     #loading {
       position: fixed;
@@ -70,6 +140,17 @@
   <canvas id="canvas"></canvas>
   <div id="crosshair"></div>
   <div id="info"></div>
+  <div id="magnifier">
+    <div id="magnifier-circle">
+      <canvas id="magnifier-canvas" width="120" height="120"></canvas>
+      <div id="magnifier-crosshair"></div>
+      <div id="magnifier-center"></div>
+    </div>
+    <div id="magnifier-info">
+      <span id="magnifier-color"></span>
+      <span id="magnifier-hex"></span>
+    </div>
+  </div>
   <div id="loading">Capturing...</div>
   <script type="module" src="./src/colorPicker.ts"></script>
 </body>

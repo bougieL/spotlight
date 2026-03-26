@@ -75,39 +75,118 @@ async function captureScreen(
     logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
 
     loading.style.display = 'none';
+    crosshair.classList.add('show');
+    magnifier.classList.add('show');
+    imageLoaded = true;
     logger.info(`[Performance] TOTAL captureScreen: ${(performance.now() - startTotal).toFixed(1)} ms`);
 
     return ctx;
   } catch (err) {
     console.error('Failed to capture screen:', err);
     loading.textContent = 'Failed: ' + String(err);
+    crosshair.classList.remove('show');
+    magnifier.classList.remove('show');
+    imageLoaded = false;
     return null;
   }
 }
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const crosshair = document.getElementById('crosshair') as HTMLElement;
-const info = document.getElementById('info') as HTMLElement;
 const loading = document.getElementById('loading') as HTMLElement;
+const magnifier = document.getElementById('magnifier') as HTMLElement;
+const magnifierCanvas = document.getElementById('magnifier-canvas') as HTMLCanvasElement;
+const magnifierColor = document.getElementById('magnifier-color') as HTMLElement;
+const magnifierHex = document.getElementById('magnifier-hex') as HTMLElement;
+const magnifierCtx = magnifierCanvas.getContext('2d', { alpha: true })!;
 
 let lastColor = '#000000';
 let ctx: CanvasRenderingContext2D | null = null;
+let imageLoaded = false;
+
+const MAGNIFIER_SIZE = 120;
+const ZOOM_LEVEL = 8; // 8x zoom
+const CAPTURE_SIZE = MAGNIFIER_SIZE / ZOOM_LEVEL; // 15 pixels
 
 function handleMouseMove(e: MouseEvent) {
   crosshair.style.left = e.clientX + 'px';
   crosshair.style.top = e.clientY + 'px';
-  info.style.left = (e.clientX + 15) + 'px';
-  info.style.top = (e.clientY + 15) + 'px';
 
-  if (!ctx) return;
+  // Position magnifier below and to the right of cursor
+  const offsetX = 25;
+  const offsetY = 25;
+  let magnifierX = e.clientX + offsetX;
+  let magnifierY = e.clientY + offsetY;
+
+  // Keep magnifier on screen (120 circle + ~35 info below = ~160 total height)
+  const totalHeight = 165;
+  const totalWidth = 130;
+  if (magnifierX + totalWidth > window.innerWidth) {
+    magnifierX = window.innerWidth - totalWidth - 10;
+  }
+  if (magnifierY + totalHeight > window.innerHeight) {
+    // Show above cursor instead
+    magnifierY = e.clientY - totalHeight - offsetY;
+  }
+  if (magnifierY < 0) {
+    magnifierY = 10;
+  }
+
+  magnifier.style.left = magnifierX + 'px';
+  magnifier.style.top = magnifierY + 'px';
+
+  if (!ctx || !imageLoaded) return;
 
   const color = getColorAtPosition(ctx, canvas, e.clientX, e.clientY);
   if (color) {
     lastColor = color;
-    info.textContent = color;
-    info.classList.add('show');
+    magnifierColor.style.backgroundColor = color;
+    magnifierHex.textContent = color;
     crosshair.style.borderColor = isLightColor(color) ? '#000' : '#fff';
   }
+
+  // Update magnifier with zoomed view
+  updateMagnifier(e.clientX, e.clientY);
+}
+
+function updateMagnifier(clientX: number, clientY: number) {
+  if (!ctx || !imageLoaded) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  // Calculate the center point in canvas coordinates
+  const centerX = Math.floor((clientX - rect.left) * scaleX);
+  const centerY = Math.floor((clientY - rect.top) * scaleY);
+
+  // Source rectangle for the magnifier (in canvas coordinates)
+  const halfSize = Math.floor(CAPTURE_SIZE / 2);
+  const sourceX = centerX - halfSize;
+  const sourceY = centerY - halfSize;
+
+  // Make sure we don't go out of bounds
+  const safeSourceX = Math.max(0, Math.min(sourceX, canvas.width - CAPTURE_SIZE));
+  const safeSourceY = Math.max(0, Math.min(sourceY, canvas.height - CAPTURE_SIZE));
+
+  // Clear and draw zoomed region
+  magnifierCtx.clearRect(0, 0, MAGNIFIER_SIZE, MAGNIFIER_SIZE);
+
+  // Disable smoothing for pixelated look
+  magnifierCtx.imageSmoothingEnabled = false;
+
+  // Draw the zoomed region
+  magnifierCtx.drawImage(
+    canvas,
+    safeSourceX,
+    safeSourceY,
+    CAPTURE_SIZE,
+    CAPTURE_SIZE,
+    0,
+    0,
+    MAGNIFIER_SIZE,
+    MAGNIFIER_SIZE
+  );
 }
 
 async function handleClick(e: MouseEvent) {
