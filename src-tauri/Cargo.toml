@@ -55,7 +55,8 @@ windows = { version = "0.58", features = [
     "ApplicationModel",
     "Foundation_Collections",
 ] }
-image = { version = "0.25", default-features = false, features = ["ico", "png"] }
+image = { version = "0.25", default-features = false, features = ["ico", "jpeg", "png"] }
+xcap = "0.2"
 regex-lite = "0.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]

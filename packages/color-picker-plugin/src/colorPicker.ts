@@ -1,4 +1,5 @@
 import { captureFullScreen, tauriApi } from '@spotlight/api';
+import logger from '@spotlight/logger';
 
 function isLightColor(color: string): boolean {
   const hex = color.replace('#', '');
@@ -42,23 +43,39 @@ async function captureScreen(
   canvas: HTMLCanvasElement,
   loading: HTMLElement
 ): Promise<CanvasRenderingContext2D | null> {
+  const startTotal = performance.now();
   try {
+    const startCapture = performance.now();
     const capture = await captureFullScreen();
+    logger.info(`[Performance] captureFullScreen: ${(performance.now() - startCapture).toFixed(1)} ms`);
 
     canvas.width = capture.width;
     canvas.height = capture.height;
-    const ctx = canvas.getContext('2d', { alpha: true })!;
+    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true })!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const imgElement = new Image();
-    imgElement.onload = () => {
-      ctx.drawImage(imgElement, 0, 0);
-      loading.style.display = 'none';
-    };
-    imgElement.onerror = () => {
-      loading.textContent = 'Failed to load capture';
-    };
-    imgElement.src = capture.image_data;
+    const startFetch = performance.now();
+    // Use fetch to load file via asset protocol
+    const assetUrl = tauriApi.convertFileSrc(capture.filePath);
+    const res = await fetch(assetUrl);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch image: ${res.status}`);
+    }
+    const blob = await res.blob();
+    logger.info(`[Performance] fetch blob: ${(performance.now() - startFetch).toFixed(1)} ms`);
+
+    const startBitmap = performance.now();
+    // Create image bitmap from blob - this avoids canvas tainting
+    const imageBitmap = await createImageBitmap(blob);
+    logger.info(`[Performance] createImageBitmap: ${(performance.now() - startBitmap).toFixed(1)} ms`);
+
+    const startDraw = performance.now();
+    ctx.drawImage(imageBitmap, 0, 0);
+    imageBitmap.close();
+    logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
+
+    loading.style.display = 'none';
+    logger.info(`[Performance] TOTAL captureScreen: ${(performance.now() - startTotal).toFixed(1)} ms`);
 
     return ctx;
   } catch (err) {

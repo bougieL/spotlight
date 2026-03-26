@@ -43,11 +43,9 @@ export interface TauriApi {
 }
 
 export interface ScreenCapture {
-  image_data: string;
+  filePath: string;
   width: number;
   height: number;
-  offset_x: number;
-  offset_y: number;
 }
 
 export const captureFullScreen = (): Promise<ScreenCapture> =>
