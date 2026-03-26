@@ -11,16 +11,23 @@ pub fn capture_full_screen() -> Result<ScreenCapture, String> {
     let mut dup = DxgiDuplicationApi::new(monitor)
         .map_err(|e| format!("Failed to create duplication API: {}", e))?;
 
-    // First frame might be empty, try to get a valid one
+    // Try to get a valid frame with retries
+    let timeout = 2000;
     let mut frame = dup
-        .acquire_next_frame(1000)
+        .acquire_next_frame(timeout)
         .map_err(|e| format!("Failed to acquire frame: {}", e))?;
 
-    // If first frame is empty (no content yet), get another
-    if frame.frame_info().LastPresentTime == 0 {
+    // If first frame is empty, try a few more times
+    let mut attempts = 0;
+    while frame.frame_info().LastPresentTime == 0 && attempts < 5 {
         frame = dup
-            .acquire_next_frame(100)
-            .map_err(|e| format!("Failed to acquire second frame: {}", e))?;
+            .acquire_next_frame(500)
+            .map_err(|e| format!("Failed to acquire frame: {}", e))?;
+        attempts += 1;
+    }
+
+    if frame.frame_info().LastPresentTime == 0 {
+        return Err("Failed to capture screen: frame is empty".to_string());
     }
 
     let width = frame.width() as i32;

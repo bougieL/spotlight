@@ -16,6 +16,7 @@ import { jsonPlugin } from "@spotlight/json-plugin";
 import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
 import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
 import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
+import { screenshotPlugin } from "@spotlight/screenshot-plugin";
 import { translationPlugin } from "@spotlight/translation-plugin";
 
 /**
@@ -37,6 +38,7 @@ export function registerAllPlugins(): void {
   pluginRegistry.register(aiChatPlugin);
   pluginRegistry.register(colorPickerPlugin);
   pluginRegistry.register(colorPalettePlugin);
+  pluginRegistry.register(screenshotPlugin);
   pluginRegistry.register(translationPlugin);
 }
 

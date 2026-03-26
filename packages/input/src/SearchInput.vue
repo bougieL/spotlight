@@ -161,7 +161,7 @@ const handlePaste = async (event: ClipboardEvent) => {
       />
     </div>
     <div v-if="props.files.length > 0" class="files-container">
-      <div v-for="file in props.files" :key="file.id" class="file-item">
+      <div v-for="file in props.files" :key="file.id" class="file-item" :title="file.path">
         <img v-if="file.type === 'image'" :src="file.src" :alt="file.name" class="file-image" />
         <template v-else>
           <FileText class="file-icon" :size="20" />
@@ -257,7 +257,11 @@ const handlePaste = async (event: ClipboardEvent) => {
   padding: 0 24px 12px;
   overflow-x: auto;
   background-color: var(--spotlight-bg);
-  border-top: 1px solid var(--spotlight-border);
+  scrollbar-width: none;
+}
+
+.files-container::-webkit-scrollbar {
+  display: none;
 }
 
 .file-item {

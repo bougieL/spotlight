@@ -14,6 +14,21 @@ export interface ChromeBookmark {
   folder_path: string[];
 }
 
+export interface ScreenCapture {
+  filePath: string;
+  width: number;
+  height: number;
+}
+
+export async function captureFullScreen(): Promise<ScreenCapture> {
+  // In mock mode, return a placeholder screen capture
+  return {
+    filePath: '',
+    width: 1920,
+    height: 1080,
+  };
+}
+
 export async function saveTempImage(dataUrl: string): Promise<string> {
   // In mock mode, just return the data URL as-is for testing
   return dataUrl;

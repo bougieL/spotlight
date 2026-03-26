@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileText, Image, Package } from 'lucide-vue-next';
+import { Package } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { translations, useLocale } from '@spotlight/i18n';
 import type { SearchResultItem } from '@spotlight/core';
@@ -92,13 +92,6 @@ onUnmounted(() => {
 
 <template>
   <div class="search-list">
-    <div v-if="files.length > 0" class="search-list-content">
-      <div v-for="file in files" :key="file.id" class="search-list-item">
-        <Image v-if="file.type === 'image'" :size="16" class="item-icon" />
-        <FileText v-else :size="16" class="item-icon" />
-        <span class="item-name">{{ file.name }}</span>
-      </div>
-    </div>
     <div v-if="searchResults.length > 0" class="spotlight-results-dropdown">
       <div
         v-for="(item, index) in searchResults"
@@ -131,35 +124,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background-color: var(--spotlight-bg);
-}
-
-.search-list-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 24px 12px;
-}
-
-.search-list-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background-color: var(--spotlight-tag-bg);
-  color: var(--spotlight-tag-text);
-  font-size: 12px;
-}
-
-.item-icon {
-  flex-shrink: 0;
-}
-
-.item-name {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .spotlight-results-dropdown {

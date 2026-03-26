@@ -313,104 +313,6 @@ pub fn get_clipboard_image() -> Result<String, String> {
     }
 }
 
-pub fn set_clipboard_image(data_url: String) -> Result<(), String> {
-    #[cfg(windows)]
-    {
-        use base64::Engine;
-        use windows::Win32::Foundation::HWND;
-        use windows::Win32::Graphics::Gdi::{
-            CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, SetDIBits,
-            BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS,
-        };
-        use windows::Win32::System::DataExchange::{
-            CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
-        };
-
-        const CF_BITMAP: u32 = 2;
-
-        unsafe {
-            // Extract base64 data from data URL
-            let base64_data = data_url
-                .split(',')
-                .nth(1)
-                .ok_or("Invalid data URL format")?;
-
-            let image_data = base64::engine::general_purpose::STANDARD
-                .decode(base64_data)
-                .map_err(|e| format!("Failed to decode base64: {}", e))?;
-
-            // Decode PNG
-            let img = image::load_from_memory(&image_data)
-                .map_err(|e| format!("Failed to decode image: {}", e))?
-                .to_rgba8();
-
-            let (width, height) = img.dimensions();
-
-            // Convert RGBA to BGRA
-            let mut bgra_data = img.to_vec();
-            for chunk in bgra_data.chunks_exact_mut(4) {
-                chunk.swap(0, 2);
-            }
-
-            if OpenClipboard(HWND::default()).is_err() {
-                return Err("Failed to open clipboard".to_string());
-            }
-
-            let _ = EmptyClipboard();
-
-            // Create device context
-            let hdc = CreateCompatibleDC(None);
-
-            // Create bitmap
-            let hbitmap = CreateCompatibleBitmap(hdc, width as i32, height as i32);
-
-            // Setup BITMAPINFO
-            let mut bmi = BITMAPINFO {
-                bmiHeader: BITMAPINFOHEADER {
-                    biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
-                    biWidth: width as i32,
-                    biHeight: -(height as i32),
-                    biPlanes: 1,
-                    biBitCount: 32,
-                    biCompression: 0,
-                    biSizeImage: (width * height * 4) as u32,
-                    ..Default::default()
-                },
-                ..Default::default()
-            };
-
-            // Set bitmap bits
-            let _ = SetDIBits(
-                hdc,
-                hbitmap,
-                0,
-                height,
-                bgra_data.as_ptr() as *const _,
-                &mut bmi,
-                DIB_RGB_COLORS,
-            );
-
-            // Cleanup DC
-            let _ = DeleteDC(hdc);
-
-            // Set clipboard data
-            let hmem_handle = windows::Win32::Foundation::HANDLE(hbitmap.0);
-            let _ = SetClipboardData(CF_BITMAP, hmem_handle);
-
-            // Delete bitmap handle (clipboard has its own copy)
-            let _ = DeleteObject(windows::Win32::Graphics::Gdi::HGDIOBJ(hbitmap.0));
-
-            let _ = CloseClipboard();
-            Ok(())
-        }
-    }
-
-    #[cfg(not(windows))]
-    {
-        let _ = data_url;
-        Ok(())
-    }
-}
 
 pub fn set_clipboard_files(files: Vec<String>) -> Result<(), String> {
     #[cfg(windows)]
@@ -622,4 +524,100 @@ unsafe fn wcslen(s: *const u16) -> usize {
         count += 1;
     }
     count
+}
+pub fn set_clipboard_image(data_url: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use base64::Engine;
+        use windows::Win32::Foundation::HWND;
+        use windows::Win32::Graphics::Gdi::{
+            CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, SetDIBits,
+            BITMAPINFO, BITMAPINFOHEADER, DIB_RGB_COLORS,
+        };
+        use windows::Win32::System::DataExchange::{
+            CloseClipboard, EmptyClipboard, OpenClipboard, SetClipboardData,
+        };
+
+        const CF_BITMAP: u32 = 2;
+
+        unsafe {
+            // Extract base64 data from data URL
+            let base64_data = data_url
+                .split(',')
+                .nth(1)
+                .ok_or("Invalid data URL format")?;
+
+            let image_data = base64::engine::general_purpose::STANDARD
+                .decode(base64_data)
+                .map_err(|e| format!("Failed to decode base64: {}", e))?;
+
+            // Decode PNG
+            let img = image::load_from_memory(&image_data)
+                .map_err(|e| format!("Failed to decode image: {}", e))?
+                .to_rgba8();
+
+            let (width, height) = img.dimensions();
+
+            // Convert RGBA to BGRA
+            let mut bgra_data = img.to_vec();
+            for chunk in bgra_data.chunks_exact_mut(4) {
+                chunk.swap(0, 2);
+            }
+
+            if OpenClipboard(HWND::default()).is_err() {
+                return Err("Failed to open clipboard".to_string());
+            }
+
+            let _ = EmptyClipboard();
+
+            // Create device context and bitmap
+            let hdc = CreateCompatibleDC(None);
+            let hbitmap = CreateCompatibleBitmap(hdc, width as i32, height as i32);
+
+            // Setup BITMAPINFO - bottom-up DIB (positive height for Windows GDI)
+            let mut bmi = BITMAPINFO {
+                bmiHeader: BITMAPINFOHEADER {
+                    biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
+                    biWidth: width as i32,
+                    biHeight: height as i32,
+                    biPlanes: 1,
+                    biBitCount: 32,
+                    biCompression: 0,
+                    biSizeImage: (width * height * 4) as u32,
+                    ..Default::default()
+                },
+                ..Default::default()
+            };
+
+            // Set bitmap bits from bottom-up (scan line 0 is bottom)
+            let _ = SetDIBits(
+                hdc,
+                hbitmap,
+                0,
+                height,
+                bgra_data.as_ptr() as *const _,
+                &mut bmi,
+                DIB_RGB_COLORS,
+            );
+
+            // Cleanup DC
+            let _ = DeleteDC(hdc);
+
+            // Set clipboard data
+            let hmem_handle = windows::Win32::Foundation::HANDLE(hbitmap.0);
+            let _ = SetClipboardData(CF_BITMAP, hmem_handle);
+
+            // Delete bitmap handle (clipboard has its own copy)
+            let _ = DeleteObject(windows::Win32::Graphics::Gdi::HGDIOBJ(hbitmap.0));
+
+            let _ = CloseClipboard();
+            Ok(())
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = data_url;
+        Ok(())
+    }
 }
