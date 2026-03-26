@@ -91,29 +91,30 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="search-list">
-    <div v-if="searchResults.length > 0" class="spotlight-results-dropdown">
-      <div
-        v-for="(item, index) in searchResults"
-        :key="index"
-        class="spotlight-result-item"
-        :class="{ 'is-selected': index === selectedIndex }"
-        @click="selectItem(item)"
-        @mouseenter="selectedIndex = index"
-      >
-        <img
-          v-if="item.iconUrl"
-          :src="item.iconUrl"
-          class="result-icon-img"
-        />
-        <Package v-else class="result-icon" :size="20" />
-        <div class="result-content">
-          <div class="result-title">{{ translateTitle(item.title) }}</div>
-          <div class="result-desc">{{ item.desc }}</div>
-        </div>
-        <div v-if="index < 9" class="shortcut-hint">
-          Ctrl + {{ index + 1 }}
-        </div>
+  <div
+    v-if="searchResults.length > 0"
+    class="search-list"
+  >
+    <div
+      v-for="(item, index) in searchResults"
+      :key="index"
+      class="spotlight-result-item"
+      :class="{ 'is-selected': index === selectedIndex }"
+      @click="selectItem(item)"
+      @mouseenter="selectedIndex = index"
+    >
+      <img
+        v-if="item.iconUrl"
+        :src="item.iconUrl"
+        class="result-icon-img"
+      />
+      <Package v-else class="result-icon" :size="20" />
+      <div class="result-content">
+        <div class="result-title">{{ translateTitle(item.title) }}</div>
+        <div class="result-desc">{{ item.desc }}</div>
+      </div>
+      <div v-if="index < 9" class="shortcut-hint">
+        Ctrl + {{ index + 1 }}
       </div>
     </div>
   </div>
@@ -124,11 +125,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background-color: var(--spotlight-bg);
-}
-
-.spotlight-results-dropdown {
   padding: 8px 0;
-  border-top: 1px solid var(--spotlight-border);
   max-height: 320px;
   overflow-y: auto;
 }
@@ -136,8 +133,7 @@ onUnmounted(() => {
 .spotlight-result-item {
   display: flex;
   align-items: center;
-  height: 56px;
-  padding: 0 20px;
+  padding: 12px 20px;
   cursor: pointer;
   transition: background-color 0.15s;
 }

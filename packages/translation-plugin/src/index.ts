@@ -16,7 +16,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const translationIconUrl = new URL('./assets/translation.svg', import.meta.url).href;
+const translationIconUrl = new URL('../assets/translation.svg', import.meta.url).href;
 
 const STORAGE_KEY = 'translation_settings';
 const ACTION_OPEN = 'open';

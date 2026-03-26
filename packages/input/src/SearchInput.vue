@@ -87,8 +87,9 @@ const handlePaste = async (event: ClipboardEvent) => {
     const dataUrl = await imgPromise;
 
     let imageSrc = dataUrl;
+    let localPath = '';
     try {
-      const localPath = await tauriApi.saveTempImage(dataUrl);
+      localPath = await tauriApi.saveTempImage(dataUrl);
       imageSrc = tauriApi.convertFileSrc(localPath);
     } catch {
       // fallback to data url
@@ -97,6 +98,7 @@ const handlePaste = async (event: ClipboardEvent) => {
     newFiles.push({
       id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: file.name || 'pasted-image',
+      path: localPath,
       src: imageSrc,
       type: 'image',
     });
@@ -117,6 +119,7 @@ const handlePaste = async (event: ClipboardEvent) => {
       newFiles.push({
         id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name: fileName,
+        path: filePath || '',
         src: filePath || '',
         type: 'file',
       });
@@ -181,6 +184,7 @@ const handlePaste = async (event: ClipboardEvent) => {
   flex-direction: column;
   width: 100%;
   max-width: 800px;
+  border-bottom: 1px solid var(--spotlight-border);
 }
 
 .spotlight-input-row {

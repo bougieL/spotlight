@@ -6,7 +6,7 @@
   --spotlight-placeholder: #888;
   --spotlight-icon: #666;
   --spotlight-plugin-name: #666;
-  --spotlight-border: rgba(0, 0, 0, 0.15);
+  --spotlight-border: #ddd;
   --spotlight-shadow: rgba(0, 0, 0, 0.15);
   --spotlight-image-bg: rgba(200, 200, 200, 0.6);
   --spotlight-item-hover: rgba(0, 0, 0, 0.05);
@@ -37,7 +37,7 @@
   --spotlight-placeholder: #888;
   --spotlight-icon: #888;
   --spotlight-plugin-name: #888;
-  --spotlight-border: rgba(255, 255, 255, 0.15);
+  --spotlight-border: #777;
   --spotlight-shadow: rgba(0, 0, 0, 0.4);
   --spotlight-image-bg: rgba(80, 80, 80, 0.6);
   --spotlight-item-hover: rgba(255, 255, 255, 0.1);
@@ -68,7 +68,7 @@
   --spotlight-placeholder: #888;
   --spotlight-icon: #666;
   --spotlight-plugin-name: #666;
-  --spotlight-border: rgba(0, 0, 0, 0.15);
+  --spotlight-border: #ddd;
   --spotlight-shadow: rgba(0, 0, 0, 0.15);
   --spotlight-image-bg: rgba(200, 200, 200, 0.6);
   --spotlight-item-hover: rgba(0, 0, 0, 0.05);
@@ -100,7 +100,7 @@
     --spotlight-placeholder: #888;
     --spotlight-icon: #888;
     --spotlight-plugin-name: #888;
-    --spotlight-border: rgba(255, 255, 255, 0.15);
+    --spotlight-border: #777;
     --spotlight-shadow: rgba(0, 0, 0, 0.4);
     --spotlight-image-bg: rgba(80, 80, 80, 0.6);
     --spotlight-item-hover: rgba(255, 255, 255, 0.1);

@@ -68,6 +68,7 @@ export interface SearchParams {
 export interface FileItem {
   id: string;
   name: string;
+  path: string;
   src: string;
   type: 'image' | 'file';
 }

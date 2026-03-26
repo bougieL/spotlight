@@ -11,7 +11,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const screenshotIconUrl = new URL('./assets/screenshot.svg', import.meta.url).href;
+const screenshotIconUrl = new URL('../assets/screenshot.svg', import.meta.url).href;
 
 const ACTION_SCREENSHOT = 'screenshot';
 const OVERLAY_WINDOW_LABEL = 'screenshot-overlay';
