@@ -40,8 +40,7 @@ async function closePicker(): Promise<void> {
 }
 
 async function captureScreen(
-  canvas: HTMLCanvasElement,
-  loading: HTMLElement
+  canvas: HTMLCanvasElement
 ): Promise<CanvasRenderingContext2D | null> {
   const startTotal = performance.now();
   try {
@@ -67,7 +66,6 @@ async function captureScreen(
     ctx.drawImage(img, 0, 0);
     logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
 
-    loading.style.display = 'none';
     crosshair.classList.add('show');
     magnifier.classList.add('show');
     imageLoaded = true;
@@ -76,7 +74,6 @@ async function captureScreen(
     return ctx;
   } catch (err) {
     logger.error('Failed to capture screen:', err);
-    loading.textContent = 'Failed: ' + String(err);
     crosshair.classList.remove('show');
     magnifier.classList.remove('show');
     imageLoaded = false;
@@ -86,7 +83,6 @@ async function captureScreen(
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const crosshair = document.getElementById('crosshair') as HTMLElement;
-const loading = document.getElementById('loading') as HTMLElement;
 const magnifier = document.getElementById('magnifier') as HTMLElement;
 const magnifierCanvas = document.getElementById('magnifier-canvas') as HTMLCanvasElement;
 const magnifierColor = document.getElementById('magnifier-color') as HTMLElement;
@@ -203,7 +199,7 @@ document.addEventListener('mousemove', handleMouseMove);
 document.addEventListener('click', handleClick);
 document.addEventListener('keydown', handleKeyDown);
 
-captureScreen(canvas, loading).then((result) => {
+captureScreen(canvas).then((result) => {
   if (result) {
     ctx = result;
   }

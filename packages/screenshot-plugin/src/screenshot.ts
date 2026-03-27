@@ -5,7 +5,6 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const selection = document.getElementById('selection') as HTMLElement;
 const selectionDimensions = document.getElementById('selection-dimensions') as HTMLElement;
 const hint = document.getElementById('hint') as HTMLElement;
-const loading = document.getElementById('loading') as HTMLElement;
 
 let ctx: CanvasRenderingContext2D | null = null;
 let imageLoaded = false;
@@ -33,8 +32,7 @@ async function closeScreenshot(): Promise<void> {
 }
 
 async function captureScreen(
-  canvas: HTMLCanvasElement,
-  loading: HTMLElement
+  canvas: HTMLCanvasElement
 ): Promise<CanvasRenderingContext2D | null> {
   const startTotal = performance.now();
   try {
@@ -66,14 +64,12 @@ async function captureScreen(
     const pixel = ctx.getImageData(centerX, centerY, 1, 1).data;
     logger.info(`[Debug] Center pixel (${centerX}, ${centerY}): rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3]})`);
 
-    loading.style.display = 'none';
     imageLoaded = true;
     logger.info(`[Performance] TOTAL captureScreen: ${(performance.now() - startTotal).toFixed(1)} ms`);
 
     return ctx;
   } catch (err) {
     logger.error('Failed to capture screen:', err);
-    loading.textContent = 'Failed: ' + String(err);
     imageLoaded = false;
     return null;
   }
@@ -209,7 +205,7 @@ async function handleKeyDown(e: KeyboardEvent): Promise<void> {
   }
 }
 
-captureScreen(canvas, loading).then((result) => {
+captureScreen(canvas).then((result) => {
   if (result) {
     ctx = result;
     showHint('Click and drag to select region');
