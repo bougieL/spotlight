@@ -2,6 +2,7 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 
 export { createPluginStorage, type PluginStorage } from './storage';
 export { listen, emit, on, EventName, type UnlistenFn, type EventNameType } from './event';
+export { setupTray, disposeTray, refreshTray, registerTrayItem, unRegisterTrayItem, getTrayInstance, type TrayOptions, type TrayItem } from './tray';
 
 export interface AppInfo {
   name: string;
@@ -22,6 +23,7 @@ export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
   createOverlayWindow: (url: string, label: string) => Promise<void>;
   closeOverlayWindow: (label: string) => Promise<void>;
+  exitApp: () => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
   getClipboardFilePaths: () => Promise<string[]>;
   getClipboardText: () => Promise<string>;
@@ -55,6 +57,8 @@ export const captureFullScreen = (): Promise<ScreenCapture> =>
 export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
 
+export const exitApp = (): Promise<void> => invoke('exit_app');
+
 export const tauriApi: TauriApi = {
   hideWindow: () => invoke('hide_window'),
 
@@ -64,6 +68,8 @@ export const tauriApi: TauriApi = {
     invoke('create_overlay_window', { url, label }),
 
   closeOverlayWindow: (label: string) => invoke('close_overlay_window', { label }),
+
+  exitApp: () => invoke('exit_app'),
 
   saveTempImage: (dataUrl: string) => invoke<string>('save_temp_image', { dataUrl }),
 

@@ -9,17 +9,20 @@ use commands::{
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
     save_temp_image, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
-    write_plugin_settings, create_overlay_window, close_overlay_window,
+    write_plugin_settings, create_overlay_window, close_overlay_window, exit_app,
 };
-use tauri::{
-    menu::{Menu, MenuItem},
-    tray::TrayIconBuilder,
-    Manager,
-};
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            // Focus existing window when a second instance is launched
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -54,6 +57,7 @@ pub fn run() {
             write_log,
             create_overlay_window,
             close_overlay_window,
+            exit_app,
             capture_full_screen,
             execute_shell_command,
             get_autostart_enabled,
@@ -82,40 +86,6 @@ pub fn run() {
                 let _ =
                     window.set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }));
             }
-
-            // Build system tray menu
-            let show_item = MenuItem::with_id(app, "show", "Show", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&show_item, &quit_item])?;
-
-            // Create system tray icon
-            let _tray = TrayIconBuilder::new()
-                .icon(app.default_window_icon().cloned().unwrap())
-                .menu(&menu)
-                .tooltip("spotlight")
-                .on_tray_icon_event(|tray, event| {
-                    if let tauri::tray::TrayIconEvent::Click { button, .. } = event {
-                        if button == tauri::tray::MouseButton::Left {
-                            if let Some(window) = tray.app_handle().get_webview_window("main") {
-                                let _ = window.show();
-                                let _ = window.set_focus();
-                            }
-                        }
-                    }
-                })
-                .on_menu_event(|app, event| match event.id.as_ref() {
-                    "show" => {
-                        if let Some(window) = app.get_webview_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
-                    "quit" => {
-                        app.exit(0);
-                    }
-                    _ => {}
-                })
-                .build(app)?;
 
             Ok(())
         })

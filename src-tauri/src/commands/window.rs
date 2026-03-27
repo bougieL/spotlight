@@ -166,3 +166,9 @@ pub async fn close_overlay_window(app: tauri::AppHandle, label: String) -> Resul
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn exit_app(app: tauri::AppHandle) -> Result<(), String> {
+    app.exit(0);
+    Ok(())
+}

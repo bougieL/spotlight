@@ -18,5 +18,7 @@
   "settings.hideOnBlur": "失焦隐藏",
   "settings.hideOnBlur.enable": "窗口失焦时自动隐藏",
   "settings.plugins": "插件管理",
-  "settings.plugins.description": "启用或禁用插件"
+  "settings.plugins.description": "启用或禁用插件",
+  "tray.show": "显示",
+  "tray.quit": "退出"
 }

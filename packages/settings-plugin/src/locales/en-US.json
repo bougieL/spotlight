@@ -18,5 +18,7 @@
   "settings.hideOnBlur": "Hide on Blur",
   "settings.hideOnBlur.enable": "Hide window when it loses focus",
   "settings.plugins": "Plugins",
-  "settings.plugins.description": "Enable or disable plugins"
+  "settings.plugins.description": "Enable or disable plugins",
+  "tray.show": "Show",
+  "tray.quit": "Quit"
 }

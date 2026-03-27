@@ -1,21 +1,24 @@
 <script setup lang="ts">
-import { ref, provide, onMounted, computed } from 'vue';
+import { ref, provide, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { SearchInput } from "@spotlight/input";
 import { registerAllPlugins, recentPlugin, pluginRegistry } from "./plugins";
-import { provideI18n, setLocale } from "@spotlight/i18n";
+import { provideI18n, setLocale, useI18n } from "@spotlight/i18n";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, PanelContext } from "@spotlight/core";
 import { panelContext, ROUTE_NAMES } from "@spotlight/core";
-import { useWindowResize, useWindowFocus, usePlugins } from "./composables";
+import { useWindowResize, useWindowFocus, usePlugins, useTray } from "./composables";
 
 provideI18n();
+const { locale } = useI18n();
 
 const router = useRouter();
 const route = useRoute();
 
 registerAllPlugins();
+
+const { refreshTray } = useTray();
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
@@ -77,6 +80,18 @@ onMounted(async () => {
   const savedLanguage = await settingsPlugin.getLanguage();
   applyTheme(savedTheme);
   setLocale(savedLanguage);
+
+  // Initialize tray after locale is set
+  await refreshTray();
+});
+
+// Only refresh tray when locale changes to a different value (not initial set)
+let previousLocale = '';
+watch(locale, async (newLocale) => {
+  if (newLocale !== previousLocale && previousLocale !== '') {
+    await refreshTray();
+  }
+  previousLocale = newLocale;
 });
 </script>
 
