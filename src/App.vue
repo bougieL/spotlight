@@ -70,6 +70,10 @@ const handleClosePanel = () => {
   router.push({ name: ROUTE_NAMES.SEARCH });
 };
 
+const handleOpenSettings = () => {
+  router.push({ name: 'settings-plugin' });
+};
+
 let resizeObserver: ResizeObserver | null = null;
 let resizeTimer: ReturnType<typeof setTimeout> | null = null;
 let lastHeight: number | null = null;
@@ -140,6 +144,7 @@ onUnmounted(async () => {
       :is-panel-mode="isPanelMode"
       :plugin-name="activePluginName"
       @back="handleClosePanel"
+      @open-settings="handleOpenSettings"
     />
     <RouterView v-slot="{ Component }">
       <KeepAlive>

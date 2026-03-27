@@ -145,10 +145,12 @@ onMounted(async () => {
     </section>
 
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.shortcut') }}</h3>
+      <div class="section-header">
+        <h3 class="section-title">{{ t('settings.shortcut') }}</h3>
+        <p v-if="hotkeyError" class="shortcut-error">{{ hotkeyError }}</p>
+        <p v-else class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
+      </div>
       <HotkeyPicker v-model="currentHotkey" :error="hotkeyError" @update:model-value="updateHotkey" />
-      <p v-if="hotkeyError" class="shortcut-error">{{ hotkeyError }}</p>
-      <p v-else class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
     </section>
 
     <section class="settings-section">
@@ -165,8 +167,10 @@ onMounted(async () => {
     </section>
 
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.plugins') }}</h3>
-      <p class="section-description">{{ t('settings.plugins.description') }}</p>
+      <div class="section-header">
+        <h3 class="section-title">{{ t('settings.plugins') }}</h3>
+        <p class="section-description">{{ t('settings.plugins.description') }}</p>
+      </div>
       <div class="plugin-list">
         <div
           v-for="{ plugin, isDisabled } in pluginList"
@@ -213,6 +217,17 @@ onMounted(async () => {
   margin-bottom: 12px;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.section-header .section-title {
+  margin-bottom: 0;
+}
+
 .option-group {
   display: flex;
   gap: 8px;
@@ -252,19 +267,16 @@ onMounted(async () => {
 }
 
 .shortcut-hint {
-  margin-top: 8px;
   font-size: 12px;
   color: var(--spotlight-placeholder);
 }
 
 .shortcut-error {
-  margin-top: 8px;
   font-size: 12px;
   color: var(--spotlight-tag-text);
 }
 
 .section-description {
-  margin-bottom: 12px;
   font-size: 12px;
   color: var(--spotlight-placeholder);
 }

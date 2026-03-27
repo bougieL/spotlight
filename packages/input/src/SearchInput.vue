@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search, X, FileText, ArrowLeft } from 'lucide-vue-next';
+import { Search, X, FileText, ArrowLeft, Settings } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import { useI18n } from '@spotlight/i18n';
@@ -29,6 +29,8 @@ const emit = defineEmits<{
   (e: 'search', query: string, files: FileItem[]): void;
   // eslint-disable-next-line no-unused-vars
   (e: 'back'): void;
+  // eslint-disable-next-line no-unused-vars
+  (e: 'openSettings'): void;
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -53,6 +55,10 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 const handleBack = () => {
   emit('back');
+};
+
+const handleOpenSettings = () => {
+  emit('openSettings');
 };
 
 const removeFile = (id: string) => {
@@ -137,7 +143,7 @@ const handlePaste = async (event: ClipboardEvent) => {
 
 <template>
   <div class="spotlight-input-wrapper">
-    <div class="spotlight-input-row">
+    <div class="spotlight-input-row" data-tauri-drag-region>
       <button v-if="props.isPanelMode" class="back-button" @click="handleBack" aria-label="Back">
         <ArrowLeft class="back-icon" :size="24" />
       </button>
@@ -153,6 +159,9 @@ const handlePaste = async (event: ClipboardEvent) => {
         @paste="handlePaste"
         @keydown="handleKeydown"
       />
+      <button class="settings-button" @click="handleOpenSettings" aria-label="Settings">
+        <Settings class="settings-icon" :size="20" />
+      </button>
     </div>
     <div v-if="props.files.length > 0" class="files-container">
       <div v-for="file in props.files" :key="file.id" class="file-item" :title="file.path">
@@ -184,6 +193,7 @@ const handlePaste = async (event: ClipboardEvent) => {
   height: 64px;
   padding: 0 24px;
   background-color: var(--spotlight-bg);
+  cursor: move;
 }
 
 .search-icon {
@@ -243,6 +253,31 @@ const handlePaste = async (event: ClipboardEvent) => {
 
 .spotlight-input::placeholder {
   color: var(--spotlight-placeholder);
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin-left: 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--spotlight-icon);
+  flex-shrink: 0;
+}
+
+.settings-button:hover {
+  background-color: var(--spotlight-hover-bg);
+  color: var(--spotlight-text);
+}
+
+.settings-icon {
+  flex-shrink: 0;
 }
 
 .files-container {
