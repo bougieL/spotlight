@@ -149,7 +149,20 @@ function redrawWithDim(minX: number, minY: number, width: number, height: number
 }
 
 function updateSelection(): void {
-  const { minX, minY, width, height } = getSelectionBounds();
+  // Use selectionBounds if in resize mode, otherwise use getSelectionBounds
+  let minX: number, minY: number, width: number, height: number;
+  if (isResizing || selectionBounds.maxX > selectionBounds.minX) {
+    minX = selectionBounds.minX;
+    minY = selectionBounds.minY;
+    width = selectionBounds.maxX - selectionBounds.minX;
+    height = selectionBounds.maxY - selectionBounds.minY;
+  } else {
+    const bounds = getSelectionBounds();
+    minX = bounds.minX;
+    minY = bounds.minY;
+    width = bounds.width;
+    height = bounds.height;
+  }
 
   selection.style.left = minX + 'px';
   selection.style.top = minY + 'px';
@@ -182,6 +195,14 @@ function clearSelection(): void {
   selection.classList.remove('resizing');
   selectionDimensions.classList.remove('show');
   hideButtons();
+  selectionBounds = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+  isResizing = false;
+  resizeHandle = '';
+  // Reset coordinate state
+  startX = 0;
+  startY = 0;
+  currentX = 0;
+  currentY = 0;
 
   // Redraw with full dim (no cutout)
   if (ctx && screenshotImage && imageLoaded) {
@@ -266,10 +287,27 @@ async function copySelectionToClipboard(): Promise<void> {
 
 function handleMouseDown(e: MouseEvent): void {
   if (!imageLoaded) return;
+  // Prevent interfering with active resize operations
+  if (isResizing) return;
 
   const target = e.target as HTMLElement;
   if (target.classList.contains('resize-handle') || target.classList.contains('btn')) {
     return;
+  }
+
+  // Check if clicking inside existing selection - if so, keep it for new drag
+  if (selection.classList.contains('show')) {
+    const rect = selection.getBoundingClientRect();
+    const inSelection =
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom;
+
+    if (inSelection) {
+      // Clear and start fresh drag from current position
+      clearSelection();
+    }
   }
 
   isSelecting = true;
@@ -279,7 +317,6 @@ function handleMouseDown(e: MouseEvent): void {
   currentX = e.clientX;
   currentY = e.clientY;
   hideHint();
-  clearSelection();
 }
 
 function handleMouseMove(e: MouseEvent): void {
@@ -296,8 +333,12 @@ function handleMouseMove(e: MouseEvent): void {
 }
 
 function handleResize(e: MouseEvent): void {
+  // Guard: only resize when a handle is actively selected
+  if (!resizeHandle) return;
+
   const dx = e.clientX - currentX;
   const dy = e.clientY - currentY;
+  // Keep currentX/currentY as mouse position reference
   currentX = e.clientX;
   currentY = e.clientY;
 
@@ -334,11 +375,17 @@ function handleResize(e: MouseEvent): void {
       break;
   }
 
-  if (maxX > minX && maxY > minY) {
+  // Clamp to screen boundaries
+  minX = Math.max(0, minX);
+  minY = Math.max(0, minY);
+  maxX = Math.min(window.innerWidth, maxX);
+  maxY = Math.min(window.innerHeight, maxY);
+
+  // Ensure minimum size
+  if (maxX - minX >= 5 && maxY - minY >= 5) {
+    // Update startX/startY only (currentX/currentY stay as mouse position)
     startX = minX;
     startY = minY;
-    currentX = maxX;
-    currentY = maxY;
     selectionBounds = { minX, minY, maxX, maxY };
 
     // Redraw with new dim
@@ -350,11 +397,17 @@ function handleResize(e: MouseEvent): void {
 }
 
 function handleResizeStart(e: MouseEvent): void {
-  if (!isResizing) return;
-  e.stopPropagation();
+  // Re-enable resizing mode when clicking a handle
+  isResizing = true;
+  e.preventDefault();
+  // Use stopImmediatePropagation to prevent handleMouseDown from executing
+  e.stopImmediatePropagation();
   const target = e.target as HTMLElement;
   if (target.classList.contains('resize-handle')) {
     resizeHandle = target.dataset.handle || '';
+    // Update reference point for resize calculations
+    currentX = e.clientX;
+    currentY = e.clientY;
   }
 }
 
@@ -372,8 +425,9 @@ async function handleMouseUp(_e: MouseEvent): Promise<void> {
       showHint(t('selectRegion'));
     }
   } else if (isResizing) {
+    // Stop current resize, but keep resize mode active
+    // User can click a handle to start another resize
     isResizing = false;
-    selection.classList.remove('resizing');
     resizeHandle = '';
   }
 }
