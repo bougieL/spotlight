@@ -16,6 +16,7 @@ const { query, files } = usePanelContext();
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
 const locale = useLocale();
+const listRef = ref<HTMLElement | null>(null);
 
 const translateTitle = (title: string): string => {
   return translations[locale.value][title] ?? title;
@@ -40,6 +41,9 @@ watch(
   () => query.value,
   () => {
     selectedIndex.value = 0;
+    if (listRef.value) {
+      listRef.value.scrollTop = 0;
+    }
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(performSearch, SEARCH_DEBOUNCE_MS);
   },
@@ -93,6 +97,7 @@ onUnmounted(() => {
 <template>
   <div
     v-if="searchResults.length > 0"
+    ref="listRef"
     class="search-list"
   >
     <div

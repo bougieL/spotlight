@@ -1,7 +1,7 @@
 import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
-import { tauriApi } from '@spotlight/api';
+import { tauriApi, registerTrayItem, unRegisterTrayItem } from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -68,6 +68,24 @@ export class ScreenshotPlugin extends BasePlugin {
     } catch (error) {
       logger.error('Failed to start screenshot:', error);
     }
+  }
+
+  async onMount(): Promise<void> {
+    const label = translations[getLocale()]['tray.screenshot'] || 'Screenshot';
+    await registerTrayItem({
+      id: 'screenshot',
+      text: label,
+      action: async () => {
+        logger.info('Screenshot menu item clicked');
+        await this.startScreenshot();
+      },
+    });
+    logger.info('Screenshot tray item registered');
+  }
+
+  async onUnmount(): Promise<void> {
+    await unRegisterTrayItem('screenshot');
+    logger.info('Screenshot tray item unregistered');
   }
 }
 

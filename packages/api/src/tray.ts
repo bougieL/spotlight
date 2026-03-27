@@ -20,8 +20,16 @@ export interface TrayOptions {
 }
 
 export async function registerTrayItem(item: TrayItem): Promise<void> {
+  // Wait for tray to be ready
+  let attempts = 0;
+  while (!menuInstance && attempts < 100) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    attempts++;
+  }
+
   if (!menuInstance) {
-    throw new Error('Tray not initialized. Call setupTray first.');
+    logger.error('Tray not ready after waiting');
+    return;
   }
 
   const items = await menuInstance.items();
