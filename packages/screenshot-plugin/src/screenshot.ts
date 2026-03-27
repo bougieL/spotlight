@@ -4,15 +4,52 @@ import logger from '@spotlight/logger';
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const selection = document.getElementById('selection') as HTMLElement;
 const selectionDimensions = document.getElementById('selection-dimensions') as HTMLElement;
+const buttonBar = document.getElementById('button-bar') as HTMLElement;
+const btnConfirm = document.getElementById('btn-confirm') as HTMLButtonElement;
+const btnCancel = document.getElementById('btn-cancel') as HTMLButtonElement;
 const hint = document.getElementById('hint') as HTMLElement;
 
 let ctx: CanvasRenderingContext2D | null = null;
+let screenshotImage: HTMLImageElement | null = null;
 let imageLoaded = false;
+
+// Selection state
 let isSelecting = false;
+let isResizing = false;
+let resizeHandle = '';
 let startX = 0;
 let startY = 0;
 let currentX = 0;
 let currentY = 0;
+
+// Initial selection bounds (for resize calculations)
+let selectionBounds = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+
+function getLocale(): string {
+  const locale = navigator.language || 'en-US';
+  return locale.startsWith('zh') ? 'zh-CN' : 'en-US';
+}
+
+function t(key: string): string {
+  const locale = getLocale();
+  const translations: Record<string, Record<string, string>> = {
+    'en-US': {
+      'confirm': 'Confirm',
+      'cancel': 'Cancel',
+      'selectRegion': 'Click and drag to select region',
+      'resizeHint': 'Drag handles to resize, then click Confirm',
+      'screenshotCopied': 'Screenshot copied to clipboard',
+    },
+    'zh-CN': {
+      'confirm': '确定',
+      'cancel': '取消',
+      'selectRegion': '点击并拖动选择区域',
+      'resizeHint': '拖动边框调整大小，点击确定',
+      'screenshotCopied': '截图已复制到剪贴板',
+    },
+  };
+  return translations[locale]?.[key] || key;
+}
 
 function showHint(text: string): void {
   hint.textContent = text;
@@ -43,22 +80,21 @@ async function captureScreen(
     canvas.width = capture.width;
     canvas.height = capture.height;
     logger.info(`[Debug] Canvas size: ${canvas.width}x${canvas.height}, window: ${window.innerWidth}x${window.innerHeight}`);
-    const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true })!;
+    ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true })!;
 
     const startLoad = performance.now();
-    const img = new Image();
+    screenshotImage = new Image();
     await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = capture.dataUrl;
+      screenshotImage!.onload = () => resolve();
+      screenshotImage!.onerror = () => reject(new Error('Failed to load image'));
+      screenshotImage!.src = capture.dataUrl;
     });
     logger.info(`[Performance] load image: ${(performance.now() - startLoad).toFixed(1)} ms`);
 
     const startDraw = performance.now();
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(screenshotImage, 0, 0);
     logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
 
-    // Debug: check a pixel in the center
     const centerX = Math.floor(canvas.width / 2);
     const centerY = Math.floor(canvas.height / 2);
     const pixel = ctx.getImageData(centerX, centerY, 1, 1).data;
@@ -75,13 +111,45 @@ async function captureScreen(
   }
 }
 
-function updateSelection(): void {
-  if (!isSelecting) return;
-
+function getSelectionBounds(): { minX: number; minY: number; width: number; height: number } {
   const minX = Math.min(startX, currentX);
   const minY = Math.min(startY, currentY);
   const width = Math.abs(currentX - startX);
   const height = Math.abs(currentY - startY);
+  return { minX, minY, width, height };
+}
+
+function redrawWithDim(minX: number, minY: number, width: number, height: number, cutOut = true): void {
+  if (!ctx || !screenshotImage || !imageLoaded) return;
+
+  // Redraw the screenshot first
+  ctx.drawImage(screenshotImage, 0, 0);
+
+  // Draw dim overlay using canvas coordinates
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // "Cut out" the selection area to reveal screenshot
+  if (cutOut && width > 0 && height > 0) {
+    const scaleX = canvas.width / window.innerWidth;
+    const scaleY = canvas.height / window.innerHeight;
+    const sx = minX * scaleX;
+    const sy = minY * scaleY;
+    const sw = width * scaleX;
+    const sh = height * scaleY;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+    ctx.fillRect(sx, sy, sw, sh);
+  }
+
+  ctx.restore();
+}
+
+function updateSelection(): void {
+  const { minX, minY, width, height } = getSelectionBounds();
 
   selection.style.left = minX + 'px';
   selection.style.top = minY + 'px';
@@ -93,20 +161,51 @@ function updateSelection(): void {
   selectionDimensions.style.left = (minX + width + 10) + 'px';
   selectionDimensions.style.top = minY + 'px';
   selectionDimensions.classList.add('show');
+
+  // Update button bar position
+  buttonBar.style.left = (minX + width / 2 - 70) + 'px';
+  buttonBar.style.top = (minY + height + 15) + 'px';
+}
+
+function showButtons(): void {
+  buttonBar.classList.add('show');
+  btnConfirm.textContent = t('confirm');
+  btnCancel.textContent = t('cancel');
+}
+
+function hideButtons(): void {
+  buttonBar.classList.remove('show');
 }
 
 function clearSelection(): void {
   selection.classList.remove('show');
+  selection.classList.remove('resizing');
   selectionDimensions.classList.remove('show');
+  hideButtons();
+
+  // Redraw with full dim (no cutout)
+  if (ctx && screenshotImage && imageLoaded) {
+    redrawWithDim(0, 0, 0, 0, false);
+  }
+}
+
+function enterResizeMode(): void {
+  const { minX, minY, width, height } = getSelectionBounds();
+  selectionBounds = { minX, minY, maxX: minX + width, maxY: minY + height };
+  isResizing = true;
+  selection.classList.add('resizing');
+
+  // Apply dim effect
+  redrawWithDim(minX, minY, width, height);
+
+  showButtons();
+  showHint(t('resizeHint'));
 }
 
 async function copySelectionToClipboard(): Promise<void> {
-  if (!ctx || !imageLoaded) return;
+  if (!ctx || !screenshotImage || !imageLoaded) return;
 
-  const minX = Math.min(startX, currentX);
-  const minY = Math.min(startY, currentY);
-  const width = Math.abs(currentX - startX);
-  const height = Math.abs(currentY - startY);
+  const { minX, minY, width, height } = getSelectionBounds();
 
   if (width < 5 || height < 5) {
     logger.info('Selection too small, ignoring');
@@ -128,8 +227,9 @@ async function copySelectionToClipboard(): Promise<void> {
     tempCanvas.width = sourceWidth;
     tempCanvas.height = sourceHeight;
     const tempCtx = tempCanvas.getContext('2d', { alpha: false })!;
+    // Draw from original screenshotImage, not from dimmed canvas
     tempCtx.drawImage(
-      canvas,
+      screenshotImage,
       sourceX,
       sourceY,
       sourceWidth,
@@ -140,14 +240,12 @@ async function copySelectionToClipboard(): Promise<void> {
       sourceHeight
     );
 
-    // Debug: check a pixel in the copied region
     const testPixel = tempCtx.getImageData(Math.floor(sourceWidth/2), Math.floor(sourceHeight/2), 1, 1).data;
     logger.info(`[Debug] Temp canvas center pixel: rgba(${testPixel[0]}, ${testPixel[1]}, ${testPixel[2]}, ${testPixel[3]})`);
 
     const dataUrl = tempCanvas.toDataURL('image/png');
     logger.info(`[Debug] Data URL length: ${dataUrl.length}`);
 
-    // Convert data URL to blob
     const blob = await new Promise<Blob>((resolve, reject) => {
       tempCanvas.toBlob((b) => {
         if (b) resolve(b);
@@ -160,6 +258,7 @@ async function copySelectionToClipboard(): Promise<void> {
       })
     ]);
     logger.info('Screenshot copied to clipboard');
+    showHint(t('screenshotCopied'));
   } catch (err) {
     logger.error('Failed to copy screenshot to clipboard:', err);
   }
@@ -167,7 +266,14 @@ async function copySelectionToClipboard(): Promise<void> {
 
 function handleMouseDown(e: MouseEvent): void {
   if (!imageLoaded) return;
+
+  const target = e.target as HTMLElement;
+  if (target.classList.contains('resize-handle') || target.classList.contains('btn')) {
+    return;
+  }
+
   isSelecting = true;
+  isResizing = false;
   startX = e.clientX;
   startY = e.clientY;
   currentX = e.clientX;
@@ -177,26 +283,109 @@ function handleMouseDown(e: MouseEvent): void {
 }
 
 function handleMouseMove(e: MouseEvent): void {
-  if (!isSelecting) return;
-  currentX = e.clientX;
-  currentY = e.clientY;
-  updateSelection();
+  if (isResizing) {
+    handleResize(e);
+  } else if (isSelecting) {
+    currentX = e.clientX;
+    currentY = e.clientY;
+    updateSelection();
+    // Update dim during drag
+    const { minX, minY, width, height } = getSelectionBounds();
+    redrawWithDim(minX, minY, width, height, true);
+  }
 }
 
-async function handleMouseUp(e: MouseEvent): Promise<void> {
-  if (!isSelecting) return;
-  isSelecting = false;
+function handleResize(e: MouseEvent): void {
+  const dx = e.clientX - currentX;
+  const dy = e.clientY - currentY;
   currentX = e.clientX;
   currentY = e.clientY;
-  updateSelection();
 
-  const width = Math.abs(currentX - startX);
-  const height = Math.abs(currentY - startY);
+  let { minX, minY, maxX, maxY } = selectionBounds;
 
-  if (width > 5 && height > 5) {
-    await copySelectionToClipboard();
-    await closeScreenshot();
+  switch (resizeHandle) {
+    case 'se':
+      maxX += dx;
+      maxY += dy;
+      break;
+    case 'sw':
+      minX += dx;
+      maxY += dy;
+      break;
+    case 'ne':
+      maxX += dx;
+      minY += dy;
+      break;
+    case 'nw':
+      minX += dx;
+      minY += dy;
+      break;
+    case 'n':
+      minY += dy;
+      break;
+    case 's':
+      maxY += dy;
+      break;
+    case 'e':
+      maxX += dx;
+      break;
+    case 'w':
+      minX += dx;
+      break;
   }
+
+  if (maxX > minX && maxY > minY) {
+    startX = minX;
+    startY = minY;
+    currentX = maxX;
+    currentY = maxY;
+    selectionBounds = { minX, minY, maxX, maxY };
+
+    // Redraw with new dim
+    const width = maxX - minX;
+    const height = maxY - minY;
+    redrawWithDim(minX, minY, width, height);
+    updateSelection();
+  }
+}
+
+function handleResizeStart(e: MouseEvent): void {
+  if (!isResizing) return;
+  e.stopPropagation();
+  const target = e.target as HTMLElement;
+  if (target.classList.contains('resize-handle')) {
+    resizeHandle = target.dataset.handle || '';
+  }
+}
+
+async function handleMouseUp(_e: MouseEvent): Promise<void> {
+  if (isSelecting) {
+    isSelecting = false;
+    const width = Math.abs(currentX - startX);
+    const height = Math.abs(currentY - startY);
+
+    if (width > 5 && height > 5) {
+      updateSelection();
+      enterResizeMode();
+    } else {
+      clearSelection();
+      showHint(t('selectRegion'));
+    }
+  } else if (isResizing) {
+    isResizing = false;
+    selection.classList.remove('resizing');
+    resizeHandle = '';
+  }
+}
+
+async function handleConfirm(): Promise<void> {
+  await copySelectionToClipboard();
+  await closeScreenshot();
+}
+
+async function handleCancel(): Promise<void> {
+  clearSelection();
+  showHint(t('selectRegion'));
 }
 
 async function handleKeyDown(e: KeyboardEvent): Promise<void> {
@@ -208,13 +397,19 @@ async function handleKeyDown(e: KeyboardEvent): Promise<void> {
 captureScreen(canvas).then((result) => {
   if (result) {
     ctx = result;
-    showHint('Click and drag to select region');
+    // Apply dim to entire screen initially (no cutout)
+    redrawWithDim(0, 0, 0, 0, false);
+    showHint(t('selectRegion'));
   }
 });
 
 document.addEventListener('mousedown', handleMouseDown);
 document.addEventListener('mousemove', handleMouseMove);
 document.addEventListener('mouseup', handleMouseUp);
+
+selection.addEventListener('mousedown', handleResizeStart);
+btnConfirm.addEventListener('click', handleConfirm);
+btnCancel.addEventListener('click', handleCancel);
 document.addEventListener('keydown', handleKeyDown);
 
 window.focus();
