@@ -26,6 +26,7 @@ const currentHotkey = ref('Alt+Space');
 const hotkeyError = ref<string | null>(null);
 const disabledPlugins = ref<Set<string>>(new Set());
 const autostartEnabled = ref(false);
+const hideOnBlurEnabled = ref(true);
 
 const allPlugins = computed(() => pluginRegistry.getPlugins());
 
@@ -48,6 +49,11 @@ async function togglePlugin(pluginId: string, disabled: boolean): Promise<void> 
 async function toggleAutostart(enabled: boolean): Promise<void> {
   await settingsPlugin.setAutostartEnabled(enabled);
   autostartEnabled.value = enabled;
+}
+
+async function toggleHideOnBlur(enabled: boolean): Promise<void> {
+  await settingsPlugin.setHideOnBlur(enabled);
+  hideOnBlurEnabled.value = enabled;
 }
 
 const themeOptions: { value: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
@@ -108,6 +114,9 @@ onMounted(async () => {
 
   // Load autostart setting
   autostartEnabled.value = await settingsPlugin.getAutostartEnabled();
+
+  // Load hide on blur setting
+  hideOnBlurEnabled.value = await settingsPlugin.getHideOnBlur();
 });
 </script>
 
@@ -162,6 +171,19 @@ onMounted(async () => {
         <BaseSwitch
           :model-value="autostartEnabled"
           @update:model-value="toggleAutostart($event as boolean)"
+        />
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">{{ t('settings.hideOnBlur') }}</h3>
+      <div class="autostart-item">
+        <div class="autostart-info">
+          <span class="autostart-name">{{ t('settings.hideOnBlur.enable') }}</span>
+        </div>
+        <BaseSwitch
+          :model-value="hideOnBlurEnabled"
+          @update:model-value="toggleHideOnBlur($event as boolean)"
         />
       </div>
     </section>

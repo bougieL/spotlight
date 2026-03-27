@@ -61,6 +61,7 @@ export class ColorPickerPlugin extends BasePlugin {
 
   async startColorPicker(): Promise<void> {
     try {
+      await tauriApi.hideWindow();
       const url = this.getPublicUrl('color-picker.html');
       await tauriApi.createOverlayWindow(url, OVERLAY_WINDOW_LABEL);
       logger.info('Color picker started');

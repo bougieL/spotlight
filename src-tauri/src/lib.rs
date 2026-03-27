@@ -5,7 +5,7 @@ pub mod utils;
 use commands::{
     capture_full_screen, execute_shell_command, get_app_icon, get_autostart_enabled,
     get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image, get_clipboard_text,
-    get_global_shortcut, get_installed_applications, get_plugin_storage_dir, launch_app,
+    get_global_shortcut, get_installed_applications, get_plugin_storage_dir, hide_window, launch_app,
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
     save_temp_image, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
@@ -40,6 +40,7 @@ pub fn run() {
             set_clipboard_files,
             start_clipboard_monitor,
             stop_clipboard_monitor,
+            hide_window,
             resize_window,
             get_chrome_bookmarks,
             get_installed_applications,
@@ -63,17 +64,6 @@ pub fn run() {
 
             // Hide window on startup, show only when tray icon is clicked
             let _ = window.hide();
-
-            // Hide window when it loses focus (only in release mode)
-            #[cfg(not(debug_assertions))]
-            {
-                let window_clone = window.clone();
-                window.on_window_event(move |event| {
-                    if let tauri::WindowEvent::Focused(false) = event {
-                        let _ = window_clone.hide();
-                    }
-                });
-            }
 
             if let Ok(Some(monitor)) = window.current_monitor() {
                 let scale_factor = window.scale_factor().unwrap_or(1.0);

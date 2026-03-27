@@ -18,6 +18,7 @@ export interface ChromeBookmark {
 }
 
 export interface TauriApi {
+  hideWindow: () => Promise<void>;
   resizeWindow: (height: number) => Promise<void>;
   createOverlayWindow: (url: string, label: string) => Promise<void>;
   closeOverlayWindow: (label: string) => Promise<void>;
@@ -55,6 +56,8 @@ export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
 
 export const tauriApi: TauriApi = {
+  hideWindow: () => invoke('hide_window'),
+
   resizeWindow: (height: number) => invoke('resize_window', { height }),
 
   createOverlayWindow: (url: string, label: string) =>

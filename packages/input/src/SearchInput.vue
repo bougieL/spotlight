@@ -46,9 +46,13 @@ const handleKeydown = (event: KeyboardEvent) => {
     if (props.isPanelMode) {
       emit('back');
     } else if (inputRef.value) {
+      const isEmpty = !inputRef.value.value;
       inputRef.value.value = '';
       emit('update:modelValue', '');
       emit('search', '', props.files);
+      if (isEmpty) {
+        tauriApi.hideWindow();
+      }
     }
   }
 };

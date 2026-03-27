@@ -15,6 +15,8 @@
   "settings.shortcut.reset": "Reset to Alt+Space",
   "settings.autostart": "Auto Start",
   "settings.autostart.enable": "Launch on system startup",
+  "settings.hideOnBlur": "Hide on Blur",
+  "settings.hideOnBlur.enable": "Hide window when it loses focus",
   "settings.plugins": "Plugins",
   "settings.plugins.description": "Enable or disable plugins"
 }

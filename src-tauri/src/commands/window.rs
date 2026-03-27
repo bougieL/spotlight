@@ -9,6 +9,13 @@ use windows::Win32::Foundation::HWND;
 use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORDER, WS_THICKFRAME, SetWindowLongW, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED, HWND_TOP};
 
 #[tauri::command]
+pub fn hide_window(app: tauri::AppHandle) -> Result<(), String> {
+    let window = app.get_webview_window("main").ok_or("Window not found")?;
+    window.hide().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 pub fn resize_window(app: tauri::AppHandle, height: f64) -> Result<(), String> {
     let window = app.get_webview_window("main").ok_or("Window not found")?;
     window

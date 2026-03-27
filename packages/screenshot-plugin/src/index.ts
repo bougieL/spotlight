@@ -61,6 +61,7 @@ export class ScreenshotPlugin extends BasePlugin {
 
   async startScreenshot(): Promise<void> {
     try {
+      await tauriApi.hideWindow();
       const url = this.getPublicUrl('screenshot.html');
       await tauriApi.createOverlayWindow(url, OVERLAY_WINDOW_LABEL);
       logger.info('Screenshot started');

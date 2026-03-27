@@ -138,6 +138,14 @@ export class SettingsPlugin extends BasePlugin {
     await tauriApi.setAutostartEnabled(enabled);
   }
 
+  async getHideOnBlur(): Promise<boolean> {
+    return await this.storage.get<boolean>('hideOnBlur', true);
+  }
+
+  async setHideOnBlur(enabled: boolean): Promise<void> {
+    await this.storage.set<boolean>('hideOnBlur', enabled);
+  }
+
   async setPluginDisabled(pluginId: string, disabled: boolean): Promise<void> {
     const disabledPlugins = await this.getDisabledPlugins();
     if (disabled) {

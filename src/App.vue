@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref, provide, onMounted, onUnmounted, computed } from 'vue';
+import { ref, provide, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { SearchInput } from "@spotlight/input";
-import { pluginRegistry, registerAllPlugins, recentPlugin } from "./plugins";
+import { registerAllPlugins, recentPlugin, pluginRegistry } from "./plugins";
 import { provideI18n, setLocale } from "@spotlight/i18n";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
-import { tauriApi, on, type UnlistenFn } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, PanelContext } from "@spotlight/core";
 import { panelContext, ROUTE_NAMES } from "@spotlight/core";
-import logger from '@spotlight/logger';
+import { useWindowResize, useWindowFocus, usePlugins } from "./composables";
 
 provideI18n();
 
@@ -20,7 +19,11 @@ registerAllPlugins();
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
-const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
+const searchInputRef = ref<{ focus: () => void } | null>(null);
+
+useWindowFocus(searchInputRef);
+useWindowResize();
+usePlugins();
 
 const isPanelMode = computed(() => route.path.startsWith('/panel'));
 const activePluginName = computed(() => {
@@ -41,10 +44,7 @@ provide(panelContext, {
 } as PanelContext);
 
 const handleSelect = async (item: SearchResultItem) => {
-  logger.info(`[App] handleSelect called for: ${item.title}, pluginId: ${item.pluginId}, actionId: ${item.actionId}`);
-
   if (item.pluginId && item.actionId !== undefined) {
-    logger.info(`[App] Recording selection for recent: ${item.title}`);
     await recentPlugin.recordSelection({
       item: {
         title: item.title,
@@ -56,13 +56,11 @@ const handleSelect = async (item: SearchResultItem) => {
       actionData: item.actionData,
     });
 
-    logger.info(`[App] Calling executeAction for: ${item.title}`);
     await pluginRegistry.executeAction({
       pluginId: item.pluginId,
       actionId: item.actionId,
       data: item.actionData,
     });
-    logger.info(`[App] executeAction completed for: ${item.title}`);
   }
 };
 
@@ -74,64 +72,11 @@ const handleOpenSettings = () => {
   router.push({ name: 'settings-plugin' });
 };
 
-let resizeObserver: ResizeObserver | null = null;
-let resizeTimer: ReturnType<typeof setTimeout> | null = null;
-let lastHeight: number | null = null;
-let unlistenWindowFocus: UnlistenFn | null = null;
-
-const performResize = () => {
-  const height = document.documentElement.offsetHeight;
-  if (lastHeight === height) return;
-  lastHeight = height;
-  tauriApi.resizeWindow(height).catch(() => {
-    lastHeight = null;
-  });
-};
-
 onMounted(async () => {
-  // Apply saved settings
   const savedTheme = await settingsPlugin.getThemeMode();
   const savedLanguage = await settingsPlugin.getLanguage();
   applyTheme(savedTheme);
   setLocale(savedLanguage);
-
-  // Load disabled plugins (skip lifecycle events during init, will be handled by mount below)
-  const disabledPlugins = await settingsPlugin.getDisabledPlugins();
-  await pluginRegistry.setDisabledPlugins(disabledPlugins, true);
-
-  // Register global hotkey on startup (non-blocking)
-  try {
-    await settingsPlugin.registerHotkey();
-  } catch (error) {
-    logger.warn('Failed to register global shortcut:', error);
-  }
-
-  // Mount all enabled plugins (start background tasks)
-  const plugins = pluginRegistry.getPlugins();
-  const enabledPlugins = plugins.filter((p) => !disabledPlugins.includes(p.pluginId));
-  await Promise.all(enabledPlugins.map((plugin) => plugin.onMount?.()));
-
-  resizeObserver = new ResizeObserver(() => {
-    if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(performResize, 16);
-  });
-  resizeObserver.observe(document.documentElement);
-  performResize();
-
-  // Focus input when window is shown
-  unlistenWindowFocus = await on.windowFocus(() => {
-    searchInputRef.value?.focus();
-  });
-});
-
-onUnmounted(async () => {
-  resizeObserver?.disconnect();
-  if (resizeTimer) clearTimeout(resizeTimer);
-  unlistenWindowFocus?.();
-
-  // Unmount all plugins (stop background tasks)
-  const plugins = pluginRegistry.getPlugins();
-  await Promise.all(plugins.map((plugin) => plugin.onUnmount?.()));
 });
 </script>
 
