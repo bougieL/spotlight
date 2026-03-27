@@ -10,10 +10,7 @@ pub fn execute_shell_command(command: String) -> Result<(), String> {
         unsafe {
             let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
-            let command_wide: Vec<u16> = command
-                .encode_utf16()
-                .chain(std::iter::once(0))
-                .collect();
+            let command_wide: Vec<u16> = command.encode_utf16().chain(std::iter::once(0)).collect();
 
             let result = ShellExecuteW(
                 HWND::default(),
@@ -34,6 +31,7 @@ pub fn execute_shell_command(command: String) -> Result<(), String> {
 
     #[cfg(target_os = "macos")]
     {
+        use std::process::Command;
         Command::new("sh")
             .arg("-c")
             .arg(&command)
@@ -44,6 +42,7 @@ pub fn execute_shell_command(command: String) -> Result<(), String> {
 
     #[cfg(target_os = "linux")]
     {
+        use std::process::Command;
         Command::new("sh")
             .arg("-c")
             .arg(&command)

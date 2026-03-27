@@ -10,6 +10,168 @@ unsafe impl Send for CallbackPtr {}
 #[cfg(windows)]
 static CALLBACK_PTR: Mutex<Option<CallbackPtr>> = Mutex::new(None);
 
+// ── macOS NSPasteboard helpers ──────────────────────────────────────────
+
+#[cfg(target_os = "macos")]
+mod macos_clip {
+    use cocoa::appkit::NSPasteboard;
+    use cocoa::base::{id, nil, NO, YES};
+    use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
+
+    pub fn get_pasteboard() -> id {
+        unsafe {
+            let cls = class!(NSPasteboard);
+            let pb: id = msg_send![cls, generalPasteboard];
+            pb
+        }
+    }
+
+    pub fn get_string(pb: id, type_name: id) -> Option<String> {
+        unsafe {
+            let s: id = msg_send![pb, stringForType: type_name];
+            if s == nil {
+                None
+            } else {
+                let utf8: *const i8 = msg_send![s, UTF8String];
+                if utf8.is_null() {
+                    None
+                } else {
+                    let cstr = std::ffi::CStr::from_ptr(utf8);
+                    Some(cstr.to_string_lossy().into_owned())
+                }
+            }
+        }
+    }
+
+    pub fn set_string(pb: id, text: &str, type_name: id) -> bool {
+        unsafe {
+            let cls = class!(NSString);
+            let ns_str: id = msg_send![cls, alloc];
+            let ns_str: id = msg_send![ns_str,
+                initWithBytes:text.as_ptr()
+                length:text.len()
+                encoding:4u64 // NSUTF8StringEncoding
+            ];
+            if ns_str == nil {
+                return false;
+            }
+            let _: id = msg_send![pb, clearContents];
+            let result: bool = msg_send![pb, setString:ns_str forType:type_name];
+            let _: () = msg_send![ns_str, release];
+            result
+        }
+    }
+
+    pub fn get_data(pb: id, type_name: id) -> Option<Vec<u8>> {
+        unsafe {
+            let data: id = msg_send![pb, dataForType: type_name];
+            if data == nil {
+                None
+            } else {
+                let bytes: *const u8 = msg_send![data, bytes];
+                let length: usize = msg_send![data, length];
+                if bytes.is_null() || length == 0 {
+                    None
+                } else {
+                    let slice = std::slice::from_raw_parts(bytes, length);
+                    Some(slice.to_vec())
+                }
+            }
+        }
+    }
+
+    pub fn read_file_urls(pb: id) -> Vec<String> {
+        unsafe {
+            let url_class: id = msg_send![class!(NSURL), class];
+            let classes: id = msg_send![class!(NSArray), arrayWithObject: url_class];
+            let options: id = msg_send![class!(NSDictionary), dictionary];
+            let items: id = msg_send![pb, readObjectsForClasses:classes options:options];
+
+            if items == nil {
+                return Vec::new();
+            }
+
+            let count: usize = msg_send![items, count];
+            let mut result = Vec::new();
+            for i in 0..count {
+                let url: id = msg_send![items, objectAtIndex: i];
+                if url != nil {
+                    let path: id = msg_send![url, path];
+                    if path != nil {
+                        let utf8: *const i8 = msg_send![path, UTF8String];
+                        if !utf8.is_null() {
+                            let cstr = std::ffi::CStr::from_ptr(utf8);
+                            result.push(cstr.to_string_lossy().into_owned());
+                        }
+                    }
+                }
+            }
+            result
+        }
+    }
+
+    pub fn get_clipboard_image_base64(pb: id) -> Option<String> {
+        unsafe {
+            // Try reading PNG data directly
+            let png_type: id = msg_send![class!(NSPasteboardTypePNG), stringValue];
+            let mut image_data = get_data(pb, png_type);
+
+            // Fallback: read TIFF and convert to PNG
+            if image_data.is_none() {
+                let tiff_type: id = msg_send![class!(NSPasteboardTypeTIFF), stringValue];
+                if let Some(tiff_bytes) = get_data(pb, tiff_type) {
+                    let img = image::load_from_memory(&tiff_bytes).ok()?;
+                    let mut png_bytes = Vec::new();
+                    let mut cursor = std::io::Cursor::new(&mut png_bytes);
+                    img.write_to(&mut cursor, image::ImageFormat::Png).ok()?;
+                    image_data = Some(png_bytes);
+                }
+            }
+
+            let png_bytes = image_data?;
+            if png_bytes.is_empty() {
+                return None;
+            }
+
+            let base64 =
+                base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
+            Some(format!("data:image/png;base64,{}", base64))
+        }
+    }
+
+    pub fn set_clipboard_image_from_png(pb: id, png_bytes: &[u8]) -> Result<(), String> {
+        unsafe {
+            let cls = class!(NSData);
+            let data: id = msg_send![cls, alloc];
+            let data: id = msg_send![data,
+                initWithBytes:png_bytes.as_ptr()
+                length:png_bytes.len()
+            ];
+            if data == nil {
+                return Err("Failed to create NSData for image".to_string());
+            }
+
+            let _: id = msg_send![pb, clearContents];
+
+            let png_type: id = msg_send![class!(NSPasteboardTypePNG), stringValue];
+            let types: id = msg_send![class!(NSArray), arrayWithObject: png_type];
+            let _: id = msg_send![pb, declareTypes:types owner:0];
+            let result: bool = msg_send![pb, setData:data forType:png_type];
+
+            let _: () = msg_send![data, release];
+
+            if result {
+                Ok(())
+            } else {
+                Err("Failed to set image data on clipboard".to_string())
+            }
+        }
+    }
+}
+
+// ── Public clipboard API ───────────────────────────────────────────────
+
 pub fn get_clipboard_file_paths() -> Result<Vec<String>, String> {
     #[cfg(windows)]
     {
@@ -91,7 +253,13 @@ pub fn get_clipboard_file_paths() -> Result<Vec<String>, String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        let pb = macos_clip::get_pasteboard();
+        Ok(macos_clip::read_file_urls(pb))
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         Ok(Vec::new())
     }
@@ -141,7 +309,16 @@ pub fn get_clipboard_text() -> Result<String, String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        use objc::{class, msg_send, sel, sel_impl};
+        let pb = macos_clip::get_pasteboard();
+        let type_name: objc::runtime::id =
+            unsafe { msg_send![class!(NSPasteboardTypeString), stringValue] };
+        Ok(macos_clip::get_string(pb, type_name).unwrap_or_default())
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         Ok(String::new())
     }
@@ -199,7 +376,20 @@ pub fn set_clipboard_text(text: String) -> Result<(), String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        use objc::{class, msg_send, sel, sel_impl};
+        let pb = macos_clip::get_pasteboard();
+        let type_name: objc::runtime::id =
+            unsafe { msg_send![class!(NSPasteboardTypeString), stringValue] };
+        if macos_clip::set_string(pb, &text, type_name) {
+            Ok(())
+        } else {
+            Err("Failed to set clipboard text".to_string())
+        }
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = text;
         Ok(())
@@ -307,12 +497,17 @@ pub fn get_clipboard_image() -> Result<String, String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        let pb = macos_clip::get_pasteboard();
+        Ok(macos_clip::get_clipboard_image_base64(pb).unwrap_or_default())
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         Ok(String::new())
     }
 }
-
 
 pub fn set_clipboard_files(files: Vec<String>) -> Result<(), String> {
     #[cfg(windows)]
@@ -378,7 +573,47 @@ pub fn set_clipboard_files(files: Vec<String>) -> Result<(), String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        use cocoa::base::{id, nil};
+        use objc::{class, msg_send, sel, sel_impl};
+        use std::ffi::CString;
+
+        unsafe {
+            let pb = macos_clip::get_pasteboard();
+
+            let cls = class!(NSMutableArray);
+            let file_urls: id = msg_send![cls, arrayWithCapacity: files.len()];
+
+            for path in &files {
+                let c_path =
+                    CString::new(path.as_str()).map_err(|e| format!("Invalid path: {}", e))?;
+                let ns_string_cls = class!(NSString);
+                let ns_path: id = msg_send![ns_string_cls,
+                    stringWithUTF8String: c_path.as_ptr()
+                ];
+                if ns_path == nil {
+                    continue;
+                }
+                let url_cls = class!(NSURL);
+                let file_url: id = msg_send![url_cls, fileURLWithPath: ns_path];
+                if file_url != nil {
+                    let _: () = msg_send![file_urls, addObject: file_url];
+                }
+            }
+
+            let _: id = msg_send![pb, clearContents];
+            let result: bool = msg_send![pb, writeObjects: file_urls];
+
+            if result {
+                Ok(())
+            } else {
+                Err("Failed to set clipboard files".to_string())
+            }
+        }
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = files;
         Ok(())
@@ -388,7 +623,7 @@ pub fn set_clipboard_files(files: Vec<String>) -> Result<(), String> {
 /// Start monitoring system clipboard changes.
 /// The callback is invoked each time the clipboard content changes.
 /// On Windows, uses native `AddClipboardFormatListener` for instant notifications.
-/// On other platforms, falls back to polling every 500ms.
+/// On other platforms, falls back to polling with change count detection.
 pub fn start_clipboard_monitor(callback: impl Fn() + Send + 'static) {
     if MONITOR_RUNNING.load(Ordering::SeqCst) {
         return;
@@ -489,7 +724,31 @@ pub fn start_clipboard_monitor(callback: impl Fn() + Send + 'static) {
         });
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        use objc::{class, msg_send, sel, sel_impl};
+
+        let mut last_change_count: i64 = unsafe {
+            let pb = macos_clip::get_pasteboard();
+            msg_send![pb, changeCount]
+        };
+
+        std::thread::spawn(move || {
+            while MONITOR_RUNNING.load(Ordering::SeqCst) {
+                let current_count: i64 = unsafe {
+                    let pb = macos_clip::get_pasteboard();
+                    msg_send![pb, changeCount]
+                };
+                if current_count != last_change_count {
+                    last_change_count = current_count;
+                    callback();
+                }
+                std::thread::sleep(std::time::Duration::from_millis(200));
+            }
+        });
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         std::thread::spawn(move || {
             while MONITOR_RUNNING.load(Ordering::SeqCst) {
@@ -615,7 +874,24 @@ pub fn set_clipboard_image(data_url: String) -> Result<(), String> {
         }
     }
 
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    {
+        use base64::Engine;
+
+        let base64_data = data_url
+            .split(',')
+            .nth(1)
+            .ok_or("Invalid data URL format")?;
+
+        let png_bytes = base64::engine::general_purpose::STANDARD
+            .decode(base64_data)
+            .map_err(|e| format!("Failed to decode base64: {}", e))?;
+
+        let pb = macos_clip::get_pasteboard();
+        macos_clip::set_clipboard_image_from_png(pb, &png_bytes)
+    }
+
+    #[cfg(not(any(windows, target_os = "macos")))]
     {
         let _ = data_url;
         Ok(())

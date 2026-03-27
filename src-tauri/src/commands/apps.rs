@@ -447,10 +447,12 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                 let path = entry.path();
                 if path.extension().map_or(false, |e| e == "app") {
                     if let Some(name) = path.file_stem() {
+                        let path_str = path.to_string_lossy().to_string();
+                        let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
                         apps.push(AppInfo {
                             name: name.to_string_lossy().to_string(),
-                            path: path.to_string_lossy().to_string(),
-                            icon_data: None,
+                            path: path_str,
+                            icon_data,
                         });
                     }
                 }
@@ -464,12 +466,33 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                     let path = entry.path();
                     if path.extension().map_or(false, |e| e == "app") {
                         if let Some(name) = path.file_stem() {
+                            let path_str = path.to_string_lossy().to_string();
+                            let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
                             apps.push(AppInfo {
                                 name: name.to_string_lossy().to_string(),
-                                path: path.to_string_lossy().to_string(),
-                                icon_data: None,
+                                path: path_str,
+                                icon_data,
                             });
                         }
+                    }
+                }
+            }
+        }
+
+        // Also scan /System/Applications for built-in apps
+        let system_apps = "/System/Applications";
+        if let Ok(entries) = std::fs::read_dir(system_apps) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().map_or(false, |e| e == "app") {
+                    if let Some(name) = path.file_stem() {
+                        let path_str = path.to_string_lossy().to_string();
+                        let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
+                        apps.push(AppInfo {
+                            name: name.to_string_lossy().to_string(),
+                            path: path_str,
+                            icon_data,
+                        });
                     }
                 }
             }

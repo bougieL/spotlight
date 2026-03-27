@@ -49,6 +49,12 @@
         "languages": ["SimpChinese", "English"],
         "displayLanguageSelector": true
       }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "exceptionDomain": "localhost",
+      "entitlements": "entitlements.plist",
+      "frameworks": []
     }
   }
 }

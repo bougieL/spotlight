@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>spotlight</string>
+	<key>CFBundleExecutable</key>
+	<string>spotlight</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.bougie.spotlight</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>spotlight</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>0.1.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.15</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Spotlight needs access to control other applications for launching them.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Spotlight needs camera access for screen capture features.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Spotlight needs microphone access for screen recording with audio.</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>Spotlight needs screen capture access to take screenshots and provide color picker functionality.</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>Spotlight needs accessibility access for global shortcuts and window management.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Spotlight needs access to send AppleEvents to other applications.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>Spotlight needs access to your Desktop folder to search for files and applications.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Spotlight needs access to your Documents folder to search for files.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>Spotlight needs access to your Downloads folder to search for files.</string>
+	<key>NSRemovableVolumesUsageDescription</key>
+	<string>Spotlight needs access to removable volumes to search for files.</string>
+	<key>NSFileProviderPresenceUsageDescription</key>
+	<string>Spotlight needs to check for file provider extensions.</string>
+	<key>NSAppDataUsageDescription</key>
+	<string>Spotlight needs access to app data for plugin storage.</string>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+</dict>
+</plist>

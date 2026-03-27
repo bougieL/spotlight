@@ -95,7 +95,21 @@ pub async fn create_overlay_window(
     let (screen_width, screen_height) = unsafe {
         (GetSystemMetrics(SM_CXSCREEN) as f64, GetSystemMetrics(SM_CYSCREEN) as f64)
     };
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
+    let (screen_width, screen_height) = {
+        use objc::{class, msg_send, sel, sel_impl};
+        use cocoa::base::{id, nil};
+        unsafe {
+            let screen: id = msg_send![class!(NSScreen), mainScreen];
+            if screen == nil {
+                (1920.0, 1080.0)
+            } else {
+                let frame: cocoa::foundation::NSRect = msg_send![screen, frame];
+                (frame.size.width, frame.size.height)
+            }
+        }
+    };
+    #[cfg(not(any(windows, target_os = "macos")))]
     let (screen_width, screen_height) = (1920.0, 1080.0);
 
     let mut builder = WebviewWindowBuilder::new(
