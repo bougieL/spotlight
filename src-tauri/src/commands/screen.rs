@@ -41,10 +41,18 @@ pub fn capture_full_screen() -> Result<ScreenCapture, String> {
         .save_as_image(&file_path, ImageFormat::Png)
         .map_err(|e| format!("Failed to save: {}", e))?;
 
-    let file_path_str = file_path.to_string_lossy().replace('\\', "/");
+    // Read file and encode as base64
+    let image_data = std::fs::read(&file_path)
+        .map_err(|e| format!("Failed to read image: {}", e))?;
+    let base64_data = base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &image_data);
+
+    // Clean up temp file
+    let _ = std::fs::remove_file(&file_path);
+
+    let data_url = format!("data:image/png;base64,{}", base64_data);
 
     Ok(ScreenCapture {
-        file_path: file_path_str,
+        data_url,
         width,
         height,
     })
@@ -52,8 +60,8 @@ pub fn capture_full_screen() -> Result<ScreenCapture, String> {
 
 #[derive(serde::Serialize)]
 pub struct ScreenCapture {
-    #[serde(rename = "filePath")]
-    pub file_path: String,
+    #[serde(rename = "dataUrl")]
+    pub data_url: String,
     pub width: i32,
     pub height: i32,
 }

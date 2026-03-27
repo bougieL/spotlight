@@ -28,9 +28,9 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["$TEMP/**", "**"]
+        "scope": ["**"]
       },
-      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' asset://localhost data:; font-src 'self' asset://localhost data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' file:"
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self' asset://localhost data:; font-src 'self' asset://localhost data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' file: asset://localhost"
     }
   },
   "bundle": {

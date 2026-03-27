@@ -43,7 +43,7 @@ export interface TauriApi {
 }
 
 export interface ScreenCapture {
-  filePath: string;
+  dataUrl: string;
   width: number;
   height: number;
 }

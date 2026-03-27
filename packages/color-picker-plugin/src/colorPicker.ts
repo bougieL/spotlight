@@ -35,7 +35,7 @@ async function closePicker(): Promise<void> {
   try {
     await tauriApi.closeOverlayWindow('color-picker-overlay');
   } catch (err) {
-    console.error('Failed to close picker:', err);
+    logger.error('Failed to close picker:', err);
   }
 }
 
@@ -54,24 +54,17 @@ async function captureScreen(
     const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true })!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const startFetch = performance.now();
-    // Use fetch to load file via asset protocol
-    const assetUrl = tauriApi.convertFileSrc(capture.filePath);
-    const res = await fetch(assetUrl);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch image: ${res.status}`);
-    }
-    const blob = await res.blob();
-    logger.info(`[Performance] fetch blob: ${(performance.now() - startFetch).toFixed(1)} ms`);
-
-    const startBitmap = performance.now();
-    // Create image bitmap from blob - this avoids canvas tainting
-    const imageBitmap = await createImageBitmap(blob);
-    logger.info(`[Performance] createImageBitmap: ${(performance.now() - startBitmap).toFixed(1)} ms`);
+    const startLoad = performance.now();
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = capture.dataUrl;
+    });
+    logger.info(`[Performance] load image: ${(performance.now() - startLoad).toFixed(1)} ms`);
 
     const startDraw = performance.now();
-    ctx.drawImage(imageBitmap, 0, 0);
-    imageBitmap.close();
+    ctx.drawImage(img, 0, 0);
     logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
 
     loading.style.display = 'none';
@@ -82,7 +75,7 @@ async function captureScreen(
 
     return ctx;
   } catch (err) {
-    console.error('Failed to capture screen:', err);
+    logger.error('Failed to capture screen:', err);
     loading.textContent = 'Failed: ' + String(err);
     crosshair.classList.remove('show');
     magnifier.classList.remove('show');
@@ -195,7 +188,7 @@ async function handleClick(e: MouseEvent) {
   try {
     await navigator.clipboard.writeText(lastColor);
   } catch (err) {
-    console.error('Failed to copy color:', err);
+    logger.error('Failed to copy color:', err);
   }
   await closePicker();
 }

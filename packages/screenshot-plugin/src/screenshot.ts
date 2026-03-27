@@ -28,7 +28,7 @@ async function closeScreenshot(): Promise<void> {
   try {
     await tauriApi.closeOverlayWindow('screenshot-overlay');
   } catch (err) {
-    console.error('Failed to close screenshot:', err);
+    logger.error('Failed to close screenshot:', err);
   }
 }
 
@@ -47,22 +47,17 @@ async function captureScreen(
     logger.info(`[Debug] Canvas size: ${canvas.width}x${canvas.height}, window: ${window.innerWidth}x${window.innerHeight}`);
     const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true })!;
 
-    const startFetch = performance.now();
-    const assetUrl = tauriApi.convertFileSrc(capture.filePath);
-    const res = await fetch(assetUrl);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch image: ${res.status}`);
-    }
-    const blob = await res.blob();
-    logger.info(`[Performance] fetch blob: ${(performance.now() - startFetch).toFixed(1)} ms`);
-
-    const startBitmap = performance.now();
-    const imageBitmap = await createImageBitmap(blob);
-    logger.info(`[Performance] createImageBitmap: ${(performance.now() - startBitmap).toFixed(1)} ms`);
+    const startLoad = performance.now();
+    const img = new Image();
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve();
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = capture.dataUrl;
+    });
+    logger.info(`[Performance] load image: ${(performance.now() - startLoad).toFixed(1)} ms`);
 
     const startDraw = performance.now();
-    ctx.drawImage(imageBitmap, 0, 0);
-    imageBitmap.close();
+    ctx.drawImage(img, 0, 0);
     logger.info(`[Performance] drawImage: ${(performance.now() - startDraw).toFixed(1)} ms`);
 
     // Debug: check a pixel in the center
@@ -77,7 +72,7 @@ async function captureScreen(
 
     return ctx;
   } catch (err) {
-    console.error('Failed to capture screen:', err);
+    logger.error('Failed to capture screen:', err);
     loading.textContent = 'Failed: ' + String(err);
     imageLoaded = false;
     return null;
@@ -156,8 +151,13 @@ async function copySelectionToClipboard(): Promise<void> {
     const dataUrl = tempCanvas.toDataURL('image/png');
     logger.info(`[Debug] Data URL length: ${dataUrl.length}`);
 
-    // Use JS Clipboard API to copy image
-    const blob = await (await fetch(dataUrl)).blob();
+    // Convert data URL to blob without fetch
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      tempCanvas.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error('Failed to create blob'));
+      }, 'image/png');
+    });
     await navigator.clipboard.write([
       new ClipboardItem({
         [blob.type]: blob
