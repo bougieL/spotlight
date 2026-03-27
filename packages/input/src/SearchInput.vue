@@ -86,20 +86,11 @@ const handlePaste = async (event: ClipboardEvent) => {
     reader.readAsDataURL(file);
     const dataUrl = await imgPromise;
 
-    let imageSrc = dataUrl;
-    let localPath = '';
-    try {
-      localPath = await tauriApi.saveTempImage(dataUrl);
-      imageSrc = tauriApi.convertFileSrc(localPath);
-    } catch {
-      // fallback to data url
-    }
-
     newFiles.push({
       id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: file.name || 'pasted-image',
-      path: localPath,
-      src: imageSrc,
+      path: '',
+      src: dataUrl,
       type: 'image',
     });
   }

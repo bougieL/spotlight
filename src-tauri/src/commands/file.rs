@@ -19,7 +19,7 @@ pub fn save_temp_image(data_url: String) -> Result<String, String> {
 
     fs::write(&file_path, image_data).map_err(|e| e.to_string())?;
 
-    Ok(file_path.to_string_lossy().to_string())
+    Ok(file_path.to_string_lossy().to_string().replace('\\', "/"))
 }
 
 #[tauri::command]
@@ -39,5 +39,5 @@ pub fn save_pasted_file(data_url: String, file_name: String) -> Result<String, S
 
     fs::write(&file_path, file_data).map_err(|e| e.to_string())?;
 
-    Ok(file_path.to_string_lossy().to_string())
+    Ok(file_path.to_string_lossy().to_string().replace('\\', "/"))
 }

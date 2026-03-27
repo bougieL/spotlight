@@ -147,7 +147,7 @@ async function copySelectionToClipboard(): Promise<void> {
     const dataUrl = tempCanvas.toDataURL('image/png');
     logger.info(`[Debug] Data URL length: ${dataUrl.length}`);
 
-    // Convert data URL to blob without fetch
+    // Convert data URL to blob
     const blob = await new Promise<Blob>((resolve, reject) => {
       tempCanvas.toBlob((b) => {
         if (b) resolve(b);
