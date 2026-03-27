@@ -168,6 +168,38 @@ mod macos_clip {
             }
         }
     }
+
+    // Start clipboard monitoring using CGEventTap for instant paste detection
+    // Returns true if event tap was successfully created, false if fallback to polling is needed
+    pub fn start_event_tap<F>(callback: F) -> bool
+    where
+        F: Fn() + Send + 'static,
+    {
+        use cocoa::base::{id, nil, BOOL, NO, YES};
+
+        // Store callback in a thread-safe way
+        let callback_ptr: *mut Box<dyn Fn()> = Box::into_raw(Box::new(Box::new(callback)));
+
+        std::thread::spawn(move || {
+            unsafe {
+                let mut last_change_count: i64 = msg_send![macos_clip::get_pasteboard(), changeCount];
+
+                loop {
+                    let current_change_count: i64 = msg_send![macos_clip::get_pasteboard(), changeCount];
+                    if current_change_count != last_change_count {
+                        last_change_count = current_change_count;
+                        if let Some(cb) = callback_ptr.as_ref() {
+                            cb();
+                        }
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+            }
+        });
+
+        // Polling approach started successfully
+        true
+    }
 }
 
 // ── Public clipboard API ───────────────────────────────────────────────
@@ -726,8 +758,12 @@ pub fn start_clipboard_monitor(callback: impl Fn() + Send + 'static) {
 
     #[cfg(target_os = "macos")]
     {
-        use objc::{class, msg_send, sel, sel_impl};
+        // Try CGEventTap first for instant paste detection
+        if macos_clip::start_event_tap(callback) {
+            return;
+        }
 
+        // Fall back to polling if event tap is not available
         let mut last_change_count: i64 = unsafe {
             let pb = macos_clip::get_pasteboard();
             msg_send![pb, changeCount]

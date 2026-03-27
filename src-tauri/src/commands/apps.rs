@@ -440,62 +440,245 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
 
     #[cfg(target_os = "macos")]
     {
-        let mut apps: Vec<AppInfo> = Vec::new();
+        use std::collections::HashSet;
 
-        if let Ok(entries) = std::fs::read_dir("/Applications") {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().map_or(false, |e| e == "app") {
-                    if let Some(name) = path.file_stem() {
-                        let path_str = path.to_string_lossy().to_string();
-                        let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
-                        apps.push(AppInfo {
-                            name: name.to_string_lossy().to_string(),
-                            path: path_str,
-                            icon_data,
-                        });
+        let mut apps: Vec<AppInfo> = Vec::new();
+        let mut seen_names: HashSet<String> = HashSet::new();
+
+        // Skip patterns for app names (case-insensitive)
+        let skip_patterns: &[&str] = &[
+            "install",
+            "setup",
+            "update",
+            "uninstall",
+            "unins",
+            "helper",
+            "service",
+            "launcher",
+            "bootstrap",
+            "telemetry",
+            "report",
+            "crashreporter",
+            "diagnose",
+            "config",
+            "startup",
+            "autostart",
+            "autorun",
+        ];
+
+        // Skip paths containing these patterns
+        let skip_path_patterns: &[&str] = &[
+            "/System/Applications/Utilities/",
+            "/Library/Application Support/Adobe/",
+        ];
+
+        fn should_skip_app(name: &str, path: &str, skip_patterns: &[&str], skip_path_patterns: &[&str]) -> bool {
+            let name_lower = name.to_lowercase();
+            let path_lower = path.to_lowercase();
+
+            // Check name patterns
+            for pattern in skip_patterns {
+                if name_lower.contains(pattern) {
+                    return true;
+                }
+            }
+
+            // Check path patterns
+            for pattern in skip_path_patterns {
+                if path_lower.contains(pattern) {
+                    return true;
+                }
+            }
+
+            false
+        }
+
+        // Clean app name - remove version numbers, (Beta), (Preview), etc.
+        fn clean_app_name(name: &str) -> String {
+            let cleaned = name
+                .replace(|c: char| c.is_numeric() && !c.is_alphanumeric(), " ")
+                .replace(" (Beta)", "")
+                .replace(" (Preview)", "")
+                .replace(" (Release)", "")
+                .replace(" (Stable)", "")
+                .replace(" (Nightly)", "")
+                .replace(" (Dev)", "")
+                .replace("  ", " ")
+                .trim()
+                .to_string();
+
+            // Title case
+            if cleaned.is_empty() {
+                return name.to_string();
+            }
+
+            cleaned
+                .split_whitespace()
+                .map(|word| {
+                    let mut chars = word.chars();
+                    match chars.next() {
+                        None => String::new(),
+                        Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(" ")
+        }
+
+        // Parse Info.plist to get CFBundleDisplayName or CFBundleName
+        fn get_bundle_display_name(app_path: &Path) -> Option<String> {
+            let info_plist_path = app_path.join("Contents/Info.plist");
+            if !info_plist_path.exists() {
+                return None;
+            }
+
+            let content = std::fs::read_to_string(&info_plist_path).ok()?;
+
+            // Try to find CFBundleDisplayName first, then CFBundleName
+            for key in &["CFBundleDisplayName", "CFBundleName"] {
+                if let Some(start) = content.find(key) {
+                    let after_key = &content[start..];
+                    if let Some(eq_pos) = after_key.find('>') {
+                        let value_start = after_key[eq_pos + 1..].find('>')?;
+                        let value_end = after_key[eq_pos + 1..].find("</")?;
+                        let value = &after_key[eq_pos + 1..][value_start + 1..value_end];
+                        if !value.is_empty() {
+                            return Some(value.trim().to_string());
+                        }
                     }
                 }
             }
+            None
         }
 
-        if let Ok(home) = std::env::var("HOME") {
-            let user_apps = format!("{}/Applications", home);
-            if let Ok(entries) = std::fs::read_dir(&user_apps) {
+        // Get executable path from .app bundle
+        fn get_app_executable_path(app_path: &Path) -> String {
+            // Check Contents/MacOS for the main executable
+            let macos_path = app_path.join("Contents/MacOS");
+            if macos_path.exists() {
+                if let Ok(entries) = std::fs::read_dir(&macos_path) {
+                    for entry in entries.flatten() {
+                        let entry_path = entry.path();
+                        if entry_path.is_file() {
+                            let mode = std::fs::metadata(&entry_path).ok()?.mode();
+                            if mode & 0o111 != 0 {
+                                // Executable
+                                return entry_path.to_string_lossy().to_string();
+                            }
+                        }
+                    }
+                }
+            }
+            // Fall back to app bundle path itself (macOS will handle launching)
+            app_path.to_string_lossy().to_string()
+        }
+
+        // Recursive scan function
+        fn scan_applications_dir(dir_path: &Path, apps: &mut Vec<AppInfo>, seen_names: &mut HashSet<String>, skip_patterns: &[&str], skip_path_patterns: &[&str]) {
+            if let Ok(entries) = std::fs::read_dir(dir_path) {
                 for entry in entries.flatten() {
                     let path = entry.path();
-                    if path.extension().map_or(false, |e| e == "app") {
-                        if let Some(name) = path.file_stem() {
-                            let path_str = path.to_string_lossy().to_string();
-                            let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
-                            apps.push(AppInfo {
-                                name: name.to_string_lossy().to_string(),
-                                path: path_str,
-                                icon_data,
-                            });
+
+                    // Skip if it's a directory we're told to skip
+                    let path_str = path.to_string_lossy().to_lowercase();
+                    let should_skip_dir = skip_path_patterns.iter().any(|p| path_str.contains(p));
+                    if should_skip_dir {
+                        continue;
+                    }
+
+                    if path.is_dir() {
+                        if path.extension().map_or(false, |e| e == "app") {
+                            if let Some(name) = path.file_stem() {
+                                let name_str = name.to_string_lossy().to_string();
+                                let path_str = path.to_string_lossy().to_string();
+
+                                if should_skip_app(&name_str, &path_str, skip_patterns, skip_path_patterns) {
+                                    continue;
+                                }
+
+                                // Get display name from Info.plist
+                                let display_name = get_bundle_display_name(&path)
+                                    .unwrap_or_else(|| clean_app_name(&name_str));
+
+                                let clean_name = clean_app_name(&display_name);
+                                let clean_lower = clean_name.to_lowercase();
+
+                                if seen_names.contains(&clean_lower) || clean_name.len() < 2 {
+                                    continue;
+                                }
+
+                                let exec_path = get_app_executable_path(&path);
+                                let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
+
+                                seen_names.insert(clean_lower);
+
+                                apps.push(AppInfo {
+                                    name: clean_name,
+                                    path: exec_path,
+                                    icon_data,
+                                });
+                            }
+                        } else {
+                            // Recurse into subdirectory
+                            scan_applications_dir(&path, apps, seen_names, skip_patterns, skip_path_patterns);
                         }
                     }
                 }
             }
         }
 
-        // Also scan /System/Applications for built-in apps
+        // Scan /Applications
+        scan_applications_dir(Path::new("/Applications"), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
+
+        // Scan ~/Applications
+        if let Ok(home) = std::env::var("HOME") {
+            let user_apps = format!("{}/Applications", home);
+            scan_applications_dir(Path::new(&user_apps), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
+        }
+
+        // Scan /System/Applications (but skip Utilities subdirectory)
         let system_apps = "/System/Applications";
         if let Ok(entries) = std::fs::read_dir(system_apps) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.extension().map_or(false, |e| e == "app") {
                     if let Some(name) = path.file_stem() {
+                        let name_str = name.to_string_lossy().to_string();
                         let path_str = path.to_string_lossy().to_string();
+
+                        if should_skip_app(&name_str, &path_str, skip_patterns, skip_path_patterns) {
+                            continue;
+                        }
+
+                        let display_name = get_bundle_display_name(&path)
+                            .unwrap_or_else(|| clean_app_name(&name_str));
+
+                        let clean_name = clean_app_name(&display_name);
+                        let clean_lower = clean_name.to_lowercase();
+
+                        if seen_names.contains(&clean_lower) || clean_name.len() < 2 {
+                            continue;
+                        }
+
+                        let exec_path = get_app_executable_path(&path);
                         let icon_data = crate::utils::icon::extract_icon_base64(&path_str);
+
+                        seen_names.insert(clean_lower);
+
                         apps.push(AppInfo {
-                            name: name.to_string_lossy().to_string(),
-                            path: path_str,
+                            name: clean_name,
+                            path: exec_path,
                             icon_data,
                         });
                     }
                 }
             }
+        }
+
+        // Scan ~/Library/Application Support/Applications
+        if let Ok(home) = std::env::var("HOME") {
+            let app_support_apps = format!("{}/Library/Application Support/Applications", home);
+            scan_applications_dir(Path::new(&app_support_apps), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
         }
 
         apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
