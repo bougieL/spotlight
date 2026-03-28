@@ -74,7 +74,11 @@ const handleSelect = async (item: SearchResultItem) => {
 };
 
 const handleClosePanel = () => {
-  router.push({ name: ROUTE_NAMES.SEARCH });
+  if (window.history.length > 1) {
+    router.back();
+  } else {
+    router.push({ name: ROUTE_NAMES.SEARCH });
+  }
 };
 
 const handleOpenSettings = () => {

@@ -24,16 +24,16 @@ function scrollToBottom() {
   });
 }
 
-onMounted(() => {
-  scrollToBottom();
-});
-
 watch(
   () => [props.messages.length, props.streamedContent],
   () => {
     scrollToBottom();
   }
 );
+
+onMounted(() => {
+  scrollToBottom();
+});
 </script>
 
 <template>
