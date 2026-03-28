@@ -1,20 +1,20 @@
-import { useI18n, translations } from '@spotlight/i18n';
+import { watch } from 'vue';
+import { translations } from '@spotlight/i18n';
+import type { Locale } from '@spotlight/i18n';
+import type { Ref } from 'vue';
 import {
   setupTray,
   registerTrayItem,
-  unRegisterTrayItem,
 } from '@spotlight/api';
 import logger from '@spotlight/logger';
 
-export function useTray() {
-  const { locale } = useI18n();
+export function useTray(isDetached: Ref<boolean>, locale: Ref<Locale>) {
   let initialized = false;
   let initInProgress = false;
 
   const initializeTray = async () => {
     if (initInProgress) {
       logger.info('Tray initialization already in progress, waiting...');
-      // Wait a bit for the in-progress init to finish
       while (initInProgress) {
         await new Promise((resolve) => setTimeout(resolve, 50));
       }
@@ -89,12 +89,10 @@ export function useTray() {
       return;
     }
 
-    // If locale changed, update menu item texts
     const t = translations[locale.value];
     const showLabel = t['tray.show'] || 'Show';
     const quitLabel = t['tray.quit'] || 'Quit';
 
-    // registerTrayItem checks for existing items and updates text
     await registerTrayItem({
       id: 'show',
       text: showLabel,
@@ -135,10 +133,9 @@ export function useTray() {
     logger.info('Tray menu texts updated');
   };
 
-  return {
-    initializeTray,
-    refreshTray: doRefreshTray,
-    registerTrayItem,
-    unRegisterTrayItem,
-  };
+  // Watch locale changes to refresh tray menu texts (skip if detached)
+  watch(locale, async () => {
+    if (isDetached.value) return;
+    await doRefreshTray();
+  });
 }
