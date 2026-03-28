@@ -1,6 +1,5 @@
 import type { BasePlugin, SearchResultItem, SearchParams, ActionContext } from '@spotlight/core';
-import { getPanelRouteName } from '@spotlight/core';
-import type { Router, RouteRecordRaw } from 'vue-router';
+import type { Router } from 'vue-router';
 import logger from '@spotlight/logger';
 import { calculateDetailedScore } from './scorer';
 
@@ -38,20 +37,6 @@ export class PluginRegistry {
     const actions = plugin.registerAction(ctx);
 
     this.plugins.push({ plugin, actions });
-
-    // Dynamically register the plugin's panel route if it has one
-    if (plugin.getPanelComponentLoader) {
-      const loader = plugin.getPanelComponentLoader();
-      if (loader) {
-        const route: RouteRecordRaw = {
-          path: `/panel/${plugin.pluginId}`,
-          name: getPanelRouteName(plugin.pluginId),
-          component: loader,
-        };
-        this.router.addRoute(route);
-        logger.info(`[PluginRegistry] Registered route for plugin: ${plugin.pluginId}`);
-      }
-    }
   }
 
   unregister(name: string): void {

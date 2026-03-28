@@ -1,4 +1,6 @@
+import type { RouteRecordRaw } from 'vue-router';
 import { pluginRegistry } from "@spotlight/plugin-registry";
+import { getPanelRouteName } from '@spotlight/core';
 
 // Re-export for direct access
 export { pluginRegistry };
@@ -19,27 +21,56 @@ import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
 import { screenshotPlugin } from "@spotlight/screenshot-plugin";
 import { translationPlugin } from "@spotlight/translation-plugin";
 
+const allPlugins = [
+  appSearchPlugin,
+  chromeBookmarksPlugin,
+  calculatorPlugin,
+  notesPlugin,
+  calendarPlugin,
+  settingsPlugin,
+  shortcutsPlugin,
+  clipboardPlugin,
+  recentPlugin,
+  qrcodePlugin,
+  jsonPlugin,
+  aiChatPlugin,
+  colorPickerPlugin,
+  colorPalettePlugin,
+  screenshotPlugin,
+  translationPlugin,
+];
+
+/**
+ * Get all panel routes from plugins with getPanelComponentLoader.
+ * Used for static route registration to ensure routes are available on initial load.
+ */
+export function getPanelRoutes(): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [];
+
+  for (const plugin of allPlugins) {
+    if (plugin.getPanelComponentLoader) {
+      const loader = plugin.getPanelComponentLoader();
+      if (loader) {
+        routes.push({
+          path: `/panel/${plugin.pluginId}`,
+          name: getPanelRouteName(plugin.pluginId),
+          component: loader,
+        });
+      }
+    }
+  }
+
+  return routes;
+}
+
 /**
  * Registers all built-in plugins with the plugin registry.
  * This function should be called once during application initialization.
  */
 export function registerAllPlugins(): void {
-  pluginRegistry.register(appSearchPlugin);
-  pluginRegistry.register(chromeBookmarksPlugin);
-  pluginRegistry.register(calculatorPlugin);
-  pluginRegistry.register(notesPlugin);
-  pluginRegistry.register(calendarPlugin);
-  pluginRegistry.register(settingsPlugin);
-  pluginRegistry.register(shortcutsPlugin);
-  pluginRegistry.register(clipboardPlugin);
-  pluginRegistry.register(recentPlugin);
-  pluginRegistry.register(qrcodePlugin);
-  pluginRegistry.register(jsonPlugin);
-  pluginRegistry.register(aiChatPlugin);
-  pluginRegistry.register(colorPickerPlugin);
-  pluginRegistry.register(colorPalettePlugin);
-  pluginRegistry.register(screenshotPlugin);
-  pluginRegistry.register(translationPlugin);
+  for (const plugin of allPlugins) {
+    pluginRegistry.register(plugin);
+  }
 }
 
 // Re-export plugin instances for direct access

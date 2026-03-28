@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { SearchList } from '@spotlight/panel';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 import { ROUTE_NAMES } from '@spotlight/core';
+import { getPanelRoutes } from '../plugins';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -11,6 +12,7 @@ const router = createRouter({
       name: ROUTE_NAMES.SEARCH,
       component: SearchList,
     },
+    ...getPanelRoutes(),
   ],
 });
 

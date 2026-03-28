@@ -1,5 +1,7 @@
 /* Global scrollbar styles - overlay scrollbar (doesn't take up space) */
 * {
+  margin: 0;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--spotlight-scrollbar-thumb) var(--spotlight-scrollbar-bg);
 }

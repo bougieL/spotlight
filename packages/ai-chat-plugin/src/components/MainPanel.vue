@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { MessageSquare, Plus, Settings, Send, Copy, Check, ArrowLeft, Pin, Trash2, Edit2 } from 'lucide-vue-next';
+import { MessageSquare, Plus, Settings, Send, ArrowLeft, Pin, Trash2, Edit2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton, BaseIconButton, BaseModal, BaseContextMenu, BaseSelect } from '@spotlight/components';
 import { aiChatPlugin, openaiAdapter, anthropicAdapter, type Session, type ChatMessage, type ModelConfig } from '../index';
 import ModelsEditor from './ModelsEditor.vue';
+import MessageList from './MessageList.vue';
 
 type ViewType = 'chat' | 'models';
 
@@ -22,10 +23,8 @@ const streamedContent = ref('');
 const inputText = ref('');
 const showSystemPrompt = ref(false);
 const currentView = ref<ViewType>('chat');
-const copiedId = ref<string | null>(null);
 const isEditingSystemPrompt = ref(false);
 const editingSystemPrompt = ref('');
-const messagesContainer = ref<HTMLDivElement | null>(null);
 
 // Edit session modal state
 const showEditModal = ref(false);
@@ -165,7 +164,6 @@ async function selectSession(session: Session) {
     temperature: 0.7,
     maxTokens: 4096,
   });
-  scrollToBottom();
 }
 
 async function selectModel(modelId: string) {
@@ -259,7 +257,6 @@ async function sendMessage() {
   inputText.value = '';
 
   await processStream();
-  scrollToBottom();
 }
 
 async function processStream() {
@@ -294,7 +291,6 @@ async function processStream() {
       if (chunk.done) break;
       fullContent += chunk.content;
       streamedContent.value = fullContent;
-      scrollToBottom();
     }
 
     const assistantMessage: ChatMessage = {
@@ -321,22 +317,6 @@ async function processStream() {
   }
 }
 
-function scrollToBottom() {
-  setTimeout(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
-  }, 10);
-}
-
-async function copyMessage(message: ChatMessage) {
-  await navigator.clipboard.writeText(message.content);
-  copiedId.value = message.id;
-  setTimeout(() => {
-    copiedId.value = null;
-  }, 2000);
-}
-
 async function saveModels(newModels: ModelConfig[]) {
   models.value = newModels;
   await aiChatPlugin.saveModels(models.value);
@@ -352,10 +332,6 @@ function openChatView() {
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString();
-}
-
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -448,45 +424,16 @@ function handleKeydown(event: KeyboardEvent) {
           </div>
         </div>
 
-        <div class="messages-container" ref="messagesContainer">
-          <div v-if="!activeSession" class="empty-chat">
-            <MessageSquare :size="48" class="empty-icon" />
-            <p>{{ t('aiChat.selectModel') }}</p>
-          </div>
+        <MessageList
+          v-if="activeSession"
+          :messages="messages"
+          :is-streaming="isStreaming"
+          :streamed-content="streamedContent"
+        />
 
-          <template v-else>
-            <div v-if="messages.length === 0 && !isStreaming" class="empty-chat">
-              <p>{{ t('aiChat.placeholder') }}</p>
-            </div>
-
-            <div v-for="message in messages" :key="message.id" class="message" :class="message.role">
-              <div class="message-content">
-                <div class="message-text">{{ message.content }}</div>
-                <div class="message-meta">
-                  <span class="message-time">{{ formatTime(message.timestamp) }}</span>
-                  <BaseIconButton
-                    v-if="message.role === 'assistant'"
-                    @click="copyMessage(message)"
-                    :title="t('aiChat.copy')"
-                    size="small"
-                  >
-                    <Check :size="12" v-if="copiedId === message.id" />
-                    <Copy :size="12" v-else />
-                  </BaseIconButton>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="isStreaming" class="message assistant streaming">
-              <div class="message-content">
-                <div class="message-text">{{ streamedContent }}<span class="cursor">|</span></div>
-              </div>
-            </div>
-
-            <div v-if="isStreaming" class="thinking-indicator">
-              {{ t('aiChat.thinking') }}
-            </div>
-          </template>
+        <div v-if="!activeSession" class="empty-chat">
+          <MessageSquare :size="48" class="empty-icon" />
+          <p>{{ t('aiChat.selectModel') }}</p>
         </div>
 
         <div class="input-container" v-if="activeSession">
@@ -775,15 +722,6 @@ function handleKeydown(event: KeyboardEvent) {
   gap: 8px;
 }
 
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
 .empty-chat {
   flex: 1;
   display: flex;
@@ -797,73 +735,6 @@ function handleKeydown(event: KeyboardEvent) {
 
 .empty-icon {
   opacity: 0.5;
-}
-
-.message {
-  display: flex;
-  flex-direction: column;
-  max-width: 85%;
-}
-
-.message.user {
-  align-self: flex-end;
-}
-
-.message.assistant {
-  align-self: flex-start;
-}
-
-.message-content {
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.message.user .message-content {
-  background-color: var(--spotlight-primary, var(--spotlight-icon, #666));
-  color: #fff;
-  border-bottom-right-radius: 4px;
-}
-
-.message.assistant .message-content {
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
-  border-bottom-left-radius: 4px;
-}
-
-.message-text {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.message-meta {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
-  color: var(--spotlight-icon, #666);
-}
-
-.message-time {
-  font-size: 10px;
-  color: var(--spotlight-placeholder);
-}
-
-.cursor {
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.thinking-indicator {
-  font-size: 12px;
-  color: var(--spotlight-placeholder);
-  font-style: italic;
-  padding-left: 14px;
 }
 
 .input-container {
@@ -881,13 +752,6 @@ function handleKeydown(event: KeyboardEvent) {
   padding: 0 8px 4px 8px;
   margin: 0;
   background-color: var(--spotlight-bg);
-}
-
-.chat-toolbar :deep(.base-select) {
-  min-width: 80px;
-  height: 24px;
-  font-size: 11px;
-  padding: 0 8px;
 }
 
 .message-input {
