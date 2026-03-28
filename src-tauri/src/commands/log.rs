@@ -1,7 +1,4 @@
-use chrono::Local;
-use std::fs::{self, OpenOptions};
-use std::io::Write;
-use std::path::PathBuf;
+use crate::utils::logger::{get_log_dir, init_log_dir, write_log_entry};
 use tauri::Manager;
 
 #[tauri::command]
@@ -10,43 +7,16 @@ pub fn write_log(
     message: String,
     app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
-    // Determine log directory based on environment
-    let log_dir: PathBuf = if cfg!(debug_assertions) {
-        // In development, use devLogs folder next to the executable
-        if let Ok(exe_path) = std::env::current_exe() {
-            exe_path
-                .parent()
-                .map(|p| p.to_path_buf())
-                .unwrap_or_default()
-                .join("devLogs")
-        } else {
-            PathBuf::from("devLogs")
-        }
+    let log_dir = if cfg!(debug_assertions) {
+        get_log_dir()
     } else {
-        // In release, use app_data_dir/logs
-        app_handle
-            .path()
-            .app_data_dir()
-            .map_err(|e: tauri::Error| e.to_string())?
-            .join("logs")
+        init_log_dir(
+            &app_handle
+                .path()
+                .app_data_dir()
+                .map_err(|e: tauri::Error| e.to_string())?,
+        )
     };
 
-    fs::create_dir_all(&log_dir).map_err(|e| e.to_string())?;
-
-    let today = Local::now().format("%Y-%m-%d").to_string();
-    let log_file: PathBuf = log_dir.join(format!("{}.log", today));
-
-    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S%.3f").to_string();
-    let log_entry = format!("[{}] [{}] {}\n", timestamp, level, message);
-
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&log_file)
-        .map_err(|e| e.to_string())?;
-
-    file.write_all(log_entry.as_bytes())
-        .map_err(|e| e.to_string())?;
-
-    Ok(())
+    write_log_entry(&log_dir, &level, &message)
 }

@@ -29,20 +29,23 @@
 - **ALL code comments and console logs MUST be in English**
 - **Use the unified logging module for ALL logging** - do not use `println!`, `eprintln!`, or `dbg!`
 - Web/TypeScript side: `import logger from '@spotlight/logger'; logger.info('message');`
-- Rust side: Use the `write_log` command (Tauri IPC)
+- Rust side: Use the shared logger module `src-tauri/src/utils/logger.rs`
   ```rust
+  use crate::utils::logger::{get_log_dir, write_log_entry};
+
   // Error level
-  write_log("Failed to load data".into(), "error".into());
+  write_log_entry(&log_dir, "error", "Failed to load data");
 
   // Info level
-  write_log("Application started".into(), "info".into());
+  write_log_entry(&log_dir, "info", "Application started");
 
   // Warning level
-  write_log("Warning message".into(), "warn".into());
+  write_log_entry(&log_dir, "warn", "Warning message");
 
   // Debug level
-  write_log("Debug info".into(), "debug".into());
+  write_log_entry(&log_dir, "debug", "Debug info");
   ```
+- For Tauri commands exposed to IPC, use the `write_log` command from `commands/log.rs`
 - Log file location:
   - **Development**: `{exe_dir}/devLogs/YYYY-MM-DD.log`
   - **Release**: `{app_data_dir}/logs/YYYY-MM-DD.log`
