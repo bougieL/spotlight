@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Search, X, FileText, ArrowLeft, Settings } from 'lucide-vue-next';
+import { Search, X, FileText, ArrowLeft, Settings, MoreVertical } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import { useI18n } from '@spotlight/i18n';
+import { BaseContextMenu, type ContextMenuItem } from '@spotlight/components';
 import type { FileItem } from '@spotlight/core';
 
 const { t } = useI18n();
@@ -64,6 +65,37 @@ const handleBack = () => {
 
 const handleOpenSettings = () => {
   emit('openSettings');
+};
+
+const showMenu = ref(false);
+const menuX = ref(0);
+const menuY = ref(0);
+const menuButtonRef = ref<HTMLElement | null>(null);
+
+const menuItems = computed<ContextMenuItem[]>(() => [
+  { label: t('input.settings'), icon: Settings, click: () => emit('openSettings') },
+]);
+
+const handleMenuClick = () => {
+  if (showMenu.value) {
+    showMenu.value = false;
+    return;
+  }
+  const btn = menuButtonRef.value;
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    menuX.value = rect.right;
+    menuY.value = rect.bottom + 4;
+  }
+  showMenu.value = true;
+};
+
+const handleMenuClose = () => {
+  showMenu.value = false;
+};
+
+const handleMenuSelect = (_item: ContextMenuItem) => {
+  showMenu.value = false;
 };
 
 const removeFile = (id: string) => {
@@ -167,10 +199,21 @@ const handlePaste = async (event: ClipboardEvent) => {
         @paste="handlePaste"
         @keydown="handleKeydown"
       />
-      <button class="settings-button" @click="handleOpenSettings" aria-label="Settings">
+      <button v-if="props.isPanelMode" ref="menuButtonRef" class="settings-button" @click.stop="handleMenuClick" aria-label="Menu">
+        <MoreVertical class="settings-icon" :size="20" />
+      </button>
+      <button v-else class="settings-button" @click="handleOpenSettings" aria-label="Settings">
         <Settings class="settings-icon" :size="20" />
       </button>
     </div>
+    <BaseContextMenu
+      :items="menuItems"
+      :x="menuX"
+      :y="menuY"
+      :visible="showMenu"
+      @close="handleMenuClose"
+      @select="handleMenuSelect"
+    />
     <div v-if="props.files.length > 0" class="files-container">
       <div v-for="file in props.files" :key="file.id" class="file-item" :title="file.path">
         <img v-if="file.type === 'image'" :src="file.src" :alt="file.name" class="file-image" />
