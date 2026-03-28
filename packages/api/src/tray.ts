@@ -7,6 +7,7 @@ import logger from '@spotlight/logger';
 let trayInstance: TrayIcon | null = null;
 let menuInstance: Menu | null = null;
 let refreshInProgress = false;
+let setupInProgress = false;
 
 export interface TrayItem {
   id: string;
@@ -64,54 +65,72 @@ export async function unRegisterTrayItem(id: string): Promise<void> {
 }
 
 export async function setupTray(options: TrayOptions): Promise<void> {
-  if (trayInstance) {
-    logger.info('Tray already initialized, skipping');
+  if (setupInProgress) {
+    logger.info('Setup already in progress, waiting...');
+    while (setupInProgress) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
     return;
   }
 
-  logger.info('Setting up tray...');
-
-  const icon = await defaultWindowIcon();
-  logger.info('Default window icon:', icon ? 'loaded' : 'null');
-
-  menuInstance = await Menu.new();
-
-  logger.info('Creating TrayIcon...');
-  trayInstance = await TrayIcon.new({
-    id: 'main-tray',
-    menu: menuInstance,
-    tooltip: options.tooltip || 'spotlight',
-    action: async (event) => {
-      if (event.type === 'Click' && event.button === 'Left') {
-        logger.info('Tray left click');
-        try {
-          const { getAllWindows } = await import('@tauri-apps/api/window');
-          const windows = await getAllWindows();
-          logger.info('Windows count:', windows.length);
-          const mainWindow = windows.find((w) => w.label === 'main');
-          if (mainWindow) {
-            logger.info('Found main window, showing...');
-            await mainWindow.show();
-            await mainWindow.setFocus();
-            logger.info('Main window shown and focused');
-          } else {
-            logger.error('Main window not found');
-          }
-        } catch (error) {
-          logger.error('Error showing window:', error);
-        }
-      }
-    },
-  });
-  logger.info('TrayIcon created');
-
-  if (icon) {
-    logger.info('Setting tray icon...');
-    await trayInstance.setIcon(icon);
-    logger.info('Tray icon set');
+  // Always try to remove existing tray first (page refresh may have reset JS state)
+  logger.info('Removing any existing tray...');
+  try {
+    await TrayIcon.removeById('main-tray');
+  } catch {
+    // Ignore if not found
   }
+  trayInstance = null;
+  menuInstance = null;
 
-  logger.info('Tray setup complete');
+  setupInProgress = true;
+  try {
+    logger.info('Setting up tray...');
+
+    const icon = await defaultWindowIcon();
+    logger.info('Default window icon:', icon ? 'loaded' : 'null');
+
+    menuInstance = await Menu.new();
+
+    logger.info('Creating TrayIcon...');
+    trayInstance = await TrayIcon.new({
+      id: 'main-tray',
+      menu: menuInstance,
+      tooltip: options.tooltip || 'spotlight',
+      action: async (event) => {
+        if (event.type === 'Click' && event.button === 'Left') {
+          logger.info('Tray left click');
+          try {
+            const { getAllWindows } = await import('@tauri-apps/api/window');
+            const windows = await getAllWindows();
+            logger.info('Windows count:', windows.length);
+            const mainWindow = windows.find((w) => w.label === 'main');
+            if (mainWindow) {
+              logger.info('Found main window, showing...');
+              await mainWindow.show();
+              await mainWindow.setFocus();
+              logger.info('Main window shown and focused');
+            } else {
+              logger.error('Main window not found');
+            }
+          } catch (error) {
+            logger.error('Error showing window:', error);
+          }
+        }
+      },
+    });
+    logger.info('TrayIcon created');
+
+    if (icon) {
+      logger.info('Setting tray icon...');
+      await trayInstance.setIcon(icon);
+      logger.info('Tray icon set');
+    }
+
+    logger.info('Tray setup complete');
+  } finally {
+    setupInProgress = false;
+  }
 }
 
 export async function disposeTray(): Promise<void> {
@@ -119,9 +138,9 @@ export async function disposeTray(): Promise<void> {
     return;
   }
 
+  await TrayIcon.removeById('main-tray');
   trayInstance = null;
   menuInstance = null;
-  await TrayIcon.removeById('main-tray');
   logger.info('Tray disposed');
 }
 
