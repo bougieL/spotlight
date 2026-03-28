@@ -23,6 +23,7 @@ export class ColorPickerPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.colorPicker'];
   }
+  iconUrl = colorPickerIconUrl;
   pluginId = 'color-picker-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

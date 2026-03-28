@@ -22,6 +22,7 @@ export class JsonPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.json'];
   }
+  iconUrl = jsonIconUrl;
   pluginId = 'json-plugin';
   version = '1.0.0';
 

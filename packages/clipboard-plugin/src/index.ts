@@ -45,6 +45,7 @@ export class ClipboardPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.clipboard'];
   }
+  iconUrl = clipboardIconUrl;
   pluginId = 'clipboard-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

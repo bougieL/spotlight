@@ -49,6 +49,7 @@ export class NotesPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.notes'];
   }
+  iconUrl = notesIconUrl;
   pluginId = 'notes-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

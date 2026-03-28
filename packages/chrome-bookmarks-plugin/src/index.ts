@@ -46,6 +46,7 @@ export class ChromeBookmarksPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.chromeBookmarks'];
   }
+  iconUrl = chromeIconUrl;
   pluginId = 'chrome-bookmarks-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

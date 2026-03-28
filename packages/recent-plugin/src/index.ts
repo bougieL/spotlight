@@ -43,6 +43,7 @@ export class RecentPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.recent'];
   }
+  iconUrl = recentIconUrl;
   pluginId = 'recent-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

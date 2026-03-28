@@ -25,6 +25,7 @@ export class ColorPalettePlugin extends BasePlugin {
     return translations[getLocale()]['colorPalette.description'];
   }
 
+  iconUrl = paletteIconUrl;
   pluginId = 'color-palette-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

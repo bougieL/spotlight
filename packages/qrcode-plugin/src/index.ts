@@ -22,6 +22,7 @@ export class QrCodePlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.qrcode'];
   }
+  iconUrl = qrcodeIconUrl;
   pluginId = 'qrcode-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

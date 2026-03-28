@@ -12,6 +12,8 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
+const appIconUrl = new URL('./assets/app.svg', import.meta.url).href;
+
 const ACTION_LAUNCH = 'launch';
 
 const CHINESE_APP_NAMES: Record<string, string> = {
@@ -52,6 +54,7 @@ export class AppSearchPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.appSearch'];
   }
+  iconUrl = appIconUrl;
   pluginId = 'app-search-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

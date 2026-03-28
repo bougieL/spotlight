@@ -78,6 +78,7 @@ export class TranslationPlugin extends BasePlugin {
     return translations[getLocale()]['plugin.description.translation'];
   }
 
+  iconUrl = translationIconUrl;
   pluginId = 'translation-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

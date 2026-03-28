@@ -23,6 +23,7 @@ export class ScreenshotPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.screenshot'];
   }
+  iconUrl = screenshotIconUrl;
   pluginId = 'screenshot-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

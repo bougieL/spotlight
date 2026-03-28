@@ -38,6 +38,7 @@ export class AIChatPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.aiChat'];
   }
+  iconUrl = aiChatIconUrl;
   pluginId = 'ai-chat-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

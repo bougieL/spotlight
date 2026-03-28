@@ -22,6 +22,7 @@ export class CalendarPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.calendar'];
   }
+  iconUrl = calendarIconUrl;
   pluginId = 'calendar-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

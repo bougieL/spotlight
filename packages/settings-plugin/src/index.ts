@@ -44,6 +44,7 @@ export class SettingsPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.settings'];
   }
+  iconUrl = settingsIconUrl;
   pluginId = 'settings-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

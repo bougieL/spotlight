@@ -14,6 +14,7 @@ interface Props {
   files: FileItem[];
   isPanelMode?: boolean;
   pluginName?: string;
+  pluginIcon?: string;
 }
 
 const props = defineProps<Props>();
@@ -152,7 +153,10 @@ const handlePaste = async (event: ClipboardEvent) => {
         <ArrowLeft class="back-icon" :size="24" />
       </button>
       <Search v-else class="search-icon" :size="24" />
-      <span v-if="props.isPanelMode && displayPluginName" class="plugin-name">{{ displayPluginName }}</span>
+      <span v-if="props.isPanelMode && displayPluginName" class="plugin-name">
+        <img v-if="props.pluginIcon" :src="props.pluginIcon" class="plugin-icon" />
+        {{ displayPluginName }}
+      </span>
       <input
         ref="inputRef"
         type="text"
@@ -241,6 +245,13 @@ const handlePaste = async (event: ClipboardEvent) => {
   background-color: var(--spotlight-tag-bg);
   color: var(--spotlight-tag-text);
   flex-shrink: 0;
+}
+
+.plugin-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  object-fit: contain;
 }
 
 .spotlight-input {

@@ -44,6 +44,7 @@ export class ShortcutsPlugin extends BasePlugin {
     return translations[getLocale()]['plugin.description.shortcuts'];
   }
 
+  iconUrl = shortcutsIconUrl;
   pluginId = 'shortcuts-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

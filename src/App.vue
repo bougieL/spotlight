@@ -35,6 +35,12 @@ const activePluginName = computed(() => {
   const plugin = pluginRegistry.getPlugin(match[1]);
   return plugin?.name;
 });
+const activePluginIcon = computed(() => {
+  const match = route.path.match(/^\/panel\/(.+)$/);
+  if (!match) return undefined;
+  const plugin = pluginRegistry.getPlugin(match[1]);
+  return plugin?.iconUrl;
+});
 
 const clearQuery = () => {
   query.value = '';
@@ -103,6 +109,7 @@ watch(locale, async (newLocale) => {
       v-model:files="files"
       :is-panel-mode="isPanelMode"
       :plugin-name="activePluginName"
+      :plugin-icon="activePluginIcon"
       @back="handleClosePanel"
       @open-settings="handleOpenSettings"
     />

@@ -26,6 +26,7 @@ export class CalculatorPlugin extends BasePlugin {
   get description(): string | undefined {
     return translations[getLocale()]['plugin.description.calculator'];
   }
+  iconUrl = calculatorIconUrl;
   pluginId = 'calculator-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';

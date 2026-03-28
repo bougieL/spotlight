@@ -78,6 +78,7 @@ export interface PluginMetadata {
   version: string;
   description?: string;
   author?: string;
+  iconUrl: string;
 }
 
 export abstract class BasePlugin implements PluginMetadata {
@@ -86,6 +87,7 @@ export abstract class BasePlugin implements PluginMetadata {
   abstract version: string;
   abstract get description(): string | undefined;
   author?: string;
+  abstract iconUrl: string;
 
   abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
 
