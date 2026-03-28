@@ -59,22 +59,205 @@ fn resolve_shortcut(path: &str) -> Result<ShortcutInfo, String> {
     }
 }
 
+#[cfg(windows)]
+fn find_running_app(exe_path: &str, _arguments: &str) -> Option<u32> {
+    use windows::Win32::System::Diagnostics::ToolHelp::{
+        CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
+        TH32CS_SNAPPROCESS,
+    };
+    use windows::Win32::System::Threading::{
+        OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_INFORMATION,
+    };
+
+    unsafe {
+        let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0).ok()?;
+
+        let mut entry = PROCESSENTRY32W {
+            dwSize: std::mem::size_of::<PROCESSENTRY32W>() as u32,
+            ..std::mem::zeroed()
+        };
+
+        if Process32FirstW(snapshot, &mut entry).is_ok() {
+            loop {
+                if let Ok(handle) =
+                    OpenProcess(PROCESS_QUERY_INFORMATION, false, entry.th32ProcessID)
+                {
+                    let mut path_buf = [0u16; 260];
+                    let mut buf_len = path_buf.len() as u32;
+                    if QueryFullProcessImageNameW(
+                        handle,
+                        PROCESS_NAME_WIN32,
+                        windows::core::PWSTR(path_buf.as_mut_ptr()),
+                        &mut buf_len,
+                    )
+                    .is_ok()
+                    {
+                        let process_path = String::from_utf16_lossy(&path_buf[..buf_len as usize]);
+                        let process_exe = process_path
+                            .rsplit('\\')
+                            .next()
+                            .unwrap_or_default()
+                            .to_lowercase();
+                        let target_exe = exe_path
+                            .rsplit('\\')
+                            .next()
+                            .unwrap_or_default()
+                            .to_lowercase();
+
+                        if process_exe == target_exe {
+                            let _ = windows::Win32::Foundation::CloseHandle(handle);
+                            let _ = windows::Win32::Foundation::CloseHandle(snapshot);
+                            return Some(entry.th32ProcessID);
+                        }
+                    }
+                    let _ = windows::Win32::Foundation::CloseHandle(handle);
+                }
+
+                if Process32NextW(snapshot, &mut entry).is_err() {
+                    break;
+                }
+            }
+        }
+
+        let _ = windows::Win32::Foundation::CloseHandle(snapshot);
+        None
+    }
+}
+
+#[cfg(windows)]
+fn find_window_by_pid(pid: u32) -> Option<windows::Win32::Foundation::HWND> {
+    use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetWindowThreadProcessId, IsWindowVisible,
+    };
+
+    struct EnumData {
+        pid: u32,
+        hwnd: Option<HWND>,
+    }
+
+    unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> BOOL {
+        let data = &mut *(lparam.0 as *mut EnumData);
+
+        if !IsWindowVisible(hwnd).as_bool() {
+            return BOOL(1);
+        }
+
+        let mut window_pid: u32 = 0;
+        GetWindowThreadProcessId(hwnd, Some(&mut window_pid));
+
+        if window_pid == data.pid {
+            data.hwnd = Some(hwnd);
+            return BOOL(0);
+        }
+
+        BOOL(1)
+    }
+
+    let mut data = EnumData { pid, hwnd: None };
+
+    unsafe {
+        let _ = EnumWindows(
+            Some(enum_windows_proc),
+            LPARAM(&mut data as *mut _ as isize),
+        );
+        data.hwnd
+    }
+}
+
+#[cfg(windows)]
+fn find_running_app_by_title(keyword: &str) -> Option<windows::Win32::Foundation::HWND> {
+    use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+    use windows::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetWindowTextLengthW, GetWindowTextW, IsWindowVisible,
+    };
+
+    struct EnumData {
+        keyword: String,
+        hwnd: Option<HWND>,
+    }
+
+    unsafe extern "system" fn enum_windows_proc(hwnd: HWND, lparam: LPARAM) -> BOOL {
+        let data = &mut *(lparam.0 as *mut EnumData);
+
+        if !IsWindowVisible(hwnd).as_bool() {
+            return BOOL(1);
+        }
+
+        let len = GetWindowTextLengthW(hwnd);
+        if len > 0 {
+            let mut title = vec![0u16; (len + 1) as usize];
+            GetWindowTextW(hwnd, &mut title);
+            let title_str = String::from_utf16_lossy(&title[..len as usize]);
+            if title_str
+                .to_lowercase()
+                .contains(&data.keyword.to_lowercase())
+            {
+                data.hwnd = Some(hwnd);
+                return BOOL(0);
+            }
+        }
+
+        BOOL(1)
+    }
+
+    let mut data = EnumData {
+        keyword: keyword.to_string(),
+        hwnd: None,
+    };
+
+    unsafe {
+        let _ = EnumWindows(
+            Some(enum_windows_proc),
+            LPARAM(&mut data as *mut _ as isize),
+        );
+        data.hwnd
+    }
+}
+
 #[tauri::command]
 pub fn launch_app(path: String) -> Result<(), String> {
     #[cfg(windows)]
     {
         use windows::Win32::Foundation::HWND;
         use windows::Win32::UI::Shell::ShellExecuteW;
-        use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+        use windows::Win32::UI::WindowsAndMessaging::{
+            SetForegroundWindow, ShowWindow, SW_RESTORE, SW_SHOWNORMAL,
+        };
+
+        let title_keyword = std::path::Path::new(&path)
+            .file_stem()
+            .and_then(|n| n.to_str())
+            .unwrap_or_default();
 
         let (target_path, arguments) = if path.to_lowercase().ends_with(".lnk") {
             match resolve_shortcut(&path) {
                 Ok(info) => (info.target_path, info.arguments),
-                Err(_) => (path, String::new()),
+                Err(_) => (path.clone(), String::new()),
             }
         } else {
-            (path, String::new())
+            (path.clone(), String::new())
         };
+
+        // Try to find existing window by title (works for Chrome PWAs and most apps)
+        if let Some(hwnd) = find_running_app_by_title(title_keyword) {
+            unsafe {
+                let _ = ShowWindow(hwnd, SW_RESTORE);
+                let _ = SetForegroundWindow(hwnd);
+            }
+            return Ok(());
+        }
+
+        // Fallback: check by process path and bring window to front
+        if let Some(pid) = find_running_app(&target_path, &arguments) {
+            if let Some(hwnd) = find_window_by_pid(pid) {
+                unsafe {
+                    let _ = ShowWindow(hwnd, SW_RESTORE);
+                    let _ = SetForegroundWindow(hwnd);
+                }
+            }
+            return Ok(());
+        }
 
         let path_wide: Vec<u16> = target_path
             .encode_utf16()
