@@ -6,11 +6,11 @@ export interface ChatOptions {
 }
 
 export interface AIAdapter {
-  streamChat(
-    messages: ChatMessage[],
-    config: ModelConfig,
-    options: ChatOptions
-  ): AsyncGenerator<StreamChunk>;
+  streamChat(options: {
+    messages: ChatMessage[];
+    config: ModelConfig;
+    options: ChatOptions;
+  }): AsyncGenerator<StreamChunk>;
 }
 
 export type { ChatMessage, ModelConfig, StreamChunk };

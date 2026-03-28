@@ -88,9 +88,13 @@ async function testConnection(model: ModelConfig) {
       { id: '1', role: 'user' as const, content: 'Hi', timestamp: Date.now() }
     ];
 
-    const generator = adapter.streamChat(testMessages, model, {
-      temperature: 0.7,
-      maxTokens: 10,
+    const generator = adapter.streamChat({
+      messages: testMessages,
+      config: model,
+      options: {
+        temperature: 0.7,
+        maxTokens: 10,
+      },
     });
 
     await generator.next();

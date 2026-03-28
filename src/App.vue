@@ -94,7 +94,7 @@ const handleDetach = async () => {
     const url = `${baseUrl}${panelPath}?detached=true`;
     const label = `panel-${Date.now()}`;
     const title = activePluginName.value || 'Spotlight';
-    await tauriApi.detachWindow(url, label, title);
+    await tauriApi.detachWindow({ url, label, title });
   }
 };
 

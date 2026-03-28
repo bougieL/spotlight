@@ -203,14 +203,14 @@ export class TranslationPlugin extends BasePlugin {
 
       if (model.endpointType === 'anthropic') {
         const adapter = anthropicAdapter;
-        for await (const chunk of adapter.streamChat(messages, model, { temperature: 0.3, maxTokens: 4096 })) {
+        for await (const chunk of adapter.streamChat({ messages, config: model, options: { temperature: 0.3, maxTokens: 4096 } })) {
           if (chunk.content) {
             chunks.push(chunk.content);
           }
         }
       } else {
         const adapter = openaiAdapter;
-        for await (const chunk of adapter.streamChat(messages, model, { temperature: 0.3, maxTokens: 4096 })) {
+        for await (const chunk of adapter.streamChat({ messages, config: model, options: { temperature: 0.3, maxTokens: 4096 } })) {
           if (chunk.content) {
             chunks.push(chunk.content);
           }
@@ -255,7 +255,7 @@ export class TranslationPlugin extends BasePlugin {
       const textToTranslate = query.slice(match[0].length).trim();
       if (textToTranslate) {
         const lastLangs = await this.getLastLanguages();
-        const translated = await this.translate(textToTranslate, lastLangs.from, lastLangs.to);
+        const translated = await this.translate({ text: textToTranslate, fromLang: lastLangs.from, toLang: lastLangs.to });
         if (translated) {
           return [
             {

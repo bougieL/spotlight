@@ -283,9 +283,13 @@ async function processStream() {
   const adapter = activeModel.value.endpointType === 'anthropic' ? anthropicAdapter : openaiAdapter;
 
   try {
-    const generator = adapter.streamChat(allMessages, activeModel.value, {
-      temperature: 0.7,
-      maxTokens: 4096,
+    const generator = adapter.streamChat({
+      messages: allMessages,
+      config: activeModel.value,
+      options: {
+        temperature: 0.7,
+        maxTokens: 4096,
+      },
     });
 
     for await (const chunk of generator) {

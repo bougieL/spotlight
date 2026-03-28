@@ -1,15 +1,9 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import type { AIAdapter, ChatOptions, ChatMessage, ModelConfig, StreamChunk } from '../service';
 
-interface StreamChatOptions {
-  messages: ChatMessage[];
-  config: ModelConfig;
-  options: ChatOptions;
-}
-
 export class AnthropicAdapter implements AIAdapter {
   async *streamChat(
-    { messages, config, options }: StreamChatOptions
+    { messages, config, options }: { messages: ChatMessage[]; config: ModelConfig; options: ChatOptions }
   ): AsyncGenerator<StreamChunk> {
     const systemPrompt = messages.find(m => m.role === 'system')?.content || '';
     const conversationMessages = messages.filter(m => m.role !== 'system');
