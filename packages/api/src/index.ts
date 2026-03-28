@@ -2,7 +2,7 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 
 export { createPluginStorage, type PluginStorage } from './storage';
 export { listen, emit, on, EventName, type UnlistenFn, type EventNameType } from './event';
-export { setupTray, disposeTray, refreshTray, registerTrayItem, unRegisterTrayItem, getTrayInstance, type TrayOptions, type TrayItem } from './tray';
+export { setupTray, disposeTray, registerTrayItem, unRegisterTrayItem, getTrayInstance, type TrayOptions, type TrayItem } from './tray';
 
 export interface AppInfo {
   name: string;
