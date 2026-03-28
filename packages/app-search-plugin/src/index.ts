@@ -127,19 +127,24 @@ export class AppSearchPlugin extends BasePlugin {
   private iconCache = new Map<string, string | null>();
   private iconLoading = new Map<string, Promise<string | null>>();
 
-  private async getIcon(path: string): Promise<string | null> {
-    const cached = this.iconCache.get(path);
+  private async getIcon(app: AppInfo): Promise<string | null> {
+    // If icon_data is already available, use it
+    if (app.icon_data) {
+      return app.icon_data;
+    }
+
+    const cached = this.iconCache.get(app.path);
     if (cached !== undefined) return cached;
 
-    let loader = this.iconLoading.get(path);
+    let loader = this.iconLoading.get(app.path);
     if (!loader) {
-      loader = tauriApi.getAppIcon(path);
-      this.iconLoading.set(path, loader);
+      loader = tauriApi.getAppIcon(app.path);
+      this.iconLoading.set(app.path, loader);
     }
 
     const icon = await loader;
-    this.iconCache.set(path, icon);
-    this.iconLoading.delete(path);
+    this.iconCache.set(app.path, icon);
+    this.iconLoading.delete(app.path);
     return icon;
   }
 
@@ -230,7 +235,7 @@ export class AppSearchPlugin extends BasePlugin {
 
     const topApps = scored.slice(0, limit);
     const iconPromises = topApps.map(async ({ app, score }) => {
-      const icon = await this.getIcon(app.info.path);
+      const icon = await this.getIcon(app.info);
       return { app, score, icon };
     });
 

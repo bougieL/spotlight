@@ -1,30 +1,14 @@
 use crate::utils::color::generate_color_from_string;
 
 #[cfg(windows)]
-pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
+fn extract_single_icon(hicon: windows::Win32::UI::WindowsAndMessaging::HICON) -> Option<String> {
     use windows::Win32::Graphics::Gdi::{
         CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits, GetObjectW, SelectObject, BITMAP,
         BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC,
     };
-    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, HICON, ICONINFO};
-
-    #[link(name = "shell32")]
-    extern "system" {
-        fn ExtractIconW(
-            hInst: *const std::ffi::c_void,
-            lpszExeFileName: *const u16,
-            nIconIndex: i32,
-        ) -> HICON;
-    }
-
-    let parts: Vec<&str> = icon_spec.split(',').collect();
-    let file_path = parts[0];
-    let icon_index: i32 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, GetIconInfo, ICONINFO};
 
     unsafe {
-        let file_path_wide: Vec<u16> = file_path.encode_utf16().chain(std::iter::once(0)).collect();
-        let hicon = ExtractIconW(std::ptr::null(), file_path_wide.as_ptr(), icon_index);
-
         if hicon.is_invalid() {
             return None;
         }
@@ -155,6 +139,65 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
     }
 }
 
+#[cfg(windows)]
+pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
+    use windows::Win32::UI::WindowsAndMessaging::{DestroyIcon, HICON};
+
+    #[link(name = "shell32")]
+    extern "system" {
+        fn ExtractIconW(
+            hInst: *const std::ffi::c_void,
+            lpszExeFileName: *const u16,
+            nIconIndex: i32,
+        ) -> HICON;
+
+        fn ExtractIconExW(
+            lpszFile: *const u16,
+            nIconIndex: i32,
+            phiconLarge: *mut HICON,
+            phiconSmall: *mut HICON,
+            nIcons: u32,
+        ) -> u32;
+    }
+
+    let parts: Vec<&str> = icon_spec.split(',').collect();
+    let file_path = parts[0];
+    let icon_index: i32 = parts.get(1).and_then(|s| s.parse().ok()).unwrap_or(0);
+
+    unsafe {
+        let file_path_wide: Vec<u16> = file_path.encode_utf16().chain(std::iter::once(0)).collect();
+
+        // Try ExtractIconExW first for larger icons
+        let mut large_icon = HICON::default();
+        let mut small_icon = HICON::default();
+        let count = ExtractIconExW(
+            file_path_wide.as_ptr(),
+            icon_index,
+            &mut large_icon,
+            &mut small_icon,
+            1,
+        );
+
+        if count > 0 && !large_icon.is_invalid() {
+            let result = extract_single_icon(large_icon);
+            if result.is_some() {
+                if !small_icon.is_invalid() {
+                    let _ = DestroyIcon(small_icon);
+                }
+                return result;
+            }
+        }
+
+        if !small_icon.is_invalid() {
+            let _ = DestroyIcon(small_icon);
+        }
+
+        // Fallback to ExtractIconW
+        let hicon = ExtractIconW(std::ptr::null(), file_path_wide.as_ptr(), icon_index);
+        extract_single_icon(hicon)
+    }
+}
+
 #[cfg(target_os = "macos")]
 pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
     // icon_spec is the .app bundle path on macOS
@@ -232,11 +275,11 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
         {
             // Determine size from type code
             let size = match entry_type {
-                0x6963_3039 => 512, // ic09 = 512x512
-                0x6963_3130 => 1024, // ic10 = 1024x1024
-                0x6963_3037 => 256, // ic07 = 256x256
-                0x6963_3038 => 128, // ic08 = 128x128
-                0x6963_3036 => 64,  // ic06 = 64x64
+                0x6963_3039 => 512,           // ic09 = 512x512
+                0x6963_3130 => 1024,          // ic10 = 1024x1024
+                0x6963_3037 => 256,           // ic07 = 256x256
+                0x6963_3038 => 128,           // ic08 = 128x128
+                0x6963_3036 => 64,            // ic06 = 64x64
                 _ => entry_data.len() as u32, // fallback: use data size
             };
             if size > best_size {
@@ -253,7 +296,8 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
     // Resize to 32x32 for consistency with Windows icons
     let dyn_image = image::load_from_memory(png_data).ok()?;
     let rgba_image = dyn_image.to_rgba8();
-    let resized = image::imageops::resize(&rgba_image, 32, 32, image::imageops::FilterType::Lanczos3);
+    let resized =
+        image::imageops::resize(&rgba_image, 32, 32, image::imageops::FilterType::Lanczos3);
 
     let mut png_bytes: Vec<u8> = Vec::new();
     let mut cursor = std::io::Cursor::new(&mut png_bytes);

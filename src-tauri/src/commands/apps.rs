@@ -358,6 +358,107 @@ fn clean_windows_app_name(name: &str) -> String {
     }
 }
 
+#[cfg(windows)]
+unsafe fn scan_chrome_pwa_apps(
+    apps: &mut Vec<AppInfo>,
+    seen_paths: &mut HashSet<String>,
+    seen_names: &mut HashSet<String>,
+) {
+    // Chrome PWA shortcuts are stored in:
+    // %LOCALAPPDATA%\Google\Chrome\User Data\<Profile>\Web Applications\_crx_<id>\*.lnk
+
+    let local = match std::env::var("LOCALAPPDATA") {
+        Ok(l) => l,
+        Err(_) => return,
+    };
+
+    let chrome_user_data = format!(r"{}\Google\Chrome\User Data", local);
+    let chrome_path = Path::new(&chrome_user_data);
+    if !chrome_path.exists() {
+        return;
+    }
+
+    // Collect all profile directories
+    let mut profile_dirs: Vec<std::path::PathBuf> = vec![chrome_path.join("Default")];
+
+    let profiles_dir = chrome_path.join("Profiles");
+    if profiles_dir.exists() {
+        if let Ok(entries) = std::fs::read_dir(&profiles_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    let name = path.file_name().unwrap_or_default().to_string_lossy();
+                    if name != "system_profile" {
+                        profile_dirs.push(path);
+                    }
+                }
+            }
+        }
+    }
+
+    for profile_dir in &profile_dirs {
+        let web_apps_dir = profile_dir.join("Web Applications");
+        if !web_apps_dir.exists() {
+            continue;
+        }
+
+        if let Ok(entries) = std::fs::read_dir(&web_apps_dir) {
+            for entry in entries.flatten() {
+                let entry_path = entry.path();
+                if !entry_path.is_dir() {
+                    continue;
+                }
+
+                let dir_name = entry_path.file_name().unwrap_or_default().to_string_lossy();
+                if !dir_name.starts_with("_crx_") {
+                    continue;
+                }
+
+                if let Ok(lnk_entries) = std::fs::read_dir(&entry_path) {
+                    for lnk_entry in lnk_entries.flatten() {
+                        let lnk_path = lnk_entry.path();
+                        if lnk_path.extension().map_or(false, |e| e == "lnk") {
+                            if let Some(name) = lnk_path.file_stem() {
+                                let name_str = name.to_string_lossy().to_string();
+                                let clean_lower = name_str.to_lowercase();
+
+                                if seen_names.contains(&clean_lower) || name_str.len() < 2 {
+                                    continue;
+                                }
+
+                                let path_str = lnk_path.to_string_lossy().to_string();
+                                if seen_paths.contains(&path_str) {
+                                    continue;
+                                }
+
+                                seen_paths.insert(path_str);
+                                seen_names.insert(clean_lower);
+
+                                // Try to find the icon file (.ico) with the same name
+                                let icon_data = lnk_path
+                                    .with_extension("ico")
+                                    .exists()
+                                    .then(|| {
+                                        crate::utils::icon::extract_icon_base64(
+                                            &lnk_path.with_extension("ico").to_string_lossy(),
+                                        )
+                                    })
+                                    .flatten();
+
+                                apps.push(AppInfo {
+                                    name: name_str,
+                                    path: lnk_path.to_string_lossy().to_string(),
+                                    icon_data,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[tauri::command]
 pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
     #[cfg(windows)]
@@ -432,6 +533,9 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                     );
                 }
             }
+
+            // Scan Chrome PWA apps
+            scan_chrome_pwa_apps(&mut apps, &mut seen_paths, &mut seen_names);
         }
 
         apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
@@ -472,7 +576,12 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
             "/Library/Application Support/Adobe/",
         ];
 
-        fn should_skip_app(name: &str, path: &str, skip_patterns: &[&str], skip_path_patterns: &[&str]) -> bool {
+        fn should_skip_app(
+            name: &str,
+            path: &str,
+            skip_patterns: &[&str],
+            skip_path_patterns: &[&str],
+        ) -> bool {
             let name_lower = name.to_lowercase();
             let path_lower = path.to_lowercase();
 
@@ -518,7 +627,10 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                     let mut chars = word.chars();
                     match chars.next() {
                         None => String::new(),
-                        Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                        Some(first) => {
+                            first.to_uppercase().collect::<String>()
+                                + &chars.as_str().to_lowercase()
+                        }
                     }
                 })
                 .collect::<Vec<_>>()
@@ -574,7 +686,13 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
         }
 
         // Recursive scan function
-        fn scan_applications_dir(dir_path: &Path, apps: &mut Vec<AppInfo>, seen_names: &mut HashSet<String>, skip_patterns: &[&str], skip_path_patterns: &[&str]) {
+        fn scan_applications_dir(
+            dir_path: &Path,
+            apps: &mut Vec<AppInfo>,
+            seen_names: &mut HashSet<String>,
+            skip_patterns: &[&str],
+            skip_path_patterns: &[&str],
+        ) {
             if let Ok(entries) = std::fs::read_dir(dir_path) {
                 for entry in entries.flatten() {
                     let path = entry.path();
@@ -592,7 +710,12 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                                 let name_str = name.to_string_lossy().to_string();
                                 let path_str = path.to_string_lossy().to_string();
 
-                                if should_skip_app(&name_str, &path_str, skip_patterns, skip_path_patterns) {
+                                if should_skip_app(
+                                    &name_str,
+                                    &path_str,
+                                    skip_patterns,
+                                    skip_path_patterns,
+                                ) {
                                     continue;
                                 }
 
@@ -620,7 +743,13 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                             }
                         } else {
                             // Recurse into subdirectory
-                            scan_applications_dir(&path, apps, seen_names, skip_patterns, skip_path_patterns);
+                            scan_applications_dir(
+                                &path,
+                                apps,
+                                seen_names,
+                                skip_patterns,
+                                skip_path_patterns,
+                            );
                         }
                     }
                 }
@@ -628,12 +757,24 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
         }
 
         // Scan /Applications
-        scan_applications_dir(Path::new("/Applications"), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
+        scan_applications_dir(
+            Path::new("/Applications"),
+            &mut apps,
+            &mut seen_names,
+            skip_patterns,
+            skip_path_patterns,
+        );
 
         // Scan ~/Applications
         if let Ok(home) = std::env::var("HOME") {
             let user_apps = format!("{}/Applications", home);
-            scan_applications_dir(Path::new(&user_apps), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
+            scan_applications_dir(
+                Path::new(&user_apps),
+                &mut apps,
+                &mut seen_names,
+                skip_patterns,
+                skip_path_patterns,
+            );
         }
 
         // Scan /System/Applications (but skip Utilities subdirectory)
@@ -646,7 +787,8 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
                         let name_str = name.to_string_lossy().to_string();
                         let path_str = path.to_string_lossy().to_string();
 
-                        if should_skip_app(&name_str, &path_str, skip_patterns, skip_path_patterns) {
+                        if should_skip_app(&name_str, &path_str, skip_patterns, skip_path_patterns)
+                        {
                             continue;
                         }
 
@@ -678,7 +820,13 @@ pub fn get_installed_applications() -> Result<Vec<AppInfo>, String> {
         // Scan ~/Library/Application Support/Applications
         if let Ok(home) = std::env::var("HOME") {
             let app_support_apps = format!("{}/Library/Application Support/Applications", home);
-            scan_applications_dir(Path::new(&app_support_apps), &mut apps, &mut seen_names, skip_patterns, skip_path_patterns);
+            scan_applications_dir(
+                Path::new(&app_support_apps),
+                &mut apps,
+                &mut seen_names,
+                skip_patterns,
+                skip_path_patterns,
+            );
         }
 
         apps.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));

@@ -27,18 +27,25 @@
 ### 5. Code Comments and Logs
 
 - **ALL code comments and console logs MUST be in English**
-- **Use the @spotlight/logger module for logging instead of console.log/console.error**
+- **Use the unified logging module for ALL logging** - do not use `println!`, `eprintln!`, or `dbg!`
 - Web/TypeScript side: `import logger from '@spotlight/logger'; logger.info('message');`
-- Rust side: Use the `write_log` command from `spotlight_logger` crate
+- Rust side: Use the `write_log` command (Tauri IPC)
+  ```rust
+  // Error level
+  write_log("Failed to load data".into(), "error".into());
+
+  // Info level
+  write_log("Application started".into(), "info".into());
+
+  // Warning level
+  write_log("Warning message".into(), "warn".into());
+
+  // Debug level
+  write_log("Debug info".into(), "debug".into());
+  ```
 - Log file location:
   - **Development**: `{exe_dir}/devLogs/YYYY-MM-DD.log`
   - **Release**: `{app_data_dir}/logs/YYYY-MM-DD.log`
-- Example:
-  ```typescript
-  import logger from '@spotlight/logger';
-  logger.info('Application started');
-  logger.error('Failed to load data', error);
-  ```
 
 ### 6. Cross-Platform Support (Mandatory)
 
