@@ -10,7 +10,7 @@ export interface ContextMenuItem {
 }
 
 interface Props {
-  items: ContextMenuItem[];
+  items?: ContextMenuItem[];
   x: number;
   y: number;
   visible: boolean;

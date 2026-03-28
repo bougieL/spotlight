@@ -28,6 +28,7 @@ export default [
     rules: {
       ...pluginVue.configs['flat/recommended'].rules,
       'vue/multi-word-component-names': 'off',
+      'vue/no-v-html': 'off',
       'no-console': 'warn',
       'no-debugger': 'warn',
       'max-params': ['error', 2],
@@ -52,7 +53,7 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-console': 'warn',
       'no-debugger': 'warn',
       'max-params': ['error', 2],

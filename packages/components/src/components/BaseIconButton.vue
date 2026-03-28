@@ -10,6 +10,7 @@ withDefaults(defineProps<Props>(), {
   variant: 'default',
   size: 'medium',
   disabled: false,
+  title: '',
 });
 </script>
 

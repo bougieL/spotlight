@@ -31,6 +31,7 @@ export async function log({ level, message, error }: LogOptions): Promise<void> 
     const fullMessage = serializeMessage(message, error);
     await loggerApi.writeLog(level, fullMessage);
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error('Failed to write log:', err);
   }
 }

@@ -9,6 +9,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   type: 'text',
   disabled: false,
+  placeholder: '',
 });
 
 const emit = defineEmits<{

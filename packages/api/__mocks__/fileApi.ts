@@ -55,7 +55,7 @@ export async function setClipboardText(_text: string): Promise<void> {
 
 export async function executeShellCommand(_command: string): Promise<void> {
   // In mock mode, do nothing
-  console.log('Mock executeShellCommand:', _command);
+  // console.log('Mock executeShellCommand:', _command);
 }
 
 export async function getInstalledApplications(): Promise<AppInfo[]> {
@@ -105,7 +105,7 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'get_installed_applications':
       return getInstalledApplications();
     case 'launch_app':
-      console.log('Mock launch_app:', args?.path);
+      // console.log('Mock launch_app:', args?.path);
       return Promise.resolve();
     case 'get_chrome_bookmarks':
       return getChromeBookmarks();
