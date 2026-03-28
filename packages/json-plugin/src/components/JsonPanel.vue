@@ -12,7 +12,6 @@ import JsonEditor from './JsonEditor.vue';
 .json-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: var(--spotlight-bg);
 }
 </style>

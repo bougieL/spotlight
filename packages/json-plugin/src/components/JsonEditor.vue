@@ -268,7 +268,6 @@ watch(content, () => {
 .json-editor {
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: var(--spotlight-bg);
   color: var(--spotlight-text);
   border-radius: 8px;

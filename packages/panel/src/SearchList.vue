@@ -131,7 +131,6 @@ onUnmounted(() => {
   flex-direction: column;
   background-color: var(--spotlight-bg);
   padding: 8px 0;
-  max-height: 320px;
   overflow-y: auto;
 }
 

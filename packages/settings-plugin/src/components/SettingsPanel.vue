@@ -218,7 +218,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  max-height: 500px;
   overflow-y: auto;
   background-color: var(--spotlight-bg);
   outline: none;

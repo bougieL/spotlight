@@ -201,7 +201,6 @@ function removeExpression(index: number) {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-height: 400px;
   overflow-y: auto;
 }
 

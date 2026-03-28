@@ -214,7 +214,6 @@ async function handleInput() {
 .translation-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
   background-color: var(--spotlight-bg);
   outline: none;
 }
@@ -224,7 +223,6 @@ async function handleInput() {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  height: 100%;
 }
 
 .header-row {

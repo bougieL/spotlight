@@ -220,7 +220,6 @@ function handlePreviewBlur() {
 <style scoped>
 .notes-panel {
   display: flex;
-  height: 450px;
   background-color: var(--spotlight-bg);
   outline: none;
 }

@@ -113,7 +113,10 @@ watch(locale, async (newLocale) => {
       @back="handleClosePanel"
       @open-settings="handleOpenSettings"
     />
-    <RouterView v-slot="{ Component }">
+    <RouterView
+      v-slot="{ Component }"
+      class="router-view-container"
+    >
       <KeepAlive>
         <component :is="Component" @select="handleSelect" />
       </KeepAlive>
@@ -159,4 +162,10 @@ body {
   border: none;
   background-color: transparent;
 }
+
+.router-view-container {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
 </style>

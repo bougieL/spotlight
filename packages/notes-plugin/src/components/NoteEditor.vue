@@ -76,7 +76,6 @@ watch([title, content, categoryId], () => {
 .note-editor {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .editor-header {

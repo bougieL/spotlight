@@ -235,7 +235,6 @@ function isFavorite(item: ClipboardItem): boolean {
 .clipboard-panel {
   display: flex;
   flex-direction: column;
-  height: 400px;
   background-color: var(--spotlight-bg);
   outline: none;
 }
@@ -273,6 +272,7 @@ function isFavorite(item: ClipboardItem): boolean {
 
 .clipboard-list {
   flex: 1;
+  min-height: 200px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -282,7 +282,7 @@ function isFavorite(item: ClipboardItem): boolean {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  min-height: 200px;
   gap: 16px;
   color: var(--spotlight-placeholder);
 }
