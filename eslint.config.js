@@ -9,7 +9,7 @@ export default [
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
   {
-    files: ['**/*.vue'],
+    files: ['**/*.vue', 'packages/**/*.vue'],
     plugins: {
       vue: pluginVue,
     },
@@ -30,10 +30,11 @@ export default [
       'vue/multi-word-component-names': 'off',
       'no-console': 'warn',
       'no-debugger': 'warn',
+      'max-params': ['error', 2],
     },
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', 'packages/**/*.ts'],
     plugins: {
       '@typescript-eslint': tseslint,
     },

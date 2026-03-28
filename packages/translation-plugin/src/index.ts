@@ -173,7 +173,7 @@ export class TranslationPlugin extends BasePlugin {
     return LANGUAGES;
   }
 
-  private buildTranslationPrompt(text: string, fromLang: string, toLang: string): string {
+  private buildTranslationPrompt({ text, fromLang, toLang }: { text: string; fromLang: string; toLang: string }): string {
     const fromName = LANGUAGE_NAMES[fromLang] || fromLang;
     const toName = LANGUAGE_NAMES[toLang] || toLang;
 
@@ -184,7 +184,7 @@ export class TranslationPlugin extends BasePlugin {
     return `Translate the following text from ${fromName} to ${toName}.\nOnly output the translation, nothing else.\n\nText: ${text}`;
   }
 
-  async translate(text: string, fromLang: string, toLang: string): Promise<string | null> {
+  async translate({ text, fromLang, toLang }: { text: string; fromLang: string; toLang: string }): Promise<string | null> {
     if (!text.trim()) {
       return null;
     }
@@ -196,7 +196,7 @@ export class TranslationPlugin extends BasePlugin {
     }
 
     try {
-      const prompt = this.buildTranslationPrompt(text, fromLang, toLang);
+      const prompt = this.buildTranslationPrompt({ text, fromLang, toLang });
       const messages = [{ id: '1', role: 'user' as const, content: prompt, timestamp: Date.now() }];
 
       const chunks: string[] = [];

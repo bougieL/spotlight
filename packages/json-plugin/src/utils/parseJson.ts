@@ -1,6 +1,6 @@
 function fixUnquotedKeys(json: string): string {
   return json.replace(
-    /(?<=[{,\[]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\s*:)/g,
+    /(?<=[{,[]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\s*:)/g,
     '"$1"',
   );
 }

@@ -6,6 +6,7 @@ import { useI18n } from '@spotlight/i18n';
 const { t } = useI18n();
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void;
 }>();
 

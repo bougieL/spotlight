@@ -1,11 +1,15 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import type { AIAdapter, ChatOptions, ChatMessage, ModelConfig, StreamChunk } from '../service';
 
+interface StreamChatOptions {
+  messages: ChatMessage[];
+  config: ModelConfig;
+  options: ChatOptions;
+}
+
 export class OpenAIAdapter implements AIAdapter {
   async *streamChat(
-    messages: ChatMessage[],
-    config: ModelConfig,
-    options: ChatOptions
+    { messages, config, options }: StreamChatOptions
   ): AsyncGenerator<StreamChunk> {
     const response = await fetch(`${config.apiUrl}/v1/chat/completions`, {
       method: 'POST',

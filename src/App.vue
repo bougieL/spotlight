@@ -93,7 +93,8 @@ const handleDetach = async () => {
     const baseUrl = window.location.origin;
     const url = `${baseUrl}${panelPath}?detached=true`;
     const label = `panel-${Date.now()}`;
-    await tauriApi.detachWindow(url, label);
+    const title = activePluginName.value || 'Spotlight';
+    await tauriApi.detachWindow(url, label, title);
   }
 };
 
@@ -118,7 +119,11 @@ watch(locale, async (newLocale) => {
 </script>
 
 <template>
-  <main ref="mainRef" class="spotlight-container" :class="{ detached: isDetached }">
+  <main
+    ref="mainRef"
+    class="spotlight-container"
+    :class="{ detached: isDetached }"
+  >
     <SearchInput
       v-if="!isDetached"
       ref="searchInputRef"
@@ -137,7 +142,10 @@ watch(locale, async (newLocale) => {
       :class="{ detached: isDetached }"
     >
       <KeepAlive>
-        <component :is="Component" @select="handleSelect" />
+        <component
+          :is="Component"
+          @select="handleSelect"
+        />
       </KeepAlive>
     </RouterView>
   </main>

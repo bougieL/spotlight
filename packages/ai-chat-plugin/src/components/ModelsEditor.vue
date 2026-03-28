@@ -13,7 +13,9 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'save', models: ModelConfig[]): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void;
 }>();
 

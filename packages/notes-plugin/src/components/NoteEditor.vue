@@ -11,6 +11,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'update', updates: { title?: string; content?: string; categoryId?: string | null }): void;
 }>();
 

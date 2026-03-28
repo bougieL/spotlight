@@ -11,7 +11,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "lint": "eslint src --ext .vue,.ts,.tsx",
+    "lint": "eslint src packages --ext .vue,.ts,.tsx",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run"
   },

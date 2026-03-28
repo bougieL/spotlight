@@ -21,7 +21,9 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'select', item: ContextMenuItem): void;
 }>();
 

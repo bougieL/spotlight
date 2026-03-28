@@ -172,6 +172,7 @@ pub async fn detach_window(
     app: tauri::AppHandle,
     url: String,
     label: String,
+    title: String,
 ) -> Result<(), String> {
     if let Some(existing) = app.get_webview_window(&label) {
         let _ = existing.close();
@@ -212,7 +213,7 @@ pub async fn detach_window(
     )
     .inner_size(width, height)
     .position(x, y)
-    .title("Spotlight")
+    .title(&title)
     .resizable(true)
     .min_inner_size(400.0, 300.0);
 

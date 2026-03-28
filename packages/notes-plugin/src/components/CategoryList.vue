@@ -12,8 +12,11 @@ interface Props {
 defineProps<Props>();
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'select', categoryId: string | null): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'create'): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'delete', categoryId: string): void;
 }>();
 

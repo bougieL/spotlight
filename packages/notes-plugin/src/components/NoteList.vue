@@ -12,8 +12,11 @@ interface Props {
 defineProps<Props>();
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'select', noteId: string): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'create'): void;
+  // eslint-disable-next-line no-unused-vars
   (e: 'delete', noteId: string): void;
 }>();
 
@@ -35,7 +38,7 @@ function formatDate(timestamp: number): string {
 }
 
 function getPreview(content: string): string {
-  const text = content.replace(/[#*_`~\[\]]/g, '').trim();
+  const text = content.replace(/[#*_`~[\]]/g, '').trim();
   return text.length > 50 ? text.substring(0, 50) + '...' : text || t('notes.untitled');
 }
 

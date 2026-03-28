@@ -23,7 +23,7 @@ export interface TauriApi {
   resizeWindow: (height: number) => Promise<void>;
   createOverlayWindow: (url: string, label: string) => Promise<void>;
   closeOverlayWindow: (label: string) => Promise<void>;
-  detachWindow: (url: string, label: string) => Promise<void>;
+  detachWindow: (options: { url: string; label: string; title: string }) => Promise<void>;
   exitApp: () => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
   getClipboardFilePaths: () => Promise<string[]>;
@@ -70,7 +70,7 @@ export const tauriApi: TauriApi = {
 
   closeOverlayWindow: (label: string) => invoke('close_overlay_window', { label }),
 
-  detachWindow: (url: string, label: string) => invoke('detach_window', { url, label }),
+  detachWindow: ({ url, label, title }) => invoke('detach_window', { url, label, title }),
 
   exitApp: () => invoke('exit_app'),
 

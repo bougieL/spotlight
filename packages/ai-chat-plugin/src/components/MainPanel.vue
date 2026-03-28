@@ -10,6 +10,7 @@ import MessageList from './MessageList.vue';
 type ViewType = 'chat' | 'models';
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void;
 }>();
 

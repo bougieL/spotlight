@@ -20,7 +20,13 @@ function serializeMessage(message: string, error?: unknown): string {
   return message;
 }
 
-export async function log(level: LogLevel, message: string, error?: unknown): Promise<void> {
+interface LogOptions {
+  level: LogLevel;
+  message: string;
+  error?: unknown;
+}
+
+export async function log({ level, message, error }: LogOptions): Promise<void> {
   try {
     const fullMessage = serializeMessage(message, error);
     await loggerApi.writeLog(level, fullMessage);
@@ -30,10 +36,10 @@ export async function log(level: LogLevel, message: string, error?: unknown): Pr
 }
 
 export const logger = {
-  info: (message: string, error?: unknown) => log('INFO', message, error),
-  warn: (message: string, error?: unknown) => log('WARN', message, error),
-  error: (message: string, error?: unknown) => log('ERROR', message, error),
-  debug: (message: string, error?: unknown) => log('DEBUG', message, error),
+  info: (message: string, error?: unknown) => log({ level: 'INFO', message, error }),
+  warn: (message: string, error?: unknown) => log({ level: 'WARN', message, error }),
+  error: (message: string, error?: unknown) => log({ level: 'ERROR', message, error }),
+  debug: (message: string, error?: unknown) => log({ level: 'DEBUG', message, error }),
 };
 
 export default logger;

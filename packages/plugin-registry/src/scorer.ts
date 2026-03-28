@@ -37,7 +37,7 @@ export function calculateDetailedScore(item: SearchResultItem, query: string): S
       titleMatch = 60;
       positionBonus = 10;
     }
-    if (/[\s\-_.\/\\]/.test(titleLower[titleIndex - 1])) {
+    if (/[\s\-_./\\]/.test(titleLower[titleIndex - 1])) {
       positionBonus += 10;
     }
   } else {
@@ -91,7 +91,7 @@ function fuzzyScore(query: string, target: string): FuzzyResult {
       } else {
         continuousScore = 0;
       }
-      if (targetIdx === 0 || /[\s\-_.\/\\]/.test(target[targetIdx - 1])) {
+      if (targetIdx === 0 || /[\s\-_./\\]/.test(target[targetIdx - 1])) {
         score += 3;
       }
       if (target[targetIdx] === target[targetIdx].toUpperCase() && query[queryIdx] === query[queryIdx].toLowerCase()) {

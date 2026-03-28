@@ -119,7 +119,15 @@ function getSelectionBounds(): { minX: number; minY: number; width: number; heig
   return { minX, minY, width, height };
 }
 
-function redrawWithDim(minX: number, minY: number, width: number, height: number, cutOut = true): void {
+interface RedrawOptions {
+  minX: number;
+  minY: number;
+  width: number;
+  height: number;
+  cutOut?: boolean;
+}
+
+function redrawWithDim({ minX, minY, width, height, cutOut = true }: RedrawOptions): void {
   if (!ctx || !screenshotImage || !imageLoaded) return;
 
   // Redraw the screenshot first
@@ -206,7 +214,7 @@ function clearSelection(): void {
 
   // Redraw with full dim (no cutout)
   if (ctx && screenshotImage && imageLoaded) {
-    redrawWithDim(0, 0, 0, 0, false);
+    redrawWithDim({ minX: 0, minY: 0, width: 0, height: 0, cutOut: false });
   }
 }
 
@@ -217,7 +225,7 @@ function enterResizeMode(): void {
   selection.classList.add('resizing');
 
   // Apply dim effect
-  redrawWithDim(minX, minY, width, height);
+  redrawWithDim({ minX, minY, width, height });
 
   showButtons();
   showHint(t('resizeHint'));
@@ -328,7 +336,7 @@ function handleMouseMove(e: MouseEvent): void {
     updateSelection();
     // Update dim during drag
     const { minX, minY, width, height } = getSelectionBounds();
-    redrawWithDim(minX, minY, width, height, true);
+    redrawWithDim({ minX, minY, width, height, cutOut: true });
   }
 }
 
@@ -391,7 +399,7 @@ function handleResize(e: MouseEvent): void {
     // Redraw with new dim
     const width = maxX - minX;
     const height = maxY - minY;
-    redrawWithDim(minX, minY, width, height);
+    redrawWithDim({ minX, minY, width, height });
     updateSelection();
   }
 }
@@ -452,7 +460,7 @@ captureScreen(canvas).then((result) => {
   if (result) {
     ctx = result;
     // Apply dim to entire screen initially (no cutout)
-    redrawWithDim(0, 0, 0, 0, false);
+    redrawWithDim({ minX: 0, minY: 0, width: 0, height: 0, cutOut: false });
     showHint(t('selectRegion'));
   }
 });

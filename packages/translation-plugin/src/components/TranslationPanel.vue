@@ -13,6 +13,7 @@ const { query } = usePanelContext();
 const TRANS_PREFIX_REGEX = /^(trans:|翻译:)\s*/i;
 
 const emit = defineEmits<{
+  // eslint-disable-next-line no-unused-vars
   (e: 'close'): void;
 }>();
 
@@ -75,7 +76,7 @@ async function translate() {
   outputText.value = '';
 
   try {
-    const result = await translationPlugin.translate(inputText.value, fromLang.value, toLang.value);
+    const result = await translationPlugin.translate({ text: inputText.value, fromLang: fromLang.value, toLang: toLang.value });
     if (result) {
       outputText.value = result;
       status.value = 'success';

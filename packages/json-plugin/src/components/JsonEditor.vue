@@ -64,10 +64,19 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+interface HighlightOptions {
+  match: string;
+  str?: string;
+  colon?: string;
+  num?: string;
+  bool?: string;
+  nil?: string;
+}
+
 function highlightJson(code: string): string {
   return code.replace(
-    /("(?:\\.|[^"\\])*")\s*(:)?|(-?\d+\.?\d*(?:[eE][+-]?\d+)?)|\b(true|false)\b|\b(null)\b|[{}\[\],:]/g,
-    (match, str, colon, num, bool, nil) => {
+    /("(?:\\.|[^"\\])*")\s*(:)?|(-?\d+\.?\d*(?:[eE][+-]?\d+)?)|\b(true|false)\b|\b(null)\b|[{}[,]:]/g,
+    ({ match, str, colon, num, bool, nil }: HighlightOptions) => {
       if (str) {
         return colon
           ? `<span class="json-key">${escapeHtml(match)}</span>`

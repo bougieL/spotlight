@@ -10,11 +10,15 @@ function isLightColor(color: string): boolean {
   return brightness > 128;
 }
 
+interface GetColorAtPositionOptions {
+  ctx: CanvasRenderingContext2D;
+  canvas: HTMLCanvasElement;
+  clientX: number;
+  clientY: number;
+}
+
 function getColorAtPosition(
-  ctx: CanvasRenderingContext2D,
-  canvas: HTMLCanvasElement,
-  clientX: number,
-  clientY: number
+  { ctx, canvas, clientX, clientY }: GetColorAtPositionOptions
 ): string | null {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
@@ -126,7 +130,7 @@ function handleMouseMove(e: MouseEvent) {
 
   if (!ctx || !imageLoaded) return;
 
-  const color = getColorAtPosition(ctx, canvas, e.clientX, e.clientY);
+  const color = getColorAtPosition({ ctx, canvas, clientX: e.clientX, clientY: e.clientY });
   if (color) {
     lastColor = color;
     magnifierColor.style.backgroundColor = color;

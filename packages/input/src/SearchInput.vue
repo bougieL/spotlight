@@ -97,6 +97,7 @@ const handleMenuClose = () => {
   showMenu.value = false;
 };
 
+// eslint-disable-next-line no-unused-vars
 const handleMenuSelect = (_item: ContextMenuItem) => {
   showMenu.value = false;
 };
