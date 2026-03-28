@@ -2,11 +2,16 @@ import { onMounted, onUnmounted, type Ref } from 'vue';
 import { on, type UnlistenFn } from '@spotlight/api';
 import { tauriApi } from '@spotlight/api';
 
-export function useWindowFocus(searchInputRef: Ref<{ focus: () => void } | null>) {
+export function useWindowFocus(
+  searchInputRef: Ref<{ focus: () => void } | null>,
+  isDetached: Ref<boolean>
+) {
   let unlistenWindowFocus: UnlistenFn | null = null;
   let unlistenWindowBlur: UnlistenFn | null = null;
 
   onMounted(async () => {
+    if (isDetached.value) return;
+
     // Focus input when window is shown
     unlistenWindowFocus = await on.windowFocus(() => {
       searchInputRef.value?.focus();
@@ -28,6 +33,8 @@ export function useWindowFocus(searchInputRef: Ref<{ focus: () => void } | null>
   });
 
   onUnmounted(() => {
+    if (isDetached.value) return;
+
     unlistenWindowFocus?.();
     unlistenWindowBlur?.();
   });

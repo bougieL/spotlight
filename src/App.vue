@@ -31,10 +31,8 @@ const mainRef = ref<HTMLElement | null>(null);
 useWindowResize(mainRef);
 useTray(isDetached, locale); // handles tray init and locale watch internally
 
-if (!isDetached.value) {
-  useWindowFocus(searchInputRef);
-  usePlugins();
-}
+useWindowFocus(searchInputRef, isDetached);
+usePlugins(isDetached);
 
 provide(panelContext, {
   query,

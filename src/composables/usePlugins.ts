@@ -1,10 +1,12 @@
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, type Ref } from 'vue';
 import { pluginRegistry } from '../plugins';
 import { settingsPlugin } from '@spotlight/settings-plugin';
 import logger from '@spotlight/logger';
 
-export function usePlugins() {
+export function usePlugins(isDetached: Ref<boolean>) {
   onMounted(async () => {
+    if (isDetached.value) return;
+
     // Load disabled plugins
     const disabledPlugins = await settingsPlugin.getDisabledPlugins();
     await pluginRegistry.setDisabledPlugins(disabledPlugins, true);
@@ -23,6 +25,8 @@ export function usePlugins() {
   });
 
   onUnmounted(async () => {
+    if (isDetached.value) return;
+
     // Unmount all plugins (stop background tasks)
     const plugins = pluginRegistry.getPlugins();
     await Promise.all(plugins.map((plugin) => plugin.onUnmount?.()));

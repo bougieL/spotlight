@@ -96,6 +96,7 @@ export async function setupTray(options: TrayOptions): Promise<void> {
     trayInstance = await TrayIcon.new({
       id: 'main-tray',
       menu: menuInstance,
+      showMenuOnLeftClick: false,
       tooltip: options.tooltip || 'spotlight',
       action: async (event) => {
         if (event.type === 'Click' && event.button === 'Left') {
