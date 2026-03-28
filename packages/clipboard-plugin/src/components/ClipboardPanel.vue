@@ -151,8 +151,8 @@ onUnmounted(() => {
 async function loadItems() {
   try {
     const data = await clipboardPlugin.getData();
-    items.value = data.items || [];
-    favorites.value = data.favorites || [];
+    items.value = [...(data.items || [])];
+    favorites.value = [...(data.favorites || [])];
   } catch (error) {
     logger.error('Failed to load clipboard items:', error);
   }
@@ -163,13 +163,23 @@ async function handleItemClick(item: ClipboardItem) {
 }
 
 async function handleToggleFavorite(item: ClipboardItem) {
-  await clipboardPlugin.toggleFavorite(item);
-  await loadItems();
+  const isFav = favorites.value.some(f => f.content === item.content);
+
+  if (isFav) {
+    favorites.value = favorites.value.filter(f => f.content !== item.content);
+  } else {
+    favorites.value = [{ ...item, favorite: true, timestamp: Date.now() }, ...favorites.value];
+  }
+
+  try {
+    await clipboardPlugin.toggleFavorite(item);
+  } catch (error) {
+    logger.error('Failed to toggle favorite:', error);
+    await loadItems();
+  }
 }
 
-function isFavorite(item: ClipboardItem): boolean {
-  return favorites.value.some(f => f.content === item.content);
-}
+const favoriteContents = computed(() => new Set(favorites.value.map(f => f.content)));
 </script>
 
 <template>
@@ -220,7 +230,7 @@ function isFavorite(item: ClipboardItem): boolean {
           </span>
         </div>
         <div class="item-action favorite-action" @click.stop="handleToggleFavorite(item)">
-          <Star :size="14" :class="{ 'starred': isFavorite(item) }" />
+          <Star :size="14" :class="{ starred: favoriteContents.has(item.content) }" />
         </div>
         <div class="item-action" :class="{ 'copied-action': copiedId === item.id }">
           <Check v-if="copiedId === item.id" :size="14" />
@@ -382,6 +392,7 @@ function isFavorite(item: ClipboardItem): boolean {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  word-break: break-all;
   text-overflow: ellipsis;
 }
 
