@@ -34,7 +34,11 @@ function handleDelete(event: Event, categoryId: string) {
   <div class="category-list">
     <div class="category-header">
       <span class="header-title">{{ t('notes.categories') }}</span>
-      <BaseIconButton size="small" :title="t('notes.addCategory')" @click="emit('create')">
+      <BaseIconButton
+        size="small"
+        :title="t('notes.addCategory')"
+        @click="emit('create')"
+      >
         <FolderPlus :size="16" />
       </BaseIconButton>
     </div>
@@ -44,7 +48,10 @@ function handleDelete(event: Event, categoryId: string) {
         :class="{ 'is-active': activeCategoryId === null }"
         @click="emit('select', null)"
       >
-        <Folder :size="16" class="category-icon" />
+        <Folder
+          :size="16"
+          class="category-icon"
+        />
         <span class="category-name">{{ t('notes.allNotes') }}</span>
       </div>
       <div
@@ -54,7 +61,10 @@ function handleDelete(event: Event, categoryId: string) {
         :class="{ 'is-active': activeCategoryId === category.id }"
         @click="emit('select', category.id)"
       >
-        <Folder :size="16" class="category-icon" />
+        <Folder
+          :size="16"
+          class="category-icon"
+        />
         <span class="category-name">{{ category.name }}</span>
         <BaseIconButton
           class="delete-btn"

@@ -184,13 +184,35 @@ const handlePaste = async (event: ClipboardEvent) => {
 
 <template>
   <div class="spotlight-input-wrapper">
-    <div class="spotlight-input-row" data-tauri-drag-region>
-      <button v-if="props.isPanelMode" class="back-button" @click="handleBack" aria-label="Back">
-        <ArrowLeft class="back-icon" :size="24" />
+    <div
+      class="spotlight-input-row"
+      data-tauri-drag-region
+    >
+      <button
+        v-if="props.isPanelMode"
+        class="back-button"
+        aria-label="Back"
+        @click="handleBack"
+      >
+        <ArrowLeft
+          class="back-icon"
+          :size="24"
+        />
       </button>
-      <Search v-else class="search-icon" :size="24" />
-      <span v-if="props.isPanelMode && displayPluginName" class="plugin-name">
-        <img v-if="props.pluginIcon" :src="props.pluginIcon" class="plugin-icon" />
+      <Search
+        v-else
+        class="search-icon"
+        :size="24"
+      />
+      <span
+        v-if="props.isPanelMode && displayPluginName"
+        class="plugin-name"
+      >
+        <img
+          v-if="props.pluginIcon"
+          :src="props.pluginIcon"
+          class="plugin-icon"
+        >
         {{ displayPluginName }}
       </span>
       <input
@@ -202,12 +224,29 @@ const handlePaste = async (event: ClipboardEvent) => {
         @input="handleInput"
         @paste="handlePaste"
         @keydown="handleKeydown"
-      />
-      <button v-if="props.isPanelMode" ref="menuButtonRef" class="settings-button" @click.stop="handleMenuClick" aria-label="Menu">
-        <MoreVertical class="settings-icon" :size="20" />
+      >
+      <button
+        v-if="props.isPanelMode"
+        ref="menuButtonRef"
+        class="settings-button"
+        aria-label="Menu"
+        @click.stop="handleMenuClick"
+      >
+        <MoreVertical
+          class="settings-icon"
+          :size="20"
+        />
       </button>
-      <button v-else class="settings-button" @click="handleOpenSettings" aria-label="Settings">
-        <Settings class="settings-icon" :size="20" />
+      <button
+        v-else
+        class="settings-button"
+        aria-label="Settings"
+        @click="handleOpenSettings"
+      >
+        <Settings
+          class="settings-icon"
+          :size="20"
+        />
       </button>
     </div>
     <BaseContextMenu
@@ -218,14 +257,34 @@ const handlePaste = async (event: ClipboardEvent) => {
       @close="handleMenuClose"
       @select="handleMenuSelect"
     />
-    <div v-if="props.files.length > 0" class="files-container">
-      <div v-for="file in props.files" :key="file.id" class="file-item" :title="file.path">
-        <img v-if="file.type === 'image'" :src="file.src" :alt="file.name" class="file-image" />
+    <div
+      v-if="props.files.length > 0"
+      class="files-container"
+    >
+      <div
+        v-for="file in props.files"
+        :key="file.id"
+        class="file-item"
+        :title="file.path"
+      >
+        <img
+          v-if="file.type === 'image'"
+          :src="file.src"
+          :alt="file.name"
+          class="file-image"
+        >
         <template v-else>
-          <FileText class="file-icon" :size="20" />
+          <FileText
+            class="file-icon"
+            :size="20"
+          />
           <span class="file-name">{{ file.name }}</span>
         </template>
-        <button class="remove-btn" @click="removeFile(file.id)" aria-label="Remove">
+        <button
+          class="remove-btn"
+          aria-label="Remove"
+          @click="removeFile(file.id)"
+        >
           <X :size="14" />
         </button>
       </div>

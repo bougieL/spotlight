@@ -51,13 +51,19 @@ watch([title, content, categoryId], () => {
         type="text"
         class="title-input"
         :placeholder="t('notes.titlePlaceholder')"
-      />
+      >
       <select
         v-model="categoryId"
         class="category-select"
       >
-        <option :value="null">{{ t('notes.noCategory') }}</option>
-        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+        <option :value="null">
+          {{ t('notes.noCategory') }}
+        </option>
+        <option
+          v-for="cat in categories"
+          :key="cat.id"
+          :value="cat.id"
+        >
           {{ cat.name }}
         </option>
       </select>
@@ -68,7 +74,7 @@ watch([title, content, categoryId], () => {
         class="editor-textarea"
         :placeholder="t('notes.placeholder')"
         spellcheck="false"
-      ></textarea>
+      />
     </div>
   </div>
 </template>

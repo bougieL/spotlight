@@ -91,7 +91,10 @@ onUnmounted(() => {
         top: `${adjustedPosition.y}px`,
       }"
     >
-      <template v-for="(item, index) in items" :key="index">
+      <template
+        v-for="(item, index) in items"
+        :key="index"
+      >
         <div
           v-if="item.divided && index > 0"
           class="context-menu-divider"
@@ -102,8 +105,8 @@ onUnmounted(() => {
           @click="handleItemClick(item)"
         >
           <component
-            v-if="item.icon"
             :is="item.icon"
+            v-if="item.icon"
             :size="14"
             class="context-menu-icon"
           />

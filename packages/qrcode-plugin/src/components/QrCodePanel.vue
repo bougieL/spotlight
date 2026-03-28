@@ -140,7 +140,10 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="qrcode-panel" @keydown="handleKeydown">
+  <div
+    class="qrcode-panel"
+    @keydown="handleKeydown"
+  >
     <div class="qrcode-input-section">
       <input
         v-model="inputText"
@@ -148,15 +151,25 @@ function handleKeydown(event: KeyboardEvent) {
         class="qrcode-input"
         :placeholder="t('qrcode.placeholder')"
         autofocus
-      />
+      >
     </div>
 
-    <div v-if="errorMessage" class="qrcode-error">
+    <div
+      v-if="errorMessage"
+      class="qrcode-error"
+    >
       {{ errorMessage }}
     </div>
 
-    <div v-if="qrCodeDataUrl" class="qrcode-preview">
-      <img :src="qrCodeDataUrl" alt="QR Code" class="qrcode-image" />
+    <div
+      v-if="qrCodeDataUrl"
+      class="qrcode-preview"
+    >
+      <img
+        :src="qrCodeDataUrl"
+        alt="QR Code"
+        class="qrcode-image"
+      >
       <button
         class="qrcode-copy-button"
         :class="{ 'copy-success': copySuccess }"
@@ -166,8 +179,13 @@ function handleKeydown(event: KeyboardEvent) {
       </button>
     </div>
 
-    <div v-if="history.length > 0" class="qrcode-history">
-      <div class="qrcode-history-header">{{ t('qrcode.history') }}</div>
+    <div
+      v-if="history.length > 0"
+      class="qrcode-history"
+    >
+      <div class="qrcode-history-header">
+        {{ t('qrcode.history') }}
+      </div>
       <div class="qrcode-history-list">
         <div
           v-for="(item, index) in history"

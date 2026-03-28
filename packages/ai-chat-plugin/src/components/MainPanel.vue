@@ -343,18 +343,34 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="main-panel" tabindex="0" @keydown="handleKeydown">
+  <div
+    class="main-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <!-- Models Full Panel -->
-    <div class="full-panel" v-if="currentView === 'models'">
+    <div
+      v-if="currentView === 'models'"
+      class="full-panel"
+    >
       <div class="panel-header">
         <div class="header-left">
-          <BaseIconButton @click="openChatView" :title="t('aiChat.back')">
+          <BaseIconButton
+            :title="t('aiChat.back')"
+            @click="openChatView"
+          >
             <ArrowLeft :size="16" />
           </BaseIconButton>
-          <h2 class="panel-title">{{ t('aiChat.models') }}</h2>
+          <h2 class="panel-title">
+            {{ t('aiChat.models') }}
+          </h2>
         </div>
       </div>
-      <ModelsEditor :models="models" @save="saveModels" @close="openChatView" />
+      <ModelsEditor
+        :models="models"
+        @save="saveModels"
+        @close="openChatView"
+      />
     </div>
 
     <!-- Chat View with Sidebar -->
@@ -362,12 +378,20 @@ function handleKeydown(event: KeyboardEvent) {
       <!-- Sessions Sidebar -->
       <div class="sidebar">
         <div class="sidebar-header">
-          <h2 class="sidebar-title">{{ t('aiChat.sessions') }}</h2>
+          <h2 class="sidebar-title">
+            {{ t('aiChat.sessions') }}
+          </h2>
           <div class="sidebar-actions">
-            <BaseIconButton @click="openModelsView" :title="t('aiChat.models')">
+            <BaseIconButton
+              :title="t('aiChat.models')"
+              @click="openModelsView"
+            >
               <Settings :size="16" />
             </BaseIconButton>
-            <BaseIconButton @click="createSession" :title="t('aiChat.newSession')">
+            <BaseIconButton
+              :title="t('aiChat.newSession')"
+              @click="createSession"
+            >
               <Plus :size="16" />
             </BaseIconButton>
           </div>
@@ -383,16 +407,26 @@ function handleKeydown(event: KeyboardEvent) {
             @contextmenu.prevent="openContextMenu($event, session)"
           >
             <div class="session-info">
-              <MessageSquare :size="14" class="session-icon" />
+              <MessageSquare
+                :size="14"
+                class="session-icon"
+              />
               <div class="session-details">
                 <span class="session-title">{{ session.title || t('aiChat.newSession') }}</span>
                 <span class="session-date">{{ formatDate(session.updatedAt) }}</span>
               </div>
             </div>
-            <Pin v-if="session.isPinned" :size="14" class="pin-icon-right" />
+            <Pin
+              v-if="session.isPinned"
+              :size="14"
+              class="pin-icon-right"
+            />
           </div>
 
-          <div v-if="sortedSessions.length === 0" class="empty-sessions">
+          <div
+            v-if="sortedSessions.length === 0"
+            class="empty-sessions"
+          >
             <p>{{ t('aiChat.noSessions') }}</p>
           </div>
         </div>
@@ -400,25 +434,45 @@ function handleKeydown(event: KeyboardEvent) {
 
       <!-- Chat Area -->
       <div class="chat-area">
-        <div class="system-prompt-bar" v-if="showSystemPrompt && activeSession">
-          <div v-if="!isEditingSystemPrompt" class="system-prompt-view">
+        <div
+          v-if="showSystemPrompt && activeSession"
+          class="system-prompt-bar"
+        >
+          <div
+            v-if="!isEditingSystemPrompt"
+            class="system-prompt-view"
+          >
             <span class="system-prompt-text">{{ activeSession.systemPrompt || t('aiChat.systemPromptPlaceholder') }}</span>
-            <BaseIconButton @click="startEditingSystemPrompt(activeSession)" :title="t('aiChat.editModel')">
+            <BaseIconButton
+              :title="t('aiChat.editModel')"
+              @click="startEditingSystemPrompt(activeSession)"
+            >
               <Settings :size="14" />
             </BaseIconButton>
           </div>
-          <div v-else class="system-prompt-edit">
+          <div
+            v-else
+            class="system-prompt-edit"
+          >
             <textarea
               v-model="editingSystemPrompt"
               class="system-prompt-input"
               :placeholder="t('aiChat.systemPromptPlaceholder')"
               rows="3"
-            ></textarea>
+            />
             <div class="edit-actions">
-              <BaseButton variant="primary" size="small" @click="saveSystemPrompt">
+              <BaseButton
+                variant="primary"
+                size="small"
+                @click="saveSystemPrompt"
+              >
                 {{ t('aiChat.save') }}
               </BaseButton>
-              <BaseButton variant="default" size="small" @click="cancelEditingSystemPrompt">
+              <BaseButton
+                variant="default"
+                size="small"
+                @click="cancelEditingSystemPrompt"
+              >
                 {{ t('aiChat.cancel') }}
               </BaseButton>
             </div>
@@ -432,12 +486,21 @@ function handleKeydown(event: KeyboardEvent) {
           :streamed-content="streamedContent"
         />
 
-        <div v-if="!activeSession" class="empty-chat">
-          <MessageSquare :size="48" class="empty-icon" />
+        <div
+          v-if="!activeSession"
+          class="empty-chat"
+        >
+          <MessageSquare
+            :size="48"
+            class="empty-icon"
+          />
           <p>{{ t('aiChat.selectModel') }}</p>
         </div>
 
-        <div class="input-container" v-if="activeSession">
+        <div
+          v-if="activeSession"
+          class="input-container"
+        >
           <textarea
             v-model="inputText"
             class="message-input"
@@ -445,18 +508,21 @@ function handleKeydown(event: KeyboardEvent) {
             :disabled="isStreaming"
             rows="1"
             @keydown.enter.exact.prevent="sendMessage"
-          ></textarea>
+          />
           <BaseIconButton
-            @click="sendMessage"
             :disabled="!inputText.trim() || isStreaming"
             :title="t('aiChat.send')"
             size="large"
+            @click="sendMessage"
           >
             <Send :size="16" />
           </BaseIconButton>
         </div>
 
-        <div class="chat-toolbar" v-if="activeSession && models.length > 0">
+        <div
+          v-if="activeSession && models.length > 0"
+          class="chat-toolbar"
+        >
           <BaseSelect
             :model-value="activeSession.modelId"
             :options="modelOptions"
@@ -466,7 +532,11 @@ function handleKeydown(event: KeyboardEvent) {
       </div>
 
       <!-- Edit Session Modal -->
-      <BaseModal :show="showEditModal" :title="t('aiChat.editSession')" @close="closeEditModal">
+      <BaseModal
+        :show="showEditModal"
+        :title="t('aiChat.editSession')"
+        @close="closeEditModal"
+      >
         <div class="edit-form">
           <div class="form-group">
             <label class="form-label">{{ t('aiChat.sessionName') }}</label>
@@ -482,12 +552,22 @@ function handleKeydown(event: KeyboardEvent) {
               class="form-textarea"
               :placeholder="t('aiChat.systemPromptPlaceholder')"
               rows="4"
-            ></textarea>
+            />
           </div>
         </div>
         <template #footer>
-          <BaseButton variant="default" @click="closeEditModal">{{ t('aiChat.cancel') }}</BaseButton>
-          <BaseButton variant="primary" @click="saveSessionEdit">{{ t('aiChat.save') }}</BaseButton>
+          <BaseButton
+            variant="default"
+            @click="closeEditModal"
+          >
+            {{ t('aiChat.cancel') }}
+          </BaseButton>
+          <BaseButton
+            variant="primary"
+            @click="saveSessionEdit"
+          >
+            {{ t('aiChat.save') }}
+          </BaseButton>
         </template>
       </BaseModal>
 

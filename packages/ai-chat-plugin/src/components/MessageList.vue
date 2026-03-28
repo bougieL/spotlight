@@ -37,8 +37,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="messagesContainer" class="messages-container">
-    <div v-if="messages.length === 0 && !isStreaming" class="empty-chat">
+  <div
+    ref="messagesContainer"
+    class="messages-container"
+  >
+    <div
+      v-if="messages.length === 0 && !isStreaming"
+      class="empty-chat"
+    >
       <p>{{ t('aiChat.placeholder') }}</p>
     </div>
 
@@ -54,7 +60,10 @@ onMounted(() => {
       :is-streaming="true"
     />
 
-    <div v-if="isStreaming" class="thinking-indicator">
+    <div
+      v-if="isStreaming"
+      class="thinking-indicator"
+    >
       {{ t('aiChat.thinking') }}
     </div>
   </div>

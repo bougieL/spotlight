@@ -140,7 +140,10 @@ async function handleInput() {
 </script>
 
 <template>
-  <div class="translation-panel" @keydown="handleKeydown">
+  <div
+    class="translation-panel"
+    @keydown="handleKeydown"
+  >
     <div class="translation-container">
       <!-- Header Row -->
       <div class="header-row">
@@ -148,15 +151,18 @@ async function handleInput() {
           <BaseSelect
             v-model="fromLang"
             :options="fromLanguageOptions"
-            @update:modelValue="handleInput"
+            @update:model-value="handleInput"
           />
-          <BaseIconButton @click="swapLanguages" :title="t('translation.swap')">
+          <BaseIconButton
+            :title="t('translation.swap')"
+            @click="swapLanguages"
+          >
             <ArrowLeftRight :size="16" />
           </BaseIconButton>
           <BaseSelect
             v-model="toLang"
             :options="toLanguageOptions"
-            @update:modelValue="handleInput"
+            @update:model-value="handleInput"
           />
         </div>
 
@@ -164,7 +170,7 @@ async function handleInput() {
           v-model="selectedModelId!"
           :options="modelOptions"
           :placeholder="t('translation.selectModel')"
-          @update:modelValue="selectModel"
+          @update:model-value="selectModel"
         />
       </div>
 
@@ -176,34 +182,61 @@ async function handleInput() {
           :placeholder="t('translation.placeholder')"
           :disabled="status === 'loading'"
           @input="handleInput"
-        ></textarea>
+        />
       </div>
 
       <!-- Output Area -->
       <div class="translation-output-wrapper">
         <!-- Loading State -->
-        <div v-if="status === 'loading'" class="status-content">
-          <Loader2 :size="20" class="spin" />
+        <div
+          v-if="status === 'loading'"
+          class="status-content"
+        >
+          <Loader2
+            :size="20"
+            class="spin"
+          />
           <span>{{ t('translation.translating') }}</span>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="status === 'error'" class="status-content error">
+        <div
+          v-else-if="status === 'error'"
+          class="status-content error"
+        >
           <AlertCircle :size="20" />
           <span>{{ errorMessage }}</span>
         </div>
 
         <!-- Success State -->
-        <div v-else-if="status === 'success'" class="status-content success">
-          <div class="output-text">{{ outputText }}</div>
-          <BaseIconButton @click="copyToClipboard" :title="t('translation.copy')">
-            <Check v-if="isCopied" :size="16" class="copied-icon" />
-            <Copy v-else :size="16" />
+        <div
+          v-else-if="status === 'success'"
+          class="status-content success"
+        >
+          <div class="output-text">
+            {{ outputText }}
+          </div>
+          <BaseIconButton
+            :title="t('translation.copy')"
+            @click="copyToClipboard"
+          >
+            <Check
+              v-if="isCopied"
+              :size="16"
+              class="copied-icon"
+            />
+            <Copy
+              v-else
+              :size="16"
+            />
           </BaseIconButton>
         </div>
 
         <!-- Idle State -->
-        <div v-else class="status-content idle">
+        <div
+          v-else
+          class="status-content idle"
+        >
           <span class="hint">{{ t('translation.hint') }}</span>
         </div>
       </div>

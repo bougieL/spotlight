@@ -18,15 +18,18 @@ function handleChange(event: Event): void {
 </script>
 
 <template>
-  <label class="base-switch" :class="{ disabled }">
+  <label
+    class="base-switch"
+    :class="{ disabled }"
+  >
     <input
       type="checkbox"
       :checked="modelValue"
       :disabled="disabled"
       @change="handleChange"
-    />
+    >
     <span class="switch-track">
-      <span class="switch-thumb"></span>
+      <span class="switch-thumb" />
     </span>
   </label>
 </template>

@@ -153,35 +153,45 @@ function handlePreviewBlur() {
 </script>
 
 <template>
-  <div class="notes-panel" tabindex="0" @keydown="handleKeydown">
+  <div
+    class="notes-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <NotesSidebar
       :categories="categories"
       :notes="filteredNotes"
-      :activeCategoryId="activeCategoryId"
-      :activeNoteId="activeNoteId"
-      @selectCategory="selectCategory"
-      @createCategory="handleCreateCategory"
-      @deleteCategory="handleDeleteCategory"
-      @selectNote="handleSelectNote"
-      @createNote="handleCreateNote"
-      @deleteNote="handleDeleteNote"
+      :active-category-id="activeCategoryId"
+      :active-note-id="activeNoteId"
+      @select-category="selectCategory"
+      @create-category="handleCreateCategory"
+      @delete-category="handleDeleteCategory"
+      @select-note="handleSelectNote"
+      @create-note="handleCreateNote"
+      @delete-note="handleDeleteNote"
     />
 
     <div class="notes-main">
-      <div v-if="activeNote" class="editor-container">
+      <div
+        v-if="activeNote"
+        class="editor-container"
+      >
         <div class="editor-header">
           <BaseInput
-            :modelValue="activeNote.title"
+            :model-value="activeNote.title"
             :placeholder="t('notes.titlePlaceholder')"
-            @update:modelValue="(v) => handleUpdateNote({ title: v })"
+            @update:model-value="(v) => handleUpdateNote({ title: v })"
           />
           <BaseSelect
-            :modelValue="activeNote.categoryId || ''"
+            :model-value="activeNote.categoryId || ''"
             :options="categoryOptions"
-            @update:modelValue="handleCategoryChange"
+            @update:model-value="handleCategoryChange"
           />
           <BaseIconButton @click="isPreview = !isPreview">
-            <component :is="isPreview ? EyeOff : Eye" :size="16" />
+            <component
+              :is="isPreview ? EyeOff : Eye"
+              :size="16"
+            />
           </BaseIconButton>
         </div>
 
@@ -189,28 +199,39 @@ function handlePreviewBlur() {
           <textarea
             v-if="!isPreview"
             :value="activeNote.content"
-            @input="handleUpdateNote({ content: ($event.target as HTMLTextAreaElement).value })"
             class="notes-editor"
             :placeholder="t('notes.placeholder')"
             spellcheck="false"
-          ></textarea>
+            @input="handleUpdateNote({ content: ($event.target as HTMLTextAreaElement).value })"
+          />
           <div
             v-else
             ref="previewRef"
             class="notes-preview"
             :class="{ 'is-editing': isEditingPreview }"
             :contenteditable="isEditingPreview"
-            v-html="renderedContent"
             @dblclick="enablePreviewEdit"
             @blur="handlePreviewBlur"
-          ></div>
+            v-html="renderedContent"
+          />
         </div>
       </div>
 
-      <div v-else class="empty-state">
-        <FileText :size="48" class="empty-icon" />
-        <p class="empty-text">{{ t('notes.selectNoteOrCreate') }}</p>
-        <BaseButton variant="primary" @click="handleCreateNote">
+      <div
+        v-else
+        class="empty-state"
+      >
+        <FileText
+          :size="48"
+          class="empty-icon"
+        />
+        <p class="empty-text">
+          {{ t('notes.selectNoteOrCreate') }}
+        </p>
+        <BaseButton
+          variant="primary"
+          @click="handleCreateNote"
+        >
           {{ t('notes.addNote') }}
         </BaseButton>
       </div>

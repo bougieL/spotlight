@@ -122,9 +122,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="settings-panel" tabindex="0" @keydown="handleKeydown">
+  <div
+    class="settings-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.theme') }}</h3>
+      <h3 class="section-title">
+        {{ t('settings.theme') }}
+      </h3>
       <div class="option-group">
         <button
           v-for="option in themeOptions"
@@ -133,14 +139,20 @@ onMounted(async () => {
           :class="{ 'is-active': currentTheme === option.value }"
           @click="selectTheme(option.value)"
         >
-          <component :is="option.icon" class="option-icon" :size="20" />
+          <component
+            :is="option.icon"
+            class="option-icon"
+            :size="20"
+          />
           <span class="option-label">{{ t(option.labelKey) }}</span>
         </button>
       </div>
     </section>
 
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.language') }}</h3>
+      <h3 class="section-title">
+        {{ t('settings.language') }}
+      </h3>
       <div class="option-group">
         <button
           v-for="option in languageOptions"
@@ -156,15 +168,33 @@ onMounted(async () => {
 
     <section class="settings-section">
       <div class="section-header">
-        <h3 class="section-title">{{ t('settings.shortcut') }}</h3>
-        <p v-if="hotkeyError" class="shortcut-error">{{ hotkeyError }}</p>
-        <p v-else class="shortcut-hint">{{ t('settings.shortcut.hint') }}</p>
+        <h3 class="section-title">
+          {{ t('settings.shortcut') }}
+        </h3>
+        <p
+          v-if="hotkeyError"
+          class="shortcut-error"
+        >
+          {{ hotkeyError }}
+        </p>
+        <p
+          v-else
+          class="shortcut-hint"
+        >
+          {{ t('settings.shortcut.hint') }}
+        </p>
       </div>
-      <HotkeyPicker v-model="currentHotkey" :error="hotkeyError" @update:model-value="updateHotkey" />
+      <HotkeyPicker
+        v-model="currentHotkey"
+        :error="hotkeyError"
+        @update:model-value="updateHotkey"
+      />
     </section>
 
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.autostart') }}</h3>
+      <h3 class="section-title">
+        {{ t('settings.autostart') }}
+      </h3>
       <div class="autostart-item">
         <div class="autostart-info">
           <span class="autostart-name">{{ t('settings.autostart.enable') }}</span>
@@ -177,7 +207,9 @@ onMounted(async () => {
     </section>
 
     <section class="settings-section">
-      <h3 class="section-title">{{ t('settings.hideOnBlur') }}</h3>
+      <h3 class="section-title">
+        {{ t('settings.hideOnBlur') }}
+      </h3>
       <div class="autostart-item">
         <div class="autostart-info">
           <span class="autostart-name">{{ t('settings.hideOnBlur.enable') }}</span>
@@ -191,8 +223,12 @@ onMounted(async () => {
 
     <section class="settings-section">
       <div class="section-header">
-        <h3 class="section-title">{{ t('settings.plugins') }}</h3>
-        <p class="section-description">{{ t('settings.plugins.description') }}</p>
+        <h3 class="section-title">
+          {{ t('settings.plugins') }}
+        </h3>
+        <p class="section-description">
+          {{ t('settings.plugins.description') }}
+        </p>
       </div>
       <div class="plugin-list">
         <div
@@ -202,7 +238,10 @@ onMounted(async () => {
         >
           <div class="plugin-info">
             <span class="plugin-name">{{ plugin.name }}</span>
-            <span v-if="plugin.description" class="plugin-description">{{ plugin.description }}</span>
+            <span
+              v-if="plugin.description"
+              class="plugin-description"
+            >{{ plugin.description }}</span>
           </div>
           <BaseSwitch
             :model-value="!isDisabled"

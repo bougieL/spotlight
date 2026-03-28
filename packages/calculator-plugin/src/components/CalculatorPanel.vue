@@ -156,7 +156,11 @@ function removeExpression(index: number) {
 <template>
   <div class="calculator-panel">
     <div class="calculator-inputs">
-      <div v-for="(expr, index) in expressions" :key="index" class="input-row">
+      <div
+        v-for="(expr, index) in expressions"
+        :key="index"
+        class="input-row"
+      >
         <div class="input-wrapper">
           <input
             v-model="expressions[index]"
@@ -165,24 +169,35 @@ function removeExpression(index: number) {
             :placeholder="t('calculator.placeholder')"
             @input="handleInput(index)"
             @keydown="handleKeydown(index, $event)"
-          />
-          <div v-if="getResult(expr)" class="calculator-result">
+          >
+          <div
+            v-if="getResult(expr)"
+            class="calculator-result"
+          >
             = {{ getResult(expr) }}
           </div>
         </div>
-        <button class="clear-button" @click="clearInput(index)" title="Clear">
+        <button
+          class="clear-button"
+          title="Clear"
+          @click="clearInput(index)"
+        >
           ×
         </button>
         <button
           v-if="expressions.length > 1"
           class="remove-button"
-          @click="removeExpression(index)"
           title="Remove"
+          @click="removeExpression(index)"
         >
           -
         </button>
       </div>
-      <button class="add-button" @click="addExpression" title="Add expression">
+      <button
+        class="add-button"
+        title="Add expression"
+        @click="addExpression"
+      >
         +
       </button>
     </div>

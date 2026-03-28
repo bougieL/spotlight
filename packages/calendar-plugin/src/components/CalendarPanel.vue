@@ -141,22 +141,45 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="calendar-panel" @keydown="handleKeydown" tabindex="0">
+  <div
+    class="calendar-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <div class="calendar-header">
-      <button class="nav-button" @click="prevMonth" title="上个月">
+      <button
+        class="nav-button"
+        title="上个月"
+        @click="prevMonth"
+      >
         <ChevronLeft :size="20" />
       </button>
       <div class="header-center">
         <span class="year-month">{{ currentYear }}年 {{ monthNames[currentMonth] }}</span>
-        <button class="today-button" @click="goToToday">今天</button>
+        <button
+          class="today-button"
+          @click="goToToday"
+        >
+          今天
+        </button>
       </div>
-      <button class="nav-button" @click="nextMonth" title="下个月">
+      <button
+        class="nav-button"
+        title="下个月"
+        @click="nextMonth"
+      >
         <ChevronRight :size="20" />
       </button>
     </div>
 
     <div class="calendar-weekdays">
-      <div v-for="day in weekDays" :key="day" class="weekday">{{ day }}</div>
+      <div
+        v-for="day in weekDays"
+        :key="day"
+        class="weekday"
+      >
+        {{ day }}
+      </div>
     </div>
 
     <div class="calendar-grid">
@@ -174,22 +197,38 @@ onMounted(() => {
         @click="selectDate(day)"
       >
         <span class="day-number">{{ day.day }}</span>
-        <span v-if="day.dayInfo.holidayName" class="holiday-name">{{ day.dayInfo.holidayName }}</span>
-        <span v-else class="lunar-day">{{ day.dayInfo.lunar.lunarDayCN }}</span>
+        <span
+          v-if="day.dayInfo.holidayName"
+          class="holiday-name"
+        >{{ day.dayInfo.holidayName }}</span>
+        <span
+          v-else
+          class="lunar-day"
+        >{{ day.dayInfo.lunar.lunarDayCN }}</span>
       </div>
     </div>
 
-    <div v-if="selectedDateInfo" class="date-detail">
+    <div
+      v-if="selectedDateInfo"
+      class="date-detail"
+    >
       <div class="detail-header">
         <span class="detail-date">{{ selectedDateInfo.formattedDate }}</span>
         <span class="detail-lunar">
           {{ selectedDateInfo.lunar.yearGanZhi }}年 {{ selectedDateInfo.lunar.monthDay }}
         </span>
       </div>
-      <div v-if="selectedDateInfo.dayInfo.holidayName" class="holiday-badge">
+      <div
+        v-if="selectedDateInfo.dayInfo.holidayName"
+        class="holiday-badge"
+      >
         {{ selectedDateInfo.dayInfo.holidayName }}
       </div>
-      <div v-if="selectedDateInfo.specialType" class="special-badge" :class="selectedDateInfo.specialType">
+      <div
+        v-if="selectedDateInfo.specialType"
+        class="special-badge"
+        :class="selectedDateInfo.specialType"
+      >
         {{ selectedDateInfo.specialType === 'holiday' ? '休息日' : '补班日' }}
       </div>
     </div>

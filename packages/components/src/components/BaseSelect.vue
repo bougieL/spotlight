@@ -32,7 +32,13 @@ function handleChange(event: Event) {
     :disabled="disabled"
     @change="handleChange"
   >
-    <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
+    <option
+      v-if="placeholder"
+      value=""
+      disabled
+    >
+      {{ placeholder }}
+    </option>
     <option
       v-for="option in options"
       :key="option.value"

@@ -119,8 +119,15 @@ function setMaxContextFromString(value: string) {
 
 <template>
   <div class="models-editor">
-    <div class="models-list" v-if="!isEditing && localModels.length > 0">
-      <div v-for="model in localModels" :key="model.id" class="model-item">
+    <div
+      v-if="!isEditing && localModels.length > 0"
+      class="models-list"
+    >
+      <div
+        v-for="model in localModels"
+        :key="model.id"
+        class="model-item"
+      >
         <div class="model-info">
           <div class="model-header">
             <span class="model-name">{{ model.name }}</span>
@@ -133,77 +140,146 @@ function setMaxContextFromString(value: string) {
         </div>
         <div class="model-actions">
           <BaseIconButton
-            @click="testConnection(model)"
             :disabled="testingModelId === model.id"
             :title="t('aiChat.testConnection')"
+            @click="testConnection(model)"
           >
-            <CheckCircle :size="14" v-if="testResult?.success && testingModelId === null" />
-            <XCircle :size="14" v-else-if="testResult?.success === false && testingModelId === null" />
-            <Settings :size="14" v-else />
+            <CheckCircle
+              v-if="testResult?.success && testingModelId === null"
+              :size="14"
+            />
+            <XCircle
+              v-else-if="testResult?.success === false && testingModelId === null"
+              :size="14"
+            />
+            <Settings
+              v-else
+              :size="14"
+            />
           </BaseIconButton>
-          <BaseIconButton @click="startEditModel(model)" :title="t('aiChat.editModel')">
+          <BaseIconButton
+            :title="t('aiChat.editModel')"
+            @click="startEditModel(model)"
+          >
             <Edit2 :size="14" />
           </BaseIconButton>
-          <BaseIconButton @click="deleteModel(model)" :title="t('aiChat.deleteModel')">
+          <BaseIconButton
+            :title="t('aiChat.deleteModel')"
+            @click="deleteModel(model)"
+          >
             <Trash2 :size="14" />
           </BaseIconButton>
         </div>
       </div>
     </div>
 
-    <div class="model-form" v-if="isEditing && editingModel">
+    <div
+      v-if="isEditing && editingModel"
+      class="model-form"
+    >
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.name') }}</label>
-        <BaseInput v-model="editingModel.name!" :placeholder="t('aiChat.model')" />
+        <BaseInput
+          v-model="editingModel.name!"
+          :placeholder="t('aiChat.model')"
+        />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.provider') }}</label>
-        <BaseInput v-model="editingModel.provider!" :placeholder="t('aiChat.provider')" />
+        <BaseInput
+          v-model="editingModel.provider!"
+          :placeholder="t('aiChat.provider')"
+        />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.endpointType') }}</label>
-        <BaseSelect v-model="(editingModel.endpointType as EndpointType)" :options="endpointTypeOptions" />
+        <BaseSelect
+          v-model="(editingModel.endpointType as EndpointType)"
+          :options="endpointTypeOptions"
+        />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.apiUrl') }}</label>
-        <BaseInput v-model="editingModel.apiUrl!" :placeholder="t('aiChat.apiUrlPlaceholder')" />
+        <BaseInput
+          v-model="editingModel.apiUrl!"
+          :placeholder="t('aiChat.apiUrlPlaceholder')"
+        />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.apiKey') }}</label>
-        <BaseInput v-model="editingModel.apiKey!" type="password" :placeholder="t('aiChat.apiKeyPlaceholder')" />
+        <BaseInput
+          v-model="editingModel.apiKey!"
+          type="password"
+          :placeholder="t('aiChat.apiKeyPlaceholder')"
+        />
       </div>
 
       <div class="form-group">
         <label class="form-label">{{ t('aiChat.maxContext') }}</label>
         <BaseInput
-          :modelValue="getMaxContextString()"
+          :model-value="getMaxContextString()"
           type="number"
           :placeholder="t('aiChat.maxContextPlaceholder')"
-          @update:modelValue="setMaxContextFromString"
+          @update:model-value="setMaxContextFromString"
         />
       </div>
 
       <div class="form-actions">
-        <BaseButton variant="primary" @click="saveModel">{{ t('aiChat.save') }}</BaseButton>
-        <BaseButton variant="default" @click="cancelEdit">{{ t('aiChat.cancel') }}</BaseButton>
+        <BaseButton
+          variant="primary"
+          @click="saveModel"
+        >
+          {{ t('aiChat.save') }}
+        </BaseButton>
+        <BaseButton
+          variant="default"
+          @click="cancelEdit"
+        >
+          {{ t('aiChat.cancel') }}
+        </BaseButton>
       </div>
     </div>
 
-    <div class="empty-state" v-if="!isEditing && localModels.length === 0">
-      <Settings :size="32" class="empty-icon" />
-      <p class="empty-text">{{ t('aiChat.noModels') }}</p>
-      <BaseButton variant="primary" @click="startAddModel">{{ t('aiChat.addModel') }}</BaseButton>
+    <div
+      v-if="!isEditing && localModels.length === 0"
+      class="empty-state"
+    >
+      <Settings
+        :size="32"
+        class="empty-icon"
+      />
+      <p class="empty-text">
+        {{ t('aiChat.noModels') }}
+      </p>
+      <BaseButton
+        variant="primary"
+        @click="startAddModel"
+      >
+        {{ t('aiChat.addModel') }}
+      </BaseButton>
     </div>
 
-    <div class="add-model-btn" v-if="!isEditing && localModels.length > 0">
-      <BaseButton variant="primary" @click="startAddModel">{{ t('aiChat.addModel') }}</BaseButton>
+    <div
+      v-if="!isEditing && localModels.length > 0"
+      class="add-model-btn"
+    >
+      <BaseButton
+        variant="primary"
+        @click="startAddModel"
+      >
+        {{ t('aiChat.addModel') }}
+      </BaseButton>
     </div>
 
-    <div class="test-result" v-if="testResult" :class="{ success: testResult.success, error: !testResult.success }">
+    <div
+      v-if="testResult"
+      class="test-result"
+      :class="{ success: testResult.success, error: !testResult.success }"
+    >
       {{ testResult.message }}
     </div>
   </div>

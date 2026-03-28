@@ -54,7 +54,11 @@ function handleDelete(event: Event, noteId: string) {
   <div class="note-list">
     <div class="note-header">
       <span class="header-title">{{ t('notes.notes') }}</span>
-      <BaseIconButton size="small" :title="t('notes.addNote')" @click="emit('create')">
+      <BaseIconButton
+        size="small"
+        :title="t('notes.addNote')"
+        @click="emit('create')"
+      >
         <Plus :size="16" />
       </BaseIconButton>
     </div>
@@ -66,7 +70,10 @@ function handleDelete(event: Event, noteId: string) {
         :class="{ 'is-active': activeNoteId === note.id }"
         @click="emit('select', note.id)"
       >
-        <FileText :size="16" class="note-icon" />
+        <FileText
+          :size="16"
+          class="note-icon"
+        />
         <div class="note-info">
           <span class="note-title">{{ note.title || t('notes.untitled') }}</span>
           <span class="note-preview">{{ getPreview(note.content) }}</span>
@@ -82,7 +89,10 @@ function handleDelete(event: Event, noteId: string) {
           <Trash2 :size="14" />
         </BaseIconButton>
       </div>
-      <div v-if="notes.length === 0" class="empty-state">
+      <div
+        v-if="notes.length === 0"
+        class="empty-state"
+      >
         {{ t('notes.noNotes') }}
       </div>
     </div>

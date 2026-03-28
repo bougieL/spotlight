@@ -44,20 +44,37 @@ function formatTime(timestamp: number): string {
 </script>
 
 <template>
-  <div class="message" :class="[message.role, { streaming: isStreaming }]">
+  <div
+    class="message"
+    :class="[message.role, { streaming: isStreaming }]"
+  >
     <div class="message-content">
-      <div v-if="isStreaming" class="message-text" v-html="streamingContent"></div>
-      <div v-else class="message-text" v-html="renderedContent"></div>
+      <div
+        v-if="isStreaming"
+        class="message-text"
+        v-html="streamingContent"
+      />
+      <div
+        v-else
+        class="message-text"
+        v-html="renderedContent"
+      />
       <div class="message-meta">
         <span class="message-time">{{ formatTime(message.timestamp) }}</span>
         <BaseIconButton
           v-if="message.role === 'assistant' && !isStreaming"
-          @click="copyMessage"
           :title="t('aiChat.copy')"
           size="small"
+          @click="copyMessage"
         >
-          <Check :size="12" v-if="copiedId === message.id" />
-          <Copy :size="12" v-else />
+          <Check
+            v-if="copiedId === message.id"
+            :size="12"
+          />
+          <Copy
+            v-else
+            :size="12"
+          />
         </BaseIconButton>
       </div>
     </div>

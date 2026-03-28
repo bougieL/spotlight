@@ -184,7 +184,11 @@ const favoriteContents = computed(() => new Set(favorites.value.map(f => f.conte
 </script>
 
 <template>
-  <div class="clipboard-panel" tabindex="0" @keydown="handleKeydown">
+  <div
+    class="clipboard-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <div class="clipboard-tabs">
       <button
         v-for="tab in filterTabs"
@@ -193,14 +197,25 @@ const favoriteContents = computed(() => new Set(favorites.value.map(f => f.conte
         :class="{ active: selectedType === tab.key }"
         @click="selectedType = tab.key"
       >
-        <component :is="tab.icon" :size="14" />
+        <component
+          :is="tab.icon"
+          :size="14"
+        />
         <span>{{ tab.label }}</span>
       </button>
     </div>
     <div class="clipboard-list">
-      <div v-if="filteredItems.length === 0" class="empty-state">
-        <Clipboard :size="48" class="empty-icon" />
-        <p class="empty-text">{{ t('clipboard.empty') }}</p>
+      <div
+        v-if="filteredItems.length === 0"
+        class="empty-state"
+      >
+        <Clipboard
+          :size="48"
+          class="empty-icon"
+        />
+        <p class="empty-text">
+          {{ t('clipboard.empty') }}
+        </p>
       </div>
 
       <div
@@ -211,13 +226,31 @@ const favoriteContents = computed(() => new Set(favorites.value.map(f => f.conte
         @click="handleItemClick(item)"
       >
         <div class="item-icon">
-          <component :is="getTypeIcon(item.type)" :size="16" />
+          <component
+            :is="getTypeIcon(item.type)"
+            :size="16"
+          />
         </div>
         <div class="item-content">
-          <img v-if="isImage(item)" :src="item.content" class="item-image-preview" alt="preview" />
-          <div v-else-if="isFiles(item)" class="item-files">
-            <div v-for="file in getFiles(item)" :key="file" class="file-item">
-              <FileText :size="14" class="file-icon" />
+          <img
+            v-if="isImage(item)"
+            :src="item.content"
+            class="item-image-preview"
+            alt="preview"
+          >
+          <div
+            v-else-if="isFiles(item)"
+            class="item-files"
+          >
+            <div
+              v-for="file in getFiles(item)"
+              :key="file"
+              class="file-item"
+            >
+              <FileText
+                :size="14"
+                class="file-icon"
+              />
               <span class="file-name">{{ getFileName(file) }}</span>
               <span class="file-ext">{{ getFileExtension(file) }}</span>
             </div>
@@ -230,12 +263,27 @@ const favoriteContents = computed(() => new Set(favorites.value.map(f => f.conte
             <span class="item-time">{{ formatTime(item.timestamp) }}</span>
           </span>
         </div>
-        <div class="item-action favorite-action" @click.stop="handleToggleFavorite(item)">
-          <Star :size="14" :class="{ starred: favoriteContents.has(item.content) }" />
+        <div
+          class="item-action favorite-action"
+          @click.stop="handleToggleFavorite(item)"
+        >
+          <Star
+            :size="14"
+            :class="{ starred: favoriteContents.has(item.content) }"
+          />
         </div>
-        <div class="item-action" :class="{ 'copied-action': copiedId === item.id }">
-          <Check v-if="copiedId === item.id" :size="14" />
-          <Copy v-else :size="14" />
+        <div
+          class="item-action"
+          :class="{ 'copied-action': copiedId === item.id }"
+        >
+          <Check
+            v-if="copiedId === item.id"
+            :size="14"
+          />
+          <Copy
+            v-else
+            :size="14"
+          />
         </div>
       </div>
     </div>

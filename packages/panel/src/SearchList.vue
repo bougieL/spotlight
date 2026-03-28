@@ -112,13 +112,24 @@ onUnmounted(() => {
         v-if="item.iconUrl"
         :src="item.iconUrl"
         class="result-icon-img"
+      >
+      <Package
+        v-else
+        class="result-icon"
+        :size="20"
       />
-      <Package v-else class="result-icon" :size="20" />
       <div class="result-content">
-        <div class="result-title">{{ translateTitle(item.title) }}</div>
-        <div class="result-desc">{{ item.desc }}</div>
+        <div class="result-title">
+          {{ translateTitle(item.title) }}
+        </div>
+        <div class="result-desc">
+          {{ item.desc }}
+        </div>
       </div>
-      <div v-if="index < 9" class="shortcut-hint">
+      <div
+        v-if="index < 9"
+        class="shortcut-hint"
+      >
         Ctrl + {{ index + 1 }}
       </div>
     </div>

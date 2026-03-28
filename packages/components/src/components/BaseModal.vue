@@ -20,18 +20,28 @@ defineEmits<{
 
 <template>
   <Teleport to="body">
-    <div v-if="show" class="modal-overlay" @click.self="$emit('close')">
+    <div
+      v-if="show"
+      class="modal-overlay"
+      @click.self="$emit('close')"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <span class="modal-title">{{ title }}</span>
-          <BaseIconButton size="small" @click="$emit('close')">
+          <BaseIconButton
+            size="small"
+            @click="$emit('close')"
+          >
             <X :size="16" />
           </BaseIconButton>
         </div>
         <div class="modal-body">
           <slot />
         </div>
-        <div v-if="$slots.footer" class="modal-footer">
+        <div
+          v-if="$slots.footer"
+          class="modal-footer"
+        >
           <slot name="footer" />
         </div>
       </div>

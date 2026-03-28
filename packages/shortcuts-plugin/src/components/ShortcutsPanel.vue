@@ -126,43 +126,82 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="shortcuts-panel" tabindex="0" @keydown="handleKeydown">
-    <div v-if="!isAdding && !isEditing" class="shortcuts-content">
+  <div
+    class="shortcuts-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
+    <div
+      v-if="!isAdding && !isEditing"
+      class="shortcuts-content"
+    >
       <div class="shortcuts-header">
         <input
           v-model="searchQuery"
           type="text"
           class="search-input"
           :placeholder="t('shortcuts.placeholder')"
-        />
-        <button class="add-btn" @click="startAdd">
+        >
+        <button
+          class="add-btn"
+          @click="startAdd"
+        >
           + {{ t('shortcuts.add') }}
         </button>
       </div>
 
-      <div v-if="filteredShortcuts.length === 0" class="empty-state">
+      <div
+        v-if="filteredShortcuts.length === 0"
+        class="empty-state"
+      >
         <p>{{ t('shortcuts.empty') }}</p>
       </div>
 
-      <div v-else class="shortcuts-list">
+      <div
+        v-else
+        class="shortcuts-list"
+      >
         <div
           v-for="item in filteredShortcuts"
           :key="item.id"
           class="shortcut-item"
         >
-          <div class="shortcut-info" @click="executeShortcut(item)">
-            <div class="shortcut-name">{{ item.name }}</div>
-            <div class="shortcut-command">{{ item.command }}</div>
-            <div v-if="item.description" class="shortcut-desc">{{ item.description }}</div>
+          <div
+            class="shortcut-info"
+            @click="executeShortcut(item)"
+          >
+            <div class="shortcut-name">
+              {{ item.name }}
+            </div>
+            <div class="shortcut-command">
+              {{ item.command }}
+            </div>
+            <div
+              v-if="item.description"
+              class="shortcut-desc"
+            >
+              {{ item.description }}
+            </div>
           </div>
           <div class="shortcut-actions">
-            <span v-if="executingId === item.id" class="executing">
+            <span
+              v-if="executingId === item.id"
+              class="executing"
+            >
               {{ t('shortcuts.running') }}
             </span>
-            <button class="action-btn" @click.stop="startEdit(item)" :title="t('shortcuts.edit')">
+            <button
+              class="action-btn"
+              :title="t('shortcuts.edit')"
+              @click.stop="startEdit(item)"
+            >
               {{ t('shortcuts.edit') }}
             </button>
-            <button class="action-btn delete" @click.stop="deleteShortcut(item)" :title="t('shortcuts.delete')">
+            <button
+              class="action-btn delete"
+              :title="t('shortcuts.delete')"
+              @click.stop="deleteShortcut(item)"
+            >
               {{ t('shortcuts.delete') }}
             </button>
           </div>
@@ -170,7 +209,10 @@ function handleKeydown(event: KeyboardEvent) {
       </div>
     </div>
 
-    <div v-else class="shortcuts-form">
+    <div
+      v-else
+      class="shortcuts-form"
+    >
       <h3>{{ isEditing ? t('shortcuts.edit') : t('shortcuts.add') }}</h3>
 
       <div class="form-group">
@@ -180,7 +222,7 @@ function handleKeydown(event: KeyboardEvent) {
           type="text"
           class="form-input"
           :placeholder="t('shortcuts.namePlaceholder')"
-        />
+        >
       </div>
 
       <div class="form-group">
@@ -190,7 +232,7 @@ function handleKeydown(event: KeyboardEvent) {
           type="text"
           class="form-input"
           :placeholder="t('shortcuts.commandPlaceholder')"
-        />
+        >
       </div>
 
       <div class="form-group">
@@ -200,14 +242,20 @@ function handleKeydown(event: KeyboardEvent) {
           type="text"
           class="form-input"
           :placeholder="t('shortcuts.descriptionPlaceholder')"
-        />
+        >
       </div>
 
       <div class="form-actions">
-        <button class="btn cancel" @click="cancelEdit">
+        <button
+          class="btn cancel"
+          @click="cancelEdit"
+        >
           {{ t('shortcuts.cancel') }}
         </button>
-        <button class="btn save" @click="saveShortcut">
+        <button
+          class="btn save"
+          @click="saveShortcut"
+        >
           {{ t('shortcuts.save') }}
         </button>
       </div>

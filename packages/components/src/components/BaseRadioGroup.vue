@@ -23,14 +23,17 @@ function handleChange(value: string) {
 </script>
 
 <template>
-  <div class="base-radio-group" :class="{ disabled }">
+  <div
+    class="base-radio-group"
+    :class="{ disabled }"
+  >
     <BaseRadio
       v-for="option in options"
       :key="option.value"
       :value="option.value"
       :label="option.label"
       :disabled="option.disabled || disabled"
-      :modelValue="modelValue"
+      :model-value="modelValue"
       @change="handleChange"
     />
   </div>

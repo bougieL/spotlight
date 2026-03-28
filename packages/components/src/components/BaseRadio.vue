@@ -14,14 +14,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <label class="base-radio" :class="{ disabled }">
+  <label
+    class="base-radio"
+    :class="{ disabled }"
+  >
     <input
       type="radio"
       :value="value"
       :disabled="disabled"
       @change="emit('change', value)"
-    />
-    <span class="radio-indicator"></span>
+    >
+    <span class="radio-indicator" />
     <span class="radio-label">{{ label }}</span>
   </label>
 </template>

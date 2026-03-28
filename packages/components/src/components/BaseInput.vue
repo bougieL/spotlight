@@ -30,7 +30,7 @@ function handleInput(event: Event) {
     :placeholder="placeholder"
     :disabled="disabled"
     @input="handleInput"
-  />
+  >
 </template>
 
 <style scoped>

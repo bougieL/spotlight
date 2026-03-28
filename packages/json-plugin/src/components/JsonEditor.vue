@@ -1,14 +1,44 @@
 <template>
   <div class="json-editor">
     <div class="json-toolbar">
-      <BaseButton size="small" @click="handleFormat">{{ t('json.format') }}</BaseButton>
-      <BaseButton size="small" @click="handleMinify">{{ t('json.minify') }}</BaseButton>
-      <div class="toolbar-separator"></div>
-      <BaseButton size="small" @click="handleFoldAll">{{ t('json.foldAll') }}</BaseButton>
-      <BaseButton size="small" @click="handleUnfoldAll">{{ t('json.unfoldAll') }}</BaseButton>
-      <div class="toolbar-separator"></div>
-      <BaseButton size="small" @click="handleCopy">{{ t('json.copy') }}</BaseButton>
-      <BaseButton size="small" @click="handleClear">{{ t('json.clear') }}</BaseButton>
+      <BaseButton
+        size="small"
+        @click="handleFormat"
+      >
+        {{ t('json.format') }}
+      </BaseButton>
+      <BaseButton
+        size="small"
+        @click="handleMinify"
+      >
+        {{ t('json.minify') }}
+      </BaseButton>
+      <div class="toolbar-separator" />
+      <BaseButton
+        size="small"
+        @click="handleFoldAll"
+      >
+        {{ t('json.foldAll') }}
+      </BaseButton>
+      <BaseButton
+        size="small"
+        @click="handleUnfoldAll"
+      >
+        {{ t('json.unfoldAll') }}
+      </BaseButton>
+      <div class="toolbar-separator" />
+      <BaseButton
+        size="small"
+        @click="handleCopy"
+      >
+        {{ t('json.copy') }}
+      </BaseButton>
+      <BaseButton
+        size="small"
+        @click="handleClear"
+      >
+        {{ t('json.clear') }}
+      </BaseButton>
     </div>
     <div class="json-body">
       <div class="json-gutter">
@@ -19,12 +49,19 @@
           :class="{ 'json-foldable': line.foldable, 'json-folded': line.folded }"
           @click="line.foldable && toggleFold(index)"
         >
-          <span v-if="line.foldable" class="json-fold-marker">{{ line.folded ? '▶' : '▼' }}</span>
+          <span
+            v-if="line.foldable"
+            class="json-fold-marker"
+          >{{ line.folded ? '▶' : '▼' }}</span>
           <span>{{ index + 1 }}</span>
         </div>
       </div>
       <div class="json-editor-area">
-        <pre ref="highlightRef" class="json-highlight" aria-hidden="true"></pre>
+        <pre
+          ref="highlightRef"
+          class="json-highlight"
+          aria-hidden="true"
+        />
         <textarea
           ref="textareaRef"
           v-model="content"
@@ -33,10 +70,15 @@
           @input="onInput"
           @scroll="syncScroll"
           @keydown="onKeydown"
-        ></textarea>
+        />
       </div>
     </div>
-    <div v-if="error" class="json-error">{{ t('json.invalidJson') }}: {{ error }}</div>
+    <div
+      v-if="error"
+      class="json-error"
+    >
+      {{ t('json.invalidJson') }}: {{ error }}
+    </div>
   </div>
 </template>
 

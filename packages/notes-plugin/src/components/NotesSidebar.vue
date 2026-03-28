@@ -32,14 +32,14 @@ const emit = defineEmits<{
   <div class="notes-sidebar">
     <CategoryList
       :categories="categories"
-      :activeCategoryId="activeCategoryId"
+      :active-category-id="activeCategoryId"
       @select="emit('selectCategory', $event)"
       @create="emit('createCategory')"
       @delete="emit('deleteCategory', $event)"
     />
     <NoteList
       :notes="notes"
-      :activeNoteId="activeNoteId"
+      :active-note-id="activeNoteId"
       @select="emit('selectNote', $event)"
       @create="emit('createNote')"
       @delete="emit('deleteNote', $event)"
