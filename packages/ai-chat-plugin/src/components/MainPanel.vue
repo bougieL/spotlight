@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { MessageSquare, Plus, Settings, Send, ArrowLeft, Pin, Trash2, Edit2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
-import { BaseButton, BaseIconButton, BaseModal, BaseContextMenu, BaseSelect } from '@spotlight/components';
+import { BaseButton, BaseIconButton, BaseInput, BaseModal, BaseContextMenu, BaseSelect } from '@spotlight/components';
 import { aiChatPlugin, openaiAdapter, anthropicAdapter, type Session, type ChatMessage, type ModelConfig } from '../index';
 import ModelsEditor from './ModelsEditor.vue';
 import MessageList from './MessageList.vue';

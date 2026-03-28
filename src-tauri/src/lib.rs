@@ -10,6 +10,7 @@ use commands::{
     save_temp_image, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
     write_plugin_settings, create_overlay_window, close_overlay_window, exit_app,
+    detach_window,
 };
 use tauri::Manager;
 
@@ -61,7 +62,8 @@ pub fn run() {
             capture_full_screen,
             execute_shell_command,
             get_autostart_enabled,
-            set_autostart_enabled
+            set_autostart_enabled,
+            detach_window
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

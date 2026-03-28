@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Search, X, FileText, ArrowLeft, Settings, MoreVertical } from 'lucide-vue-next';
+import { Search, X, FileText, ArrowLeft, Settings, MoreVertical, ExternalLink } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import { useI18n } from '@spotlight/i18n';
@@ -33,6 +33,8 @@ const emit = defineEmits<{
   (e: 'back'): void;
   // eslint-disable-next-line no-unused-vars
   (e: 'openSettings'): void;
+  // eslint-disable-next-line no-unused-vars
+  (e: 'detach'): void;
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -73,6 +75,7 @@ const menuY = ref(0);
 const menuButtonRef = ref<HTMLElement | null>(null);
 
 const menuItems = computed<ContextMenuItem[]>(() => [
+  { label: t('input.detach'), icon: ExternalLink, click: () => emit('detach') },
   { label: t('input.settings'), icon: Settings, click: () => emit('openSettings') },
 ]);
 

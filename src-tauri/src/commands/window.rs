@@ -168,6 +168,66 @@ pub async fn close_overlay_window(app: tauri::AppHandle, label: String) -> Resul
 }
 
 #[tauri::command]
+pub async fn detach_window(
+    app: tauri::AppHandle,
+    url: String,
+    label: String,
+) -> Result<(), String> {
+    if let Some(existing) = app.get_webview_window(&label) {
+        let _ = existing.close();
+    }
+
+    let is_dev = url.contains("localhost");
+
+    #[cfg(windows)]
+    let (screen_width, screen_height) = unsafe {
+        (GetSystemMetrics(SM_CXSCREEN) as f64, GetSystemMetrics(SM_CYSCREEN) as f64)
+    };
+    #[cfg(target_os = "macos")]
+    let (screen_width, screen_height) = {
+        use objc::{class, msg_send, sel, sel_impl};
+        use cocoa::base::{id, nil};
+        unsafe {
+            let screen: id = msg_send![class!(NSScreen), mainScreen];
+            if screen == nil {
+                (1920.0, 1080.0)
+            } else {
+                let frame: cocoa::foundation::NSRect = msg_send![screen, frame];
+                (frame.size.width, frame.size.height)
+            }
+        }
+    };
+    #[cfg(not(any(windows, target_os = "macos")))]
+    let (screen_width, screen_height) = (1920.0, 1080.0);
+
+    let width = 800.0;
+    let height = 600.0;
+    let x = (screen_width - width) / 2.0;
+    let y = (screen_height - height) / 2.0;
+
+    let mut builder = WebviewWindowBuilder::new(
+        &app,
+        &label,
+        WebviewUrl::External(url.parse().map_err(|e: url::ParseError| e.to_string())?),
+    )
+    .inner_size(width, height)
+    .position(x, y)
+    .title("Spotlight")
+    .resizable(true)
+    .min_inner_size(400.0, 300.0);
+
+    if is_dev {
+        builder = builder.devtools(true);
+    }
+
+    let window = builder.build().map_err(|e| e.to_string())?;
+
+    window.show().map_err(|e| e.to_string())?;
+    window.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 pub fn exit_app(app: tauri::AppHandle) -> Result<(), String> {
     app.exit(0);
     Ok(())

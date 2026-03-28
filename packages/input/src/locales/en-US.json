@@ -1,5 +1,6 @@
 {
   "input": "Input",
   "input.search": "Search...",
-  "input.settings": "Settings"
+  "input.settings": "Settings",
+  "input.detach": "Open in New Window"
 }

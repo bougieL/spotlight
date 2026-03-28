@@ -3,15 +3,15 @@ import { ref, provide, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { SearchInput } from "@spotlight/input";
 import { registerAllPlugins, recentPlugin, pluginRegistry } from "./plugins";
-import { provideI18n, setLocale, useI18n } from "@spotlight/i18n";
+import { provideI18n, setLocale } from "@spotlight/i18n";
 import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
+import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, PanelContext } from "@spotlight/core";
 import { panelContext, ROUTE_NAMES } from "@spotlight/core";
 import { useWindowResize, useWindowFocus, usePlugins, useTray } from "./composables";
 
-provideI18n();
-const { locale } = useI18n();
+const { locale } = provideI18n();
 
 const router = useRouter();
 const route = useRoute();
@@ -23,12 +23,14 @@ const { refreshTray } = useTray();
 const query = ref('');
 const files = ref<FileItem[]>([]);
 const searchInputRef = ref<{ focus: () => void } | null>(null);
+const mainRef = ref<HTMLElement | null>(null);
 
 useWindowFocus(searchInputRef);
-useWindowResize();
+useWindowResize(mainRef);
 usePlugins();
 
 const isPanelMode = computed(() => route.path.startsWith('/panel'));
+const isDetached = computed(() => route.query.detached === 'true');
 const activePluginName = computed(() => {
   const match = route.path.match(/^\/panel\/(.+)$/);
   if (!match) return undefined;
@@ -85,6 +87,16 @@ const handleOpenSettings = () => {
   router.push({ name: 'settings-plugin' });
 };
 
+const handleDetach = async () => {
+  const panelPath = route.path;
+  if (panelPath.startsWith('/panel')) {
+    const baseUrl = window.location.origin;
+    const url = `${baseUrl}${panelPath}?detached=true`;
+    const label = `panel-${Date.now()}`;
+    await tauriApi.detachWindow(url, label);
+  }
+};
+
 onMounted(async () => {
   const savedTheme = await settingsPlugin.getThemeMode();
   const savedLanguage = await settingsPlugin.getLanguage();
@@ -106,8 +118,9 @@ watch(locale, async (newLocale) => {
 </script>
 
 <template>
-  <main class="spotlight-container">
+  <main ref="mainRef" class="spotlight-container" :class="{ detached: isDetached }">
     <SearchInput
+      v-if="!isDetached"
       ref="searchInputRef"
       v-model="query"
       v-model:files="files"
@@ -116,10 +129,12 @@ watch(locale, async (newLocale) => {
       :plugin-icon="activePluginIcon"
       @back="handleClosePanel"
       @open-settings="handleOpenSettings"
+      @detach="handleDetach"
     />
     <RouterView
       v-slot="{ Component }"
       class="router-view-container"
+      :class="{ detached: isDetached }"
     >
       <KeepAlive>
         <component :is="Component" @select="handleSelect" />
@@ -137,8 +152,8 @@ watch(locale, async (newLocale) => {
 
 html,
 body {
-  width: 800px;
-  height: fit-content;
+  width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -150,26 +165,36 @@ body {
 }
 </style>
 
-<style scoped>
+<style>
 #app {
   width: 100%;
-  height: fit-content;
+  height: 100%;
 }
 
 .spotlight-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 800px;
+  width: 100%;
   margin: 0 auto;
   padding: 0;
   border: none;
   background-color: transparent;
 }
 
+.spotlight-container.detached {
+  height: 100%;
+}
+
 .router-view-container {
   max-height: 600px;
   overflow-y: auto;
+}
+
+.router-view-container.detached {
+  height: 100%;
+  max-height: none;
+  overflow-y: visible;
 }
 
 </style>
