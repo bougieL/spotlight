@@ -7,7 +7,7 @@ type LocaleTranslations = Partial<Record<Locale, TranslationDict>>;
 
 interface I18nContext {
   locale: ComputedRef<Locale>;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
   setLocale: (locale: Locale) => void;
   registerTranslations: (translations: LocaleTranslations) => void;
 }
@@ -45,8 +45,14 @@ export function getLocale(): Locale {
 export function createI18nContext(): I18nContext {
   const locale = computed(() => currentLocale.value);
 
-  const t = (key: string): string => {
-    return translations[locale.value][key] ?? key;
+  const t = (key: string, params?: Record<string, string>): string => {
+    let result = translations[locale.value][key] ?? key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        result = result.replace(`{{${k}}}`, v);
+      }
+    }
+    return result;
   };
 
   const setLocale = (newLocale: Locale): void => {

@@ -2,7 +2,7 @@ import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/c
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -86,10 +86,12 @@ function matchSearchEngine(query: string): { engine: SearchEngine; searchQuery: 
 
 export class ChromeBookmarksPlugin extends BasePlugin {
   get name(): string {
-    return translations[getLocale()]['plugin.chrome-bookmarks'] ?? 'Chrome Bookmarks';
+    const { t } = useI18n();
+    return t('plugin.chrome-bookmarks');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.chromeBookmarks'];
+    const { t } = useI18n();
+    return t('plugin.description.chromeBookmarks');
   }
   iconUrl = chromeIconUrl;
   pluginId = 'chrome-bookmarks-plugin';
@@ -191,10 +193,10 @@ export class ChromeBookmarksPlugin extends BasePlugin {
 
     // If query looks like a URL, try to open it directly
     if (isUrl(query)) {
-      const locale = getLocale();
+      const { t } = useI18n();
       return [{
         title: query,
-        desc: translations[locale]?.['plugin.chrome-bookmarks.open'] ?? 'Open in Chrome',
+        desc: t('plugin.chrome-bookmarks.open'),
         iconUrl: chromeIconUrl,
         pluginId: this.pluginId,
         actionId: ACTION_OPEN,
@@ -205,10 +207,10 @@ export class ChromeBookmarksPlugin extends BasePlugin {
     // Check for search engine shortcuts
     const searchMatch = matchSearchEngine(query);
     if (searchMatch) {
-      const locale = getLocale();
+      const { t } = useI18n();
       const searchResult: SearchResultItem = {
         title: `${searchMatch.engine.name} Search: ${searchMatch.searchQuery}`,
-        desc: translations[locale]?.['plugin.chrome-bookmarks.search'] ?? 'Search on {{engine}}',
+        desc: t('plugin.chrome-bookmarks.search', { engine: searchMatch.engine.name }),
         iconUrl: chromeIconUrl,
         pluginId: this.pluginId,
         actionId: ACTION_SEARCH,
