@@ -41,6 +41,7 @@ export interface TauriApi {
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   executeShellCommand: (command: string) => Promise<void>;
+  searchEverything: (query: string) => Promise<EverythingResult[]>;
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
@@ -52,8 +53,18 @@ export interface ScreenCapture {
   height: number;
 }
 
+export interface EverythingResult {
+  name: string;
+  path: string;
+  size: string;
+  date_modified: string;
+}
+
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
+
+export const searchEverything = (query: string): Promise<EverythingResult[]> =>
+  invoke<EverythingResult[]>('search_everything', { query });
 
 export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
@@ -105,6 +116,8 @@ export const tauriApi: TauriApi = {
   getChromeBookmarks: () => invoke<ChromeBookmark[]>('get_chrome_bookmarks'),
 
   executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
+
+  searchEverything: (query: string) => invoke<EverythingResult[]>('search_everything', { query }),
 
   getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
 

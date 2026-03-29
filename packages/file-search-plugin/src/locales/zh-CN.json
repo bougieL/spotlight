@@ -1,0 +1,11 @@
+{
+  "plugin.file-search": "文件搜索",
+  "plugin.description.fileSearch": "使用 Everything 搜索文件",
+  "fileSearch.openFile": "打开文件",
+  "fileSearch.openFolder": "打开所在文件夹",
+  "fileSearch.copyPath": "复制路径",
+  "fileSearch.noResults": "未找到结果",
+  "fileSearch.searching": "搜索中...",
+  "fileSearch.everythingNotRunning": "Everything 未运行，请先启动 Everything。",
+  "fileSearch.queryPlaceholder": "搜索文件..."
+}

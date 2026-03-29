@@ -7,7 +7,7 @@ use commands::{
     get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image, get_clipboard_text,
     get_global_shortcut, get_installed_applications, get_plugin_storage_dir, hide_window, launch_app,
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
-    save_temp_image, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
+    save_temp_image, search_everything, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
     write_plugin_settings, create_overlay_window, close_overlay_window, exit_app,
     detach_window,
@@ -63,6 +63,7 @@ pub fn run() {
             execute_shell_command,
             get_autostart_enabled,
             set_autostart_enabled,
+            search_everything,
             detach_window
         ])
         .setup(|app| {

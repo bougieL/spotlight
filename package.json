@@ -25,6 +25,7 @@
     "@spotlight/clipboard-plugin": "*",
     "@spotlight/color-palette-plugin": "*",
     "@spotlight/color-picker-plugin": "*",
+    "@spotlight/file-search-plugin": "*",
     "@spotlight/screenshot-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",

@@ -1,0 +1,8 @@
+This directory contains bundled binaries for Everything file search integration.
+
+Files:
+- Everything.exe - Everything search service (v1.4.1.1032 x64)
+- es.exe - Everything Command Line Interface
+
+The app will automatically start Everything.exe as a background service
+if it is not already running.

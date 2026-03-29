@@ -2,6 +2,7 @@ pub mod apps;
 pub mod autostart;
 pub mod chrome;
 pub mod clipboard;
+pub mod everything;
 pub mod file;
 pub mod launcher;
 pub mod log;
@@ -18,6 +19,7 @@ pub use clipboard::{
     get_clipboard_file_paths, get_clipboard_image, get_clipboard_text, set_clipboard_files,
     set_clipboard_image, set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor,
 };
+pub use everything::search_everything;
 pub use file::{save_pasted_file, save_temp_image};
 pub use launcher::launch_app;
 pub use log::write_log;

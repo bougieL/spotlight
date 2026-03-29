@@ -1,0 +1,11 @@
+{
+  "plugin.file-search": "File Search",
+  "plugin.description.fileSearch": "Search files using Everything",
+  "fileSearch.openFile": "Open File",
+  "fileSearch.openFolder": "Open Containing Folder",
+  "fileSearch.copyPath": "Copy Path",
+  "fileSearch.noResults": "No results found",
+  "fileSearch.searching": "Searching...",
+  "fileSearch.everythingNotRunning": "Everything is not running. Please start Everything first.",
+  "fileSearch.queryPlaceholder": "Search files..."
+}
