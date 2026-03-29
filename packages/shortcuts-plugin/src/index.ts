@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, executeShellCommand, type PluginStorage } from '@spotlight/api';
@@ -178,8 +177,10 @@ export class ShortcutsPlugin extends BasePlugin {
       }));
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/ShortcutsPanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/ShortcutsPanel.vue') },
+    ];
   }
 }
 

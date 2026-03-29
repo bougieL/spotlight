@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
@@ -20,6 +19,7 @@ registerTranslations({
 const aiChatIconUrl = new URL('./assets/chat.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
+const ACTION_OPEN_MODELS = 'open_models';
 
 const STORAGE_KEYS = {
   models: 'models',
@@ -49,6 +49,9 @@ export class AIChatPlugin extends BasePlugin {
     return {
       [ACTION_OPEN]: async () => {
         ctx.navigateToPlugin(this.pluginId);
+      },
+      [ACTION_OPEN_MODELS]: async () => {
+        ctx.navigateToPlugin(this.pluginId, 'models');
       },
     };
   }
@@ -170,6 +173,9 @@ export class AIChatPlugin extends BasePlugin {
       { keyword: 'claude', normalized: normalizeForSearch('claude') },
       { keyword: '聊天', normalized: normalizeForSearch('聊天'), pinyinInitials: toPinyinInitials('聊天') },
       { keyword: 'ai聊天', normalized: normalizeForSearch('ai聊天'), pinyinInitials: toPinyinInitials('ai聊天') },
+      { keyword: 'models', normalized: normalizeForSearch('models') },
+      { keyword: 'model', normalized: normalizeForSearch('model') },
+      { keyword: '模型', normalized: normalizeForSearch('模型'), pinyinInitials: toPinyinInitials('模型') },
     ];
 
     if (query.length > 0 && !matchKeyword(query, keywords)) {
@@ -188,8 +194,11 @@ export class AIChatPlugin extends BasePlugin {
     ];
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/MainPanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/MainPanel.vue') },
+      { name: 'models', componentLoader: () => import('./components/ModelsPanel.vue') },
+    ];
   }
 }
 

@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
@@ -183,8 +182,10 @@ export class CalculatorPlugin extends BasePlugin {
     ];
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/CalculatorPanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/CalculatorPanel.vue') },
+    ];
   }
 }
 

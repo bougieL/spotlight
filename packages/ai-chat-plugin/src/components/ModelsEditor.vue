@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Settings, Trash2, Edit2, CheckCircle, XCircle } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton, BaseIconButton, BaseInput, BaseSelect } from '@spotlight/components';
 import type { ModelConfig, EndpointType } from '@spotlight/ai-core';
 import { openaiAdapter, anthropicAdapter } from '@spotlight/ai-core';
-
-interface Props {
-  models: ModelConfig[];
-}
-
-const props = defineProps<Props>();
+import { aiChatPlugin } from '../index';
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -21,7 +16,17 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const localModels = ref<ModelConfig[]>([...props.models]);
+const localModels = ref<ModelConfig[]>([]);
+const isLoading = ref(true);
+
+onMounted(async () => {
+  try {
+    const { aiChatPlugin } = await import('../index');
+    localModels.value = await aiChatPlugin.getModels();
+  } finally {
+    isLoading.value = false;
+  }
+});
 const isEditing = ref(false);
 const editingModel = ref<Partial<ModelConfig> | null>(null);
 const testingModelId = ref<string | null>(null);
@@ -56,7 +61,7 @@ function cancelEdit() {
   isEditing.value = false;
 }
 
-function saveModel() {
+async function saveModel() {
   if (!editingModel.value) return;
 
   const existingIndex = localModels.value.findIndex(m => m.id === editingModel.value!.id);
@@ -66,14 +71,16 @@ function saveModel() {
     localModels.value.push(editingModel.value as ModelConfig);
   }
 
+  await aiChatPlugin.saveModels(localModels.value);
   emit('save', localModels.value);
   isEditing.value = false;
   editingModel.value = null;
 }
 
-function deleteModel(model: ModelConfig) {
+async function deleteModel(model: ModelConfig) {
   if (confirm(t('aiChat.confirmDeleteModel'))) {
     localModels.value = localModels.value.filter(m => m.id !== model.id);
+    await aiChatPlugin.saveModels(localModels.value);
     emit('save', localModels.value);
   }
 }
@@ -249,7 +256,7 @@ function setMaxContextFromString(value: string) {
     </div>
 
     <div
-      v-if="!isEditing && localModels.length === 0"
+      v-if="!isEditing && localModels.length === 0 && !isLoading"
       class="empty-state"
     >
       <Settings

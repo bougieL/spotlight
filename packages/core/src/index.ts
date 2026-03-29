@@ -14,7 +14,14 @@ export function getPanelRouteName(pluginId: string): string {
 }
 
 export interface ActionContext {
-  navigateToPlugin: (pluginId: string) => void;
+  navigateToPlugin: (pluginId: string, route?: string) => void;
+}
+
+export interface PanelRoute {
+  /** Route name, e.g., 'models', 'settings' */
+  name: string;
+  /** Component loader for this route */
+  componentLoader: () => Promise<Component>;
 }
 
 export interface PanelContext {
@@ -94,11 +101,21 @@ export abstract class BasePlugin implements PluginMetadata {
   abstract registerAction(ctx: ActionContext): PluginActions;
 
   /**
-   * Returns the panel component loader for this plugin.
-   * Used for dynamic route registration.
-   * Override this to provide a panel component.
+   * Returns multiple panel routes for this plugin.
+   * Each route represents a different view within the plugin.
+   * The first route is treated as the default/main route.
+   *
+   * Example:
+   * ```ts
+   * getPanelRoutes() {
+   *   return [
+   *     { name: 'main', componentLoader: () => import('./MainPanel.vue') },
+   *     { name: 'models', componentLoader: () => import('./ModelsEditor.vue') },
+   *   ];
+   * }
+   * ```
    */
-  getPanelComponentLoader?(): () => Promise<Component>;
+  getPanelRoutes?(): PanelRoute[];
 
   /**
    * Called when the plugin is registered and the app is ready.

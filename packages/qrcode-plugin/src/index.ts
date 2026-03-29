@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
@@ -61,8 +60,10 @@ export class QrCodePlugin extends BasePlugin {
     ];
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/QrCodePanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/QrCodePanel.vue') },
+    ];
   }
 }
 

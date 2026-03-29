@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
@@ -76,8 +75,10 @@ export class JsonPlugin extends BasePlugin {
     return [];
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/JsonPanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/JsonPanel.vue') },
+    ];
   }
 }
 

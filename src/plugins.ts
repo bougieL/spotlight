@@ -1,6 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { pluginRegistry } from "@spotlight/plugin-registry";
-import { getPanelRouteName } from '@spotlight/core';
 
 // Re-export for direct access
 export { pluginRegistry };
@@ -41,20 +40,23 @@ const allPlugins = [
 ];
 
 /**
- * Get all panel routes from plugins with getPanelComponentLoader.
+ * Get all panel routes from plugins with getPanelRoutes.
  * Used for static route registration to ensure routes are available on initial load.
  */
 export function getPanelRoutes(): RouteRecordRaw[] {
   const routes: RouteRecordRaw[] = [];
 
   for (const plugin of allPlugins) {
-    if (plugin.getPanelComponentLoader) {
-      const loader = plugin.getPanelComponentLoader();
-      if (loader) {
+    if (plugin.getPanelRoutes) {
+      const pluginRoutes = plugin.getPanelRoutes();
+      for (const route of pluginRoutes) {
+        const path = route.name === 'main' || route.name === plugin.pluginId
+          ? `/panel/${plugin.pluginId}`
+          : `/panel/${plugin.pluginId}/${route.name}`;
         routes.push({
-          path: `/panel/${plugin.pluginId}`,
-          name: getPanelRouteName(plugin.pluginId),
-          component: loader,
+          path,
+          name: `${plugin.pluginId}:${route.name}`,
+          component: route.componentLoader,
         });
       }
     }

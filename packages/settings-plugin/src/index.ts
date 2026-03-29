@@ -1,4 +1,3 @@
-import type { Component } from 'vue';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale, type Locale } from '@spotlight/i18n';
@@ -89,8 +88,10 @@ export class SettingsPlugin extends BasePlugin {
     ];
   }
 
-  getPanelComponentLoader(): () => Promise<Component> {
-    return () => import('./components/SettingsPanel.vue');
+  getPanelRoutes() {
+    return [
+      { name: 'main', componentLoader: () => import('./components/SettingsPanel.vue') },
+    ];
   }
 
   async getThemeMode(): Promise<ThemeMode> {

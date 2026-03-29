@@ -21,7 +21,7 @@ const urlParams = new URLSearchParams(window.location.search);
 
 const isDetached = computed(() => urlParams.get('detached') === 'true');
 const isPanelMode = computed(() => route.path.startsWith('/panel'));
-const pluginId = computed(() => route.path.match(/^\/panel\/(.+)$/)?.[1]);
+const pluginId = computed(() => route.path.match(/^\/panel\/([^/]+)/)?.[1]);
 const activePluginName = computed(() => pluginId.value ? pluginRegistry.getPlugin(pluginId.value)?.name : undefined);
 const activePluginIcon = computed(() => pluginId.value ? pluginRegistry.getPlugin(pluginId.value)?.iconUrl : undefined);
 

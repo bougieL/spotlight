@@ -17,8 +17,12 @@ const router = createRouter({
 });
 
 // Initialize navigateToPlugin in plugin registry for plugin actions
-pluginRegistry.setNavigateToPlugin((pluginId: string) => {
-  router.push({ name: pluginId });
+// Supports optional route parameter for plugin-level sub-routes
+// Route names follow the pattern: "pluginId:routeName" (e.g., "ai-chat-plugin:main", "ai-chat-plugin:models")
+// When no route is specified, defaults to "pluginId:main"
+pluginRegistry.setNavigateToPlugin((pluginId: string, route?: string) => {
+  const routeName = route ? `${pluginId}:${route}` : `${pluginId}:main`;
+  router.push({ name: routeName });
 });
 
 export default router;
