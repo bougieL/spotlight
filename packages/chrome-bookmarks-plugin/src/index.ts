@@ -16,8 +16,38 @@ registerTranslations({
 
 const ACTION_OPEN = 'open';
 const ACTION_COPY_URL = 'copy-url';
+const ACTION_SEARCH = 'search';
 
 const URL_PATTERN = /^https?:\/\//i;
+
+// Search engine configurations
+interface SearchEngine {
+  patterns: RegExp[];
+  name: string;
+  searchUrl: (query: string) => string;
+  icon: string;
+}
+
+const SEARCH_ENGINES: SearchEngine[] = [
+  {
+    patterns: [/^\(google\)\s*/i, /^\(谷歌\)\s*/i],
+    name: 'Google',
+    searchUrl: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+    icon: 'google',
+  },
+  {
+    patterns: [/^\(baidu\)\s*/i, /^\(百度\)\s*/i],
+    name: 'Baidu',
+    searchUrl: (q) => `https://www.baidu.com/s?wd=${encodeURIComponent(q)}`,
+    icon: 'baidu',
+  },
+  {
+    patterns: [/^\(github\)\s*/i, /^\(gh\)\s*/i],
+    name: 'GitHub',
+    searchUrl: (q) => `https://github.com/search?q=${encodeURIComponent(q)}`,
+    icon: 'github',
+  },
+];
 
 export interface ChromeBookmark {
   id: string;
@@ -37,6 +67,21 @@ interface CachedBookmark {
 
 function isUrl(input: string): boolean {
   return URL_PATTERN.test(input.trim());
+}
+
+function matchSearchEngine(query: string): { engine: SearchEngine; searchQuery: string } | null {
+  for (const engine of SEARCH_ENGINES) {
+    for (const pattern of engine.patterns) {
+      const match = query.match(pattern);
+      if (match) {
+        const searchQuery = query.slice(match[0].length);
+        if (searchQuery.trim()) {
+          return { engine, searchQuery: searchQuery.trim() };
+        }
+      }
+    }
+  }
+  return null;
 }
 
 export class ChromeBookmarksPlugin extends BasePlugin {
@@ -73,6 +118,15 @@ export class ChromeBookmarksPlugin extends BasePlugin {
           return;
         }
         await this.copyUrl(data);
+      },
+      [ACTION_SEARCH]: async (data) => {
+        logger.info(`[ChromeBookmarksPlugin] Search handler called with data: ${data}`);
+        if (typeof data !== 'object' || data === null || !('url' in data)) {
+          logger.warn('[ChromeBookmarksPlugin] Search data is invalid');
+          return;
+        }
+        const { url } = data as { url: string };
+        await this.openUrl(url);
       },
     };
   }
@@ -146,6 +200,21 @@ export class ChromeBookmarksPlugin extends BasePlugin {
         actionId: ACTION_OPEN,
         actionData: query,
       }];
+    }
+
+    // Check for search engine shortcuts
+    const searchMatch = matchSearchEngine(query);
+    if (searchMatch) {
+      const locale = getLocale();
+      const searchResult: SearchResultItem = {
+        title: `${searchMatch.engine.name} Search: ${searchMatch.searchQuery}`,
+        desc: translations[locale]?.['plugin.chrome-bookmarks.search'] ?? 'Search on {{engine}}',
+        iconUrl: chromeIconUrl,
+        pluginId: this.pluginId,
+        actionId: ACTION_SEARCH,
+        actionData: { url: searchMatch.engine.searchUrl(searchMatch.searchQuery) },
+      };
+      return [searchResult];
     }
 
     const bookmarks = await this.loadBookmarks();
