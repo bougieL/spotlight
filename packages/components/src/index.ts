@@ -1,4 +1,5 @@
 export { default as BaseButton } from './components/BaseButton.vue';
+export { default as BaseCheckbox } from './components/BaseCheckbox.vue';
 export { default as BaseIconButton } from './components/BaseIconButton.vue';
 export { default as BaseInput } from './components/BaseInput.vue';
 export { default as BaseSelect } from './components/BaseSelect.vue';
