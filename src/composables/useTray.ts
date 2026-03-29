@@ -9,6 +9,8 @@ import {
 import logger from '@spotlight/logger';
 
 export function useTray(isDetached: Ref<boolean>, locale: Ref<Locale>) {
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   const doRegisterTrayItems = async () => {
     const t = translations[locale.value];
     const showLabel = t['tray.show'] || 'Show';
@@ -61,8 +63,11 @@ export function useTray(isDetached: Ref<boolean>, locale: Ref<Locale>) {
   };
 
   // Watch locale changes to refresh tray menu texts (skip if detached)
-  watch(locale, async () => {
+  watch(locale, () => {
     if (isDetached.value) return;
-    await doRefreshTray();
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      doRefreshTray();
+    }, 300);
   }, { immediate: true });
 }

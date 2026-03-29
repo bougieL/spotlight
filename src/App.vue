@@ -17,7 +17,9 @@ const route = useRoute();
 
 registerAllPlugins();
 
-const isDetached = computed(() => route.query.detached === 'true');
+const urlParams = new URLSearchParams(window.location.search);
+
+const isDetached = computed(() => urlParams.get('detached') === 'true');
 const isPanelMode = computed(() => route.path.startsWith('/panel'));
 const pluginId = computed(() => route.path.match(/^\/panel\/(.+)$/)?.[1]);
 const activePluginName = computed(() => pluginId.value ? pluginRegistry.getPlugin(pluginId.value)?.name : undefined);
