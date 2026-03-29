@@ -86,10 +86,9 @@ export class TranslationPlugin extends BasePlugin {
   private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(ctx: ActionContext): PluginActions {
-    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
       [ACTION_TRANSLATE]: async (data) => {
         if (typeof data === 'string' && data) {
@@ -100,7 +99,7 @@ export class TranslationPlugin extends BasePlugin {
             logger.error('Failed to copy translation to clipboard:', error);
           }
         }
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
       [ACTION_COPY]: async (data) => {
         if (typeof data === 'string' && data) {

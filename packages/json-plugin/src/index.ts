@@ -27,10 +27,9 @@ export class JsonPlugin extends BasePlugin {
   version = '1.0.0';
 
   registerAction(ctx: ActionContext): PluginActions {
-    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
     };
   }

@@ -1,5 +1,4 @@
 import type { BasePlugin, SearchResultItem, SearchParams, ActionContext } from '@spotlight/core';
-import type { Router } from 'vue-router';
 import logger from '@spotlight/logger';
 import { calculateDetailedScore } from './scorer';
 
@@ -21,19 +20,19 @@ interface RegisteredPlugin {
 export class PluginRegistry {
   private plugins: RegisteredPlugin[] = [];
   private disabledPlugins: Set<string> = new Set();
-  private router: Router | null = null;
+  private navigateToPlugin: ((pluginId: string) => void) | null = null;
 
-  setRouter(router: Router): void {
-    this.router = router;
+  setNavigateToPlugin(fn: (pluginId: string) => void): void {
+    this.navigateToPlugin = fn;
   }
 
   register(plugin: BasePlugin): void {
-    if (!this.router) {
-      logger.warn('[PluginRegistry] Router not set, cannot register plugin');
+    if (!this.navigateToPlugin) {
+      logger.warn('[PluginRegistry] navigateToPlugin not set, cannot register plugin');
       return;
     }
 
-    const ctx: ActionContext = { router: this.router };
+    const ctx: ActionContext = { navigateToPlugin: this.navigateToPlugin };
     const actions = plugin.registerAction(ctx);
 
     this.plugins.push({ plugin, actions });

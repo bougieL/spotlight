@@ -16,7 +16,9 @@ const router = createRouter({
   ],
 });
 
-// Initialize router in plugin registry for dynamic route registration
-pluginRegistry.setRouter(router);
+// Initialize navigateToPlugin in plugin registry for plugin actions
+pluginRegistry.setNavigateToPlugin((pluginId: string) => {
+  router.push({ name: pluginId });
+});
 
 export default router;

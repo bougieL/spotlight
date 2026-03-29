@@ -28,10 +28,9 @@ export class CalendarPlugin extends BasePlugin {
   author = 'Spotlight Team';
 
   registerAction(ctx: ActionContext): PluginActions {
-    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
     };
   }

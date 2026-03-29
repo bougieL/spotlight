@@ -1,5 +1,4 @@
 import type { Component } from 'vue';
-import type { Router } from 'vue-router';
 import type { InjectionKey, Ref } from 'vue';
 import { inject } from 'vue';
 
@@ -15,7 +14,7 @@ export function getPanelRouteName(pluginId: string): string {
 }
 
 export interface ActionContext {
-  router: Router;
+  navigateToPlugin: (pluginId: string) => void;
 }
 
 export interface PanelContext {

@@ -52,10 +52,9 @@ export class ShortcutsPlugin extends BasePlugin {
   private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(ctx: ActionContext): PluginActions {
-    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
       [ACTION_EXECUTE]: async (data) => {
         if (!data || typeof data !== 'object') return;
@@ -64,7 +63,7 @@ export class ShortcutsPlugin extends BasePlugin {
         try {
           logger.info(`Executing shortcut: ${shortcut.name} - ${shortcut.command}`);
           await this.executeCommand(shortcut.command);
-          router.push({ name: this.pluginId });
+          ctx.navigateToPlugin(this.pluginId);
         } catch (error) {
           logger.error(`Failed to execute shortcut: ${shortcut.name}`, error);
         }

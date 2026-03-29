@@ -52,10 +52,9 @@ export class SettingsPlugin extends BasePlugin {
   private storage: PluginStorage = createPluginStorage(this.pluginId);
 
   registerAction(ctx: ActionContext): PluginActions {
-    const router = ctx.router;
     return {
       [ACTION_OPEN]: async () => {
-        router.push({ name: this.pluginId });
+        ctx.navigateToPlugin(this.pluginId);
       },
     };
   }
