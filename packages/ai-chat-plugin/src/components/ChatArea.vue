@@ -60,11 +60,11 @@ function handleKeydown(event: KeyboardEvent) {
       </div>
       <div v-else class="system-prompt-edit">
         <textarea
-          :model-value="editingSystemPrompt"
+          :value="editingSystemPrompt"
           class="system-prompt-input"
           :placeholder="t('aiChat.systemPromptPlaceholder')"
           rows="3"
-          @update:model-value="emit('update:editingSystemPrompt', $event)"
+          @input="emit('update:editingSystemPrompt', ($event.target as HTMLTextAreaElement).value)"
         />
         <div class="edit-actions">
           <BaseButton variant="primary" size="small" @click="emit('saveSystemPrompt')">
@@ -91,13 +91,13 @@ function handleKeydown(event: KeyboardEvent) {
 
     <div v-if="activeSession" class="input-container">
       <textarea
-        :model-value="inputText"
+        :value="inputText"
         class="message-input"
         :placeholder="t('aiChat.placeholder')"
         :disabled="isStreaming"
         rows="1"
         @keydown="handleKeydown"
-        @update:model-value="emit('update:inputText', $event)"
+        @input="emit('update:inputText', ($event.target as HTMLTextAreaElement).value)"
       />
       <BaseIconButton
         :disabled="!inputText.trim() || isStreaming"

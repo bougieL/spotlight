@@ -100,12 +100,10 @@ onMounted(async () => {
       class="router-view-container"
       :class="{ detached: isDetached }"
     >
-      <KeepAlive>
-        <component
-          :is="Component"
-          @select="handleSelect"
-        />
-      </KeepAlive>
+      <component
+        :is="Component"
+        @select="handleSelect"
+      />
     </RouterView>
   </main>
 </template>
