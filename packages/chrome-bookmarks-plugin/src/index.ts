@@ -30,19 +30,19 @@ interface SearchEngine {
 
 const SEARCH_ENGINES: SearchEngine[] = [
   {
-    patterns: [/^\(google\)\s*/i, /^\(谷歌\)\s*/i],
+    patterns: [/^google\s+/i, /^谷歌\s+/i],
     name: 'Google',
     searchUrl: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
     icon: 'google',
   },
   {
-    patterns: [/^\(baidu\)\s*/i, /^\(百度\)\s*/i],
+    patterns: [/^baidu\s+/i, /^百度\s+/i],
     name: 'Baidu',
     searchUrl: (q) => `https://www.baidu.com/s?wd=${encodeURIComponent(q)}`,
     icon: 'baidu',
   },
   {
-    patterns: [/^\(github\)\s*/i, /^\(gh\)\s*/i],
+    patterns: [/^github\s+/i, /^gh\s+/i],
     name: 'GitHub',
     searchUrl: (q) => `https://github.com/search?q=${encodeURIComponent(q)}`,
     icon: 'github',
