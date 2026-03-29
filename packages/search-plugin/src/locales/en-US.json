@@ -8,6 +8,7 @@
   "search.useRegex": "Use Regular Expression",
   "search.fileType": "File Type",
   "search.searchPath": "Search Path",
+  "search.searchPathLabel": "Search Path:",
   "search.results": "Results",
   "search.noResults": "No results found",
   "search.searching": "Searching...",

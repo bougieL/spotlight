@@ -9,6 +9,19 @@ pub struct RipgrepResult {
     pub content: String,
 }
 
+#[cfg(windows)]
+fn get_windows_drives() -> Vec<String> {
+    let mut drives = Vec::new();
+    // Check drives from C to Z
+    for letter in b'C'..=b'Z' {
+        let drive = format!("{}:\\", letter as char);
+        if std::path::Path::new(&drive).exists() {
+            drives.push(drive);
+        }
+    }
+    drives
+}
+
 fn find_binary(app: &tauri::AppHandle, name: &str) -> Option<PathBuf> {
     // 1. Dev mode: check src-tauri/binaries/
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -157,7 +170,23 @@ pub fn search_with_rg(
 
     // Limit results to prevent performance issues
     args.push("--".to_string());
-    args.push(path.unwrap_or_else(|| ".".to_string()).to_string());
+
+    #[cfg(windows)]
+    {
+        let search_path = path.unwrap_or_else(|| {
+            // Get all Windows drive letters
+            let drives = get_windows_drives();
+            if drives.is_empty() {
+                "C:\\".to_string()
+            } else {
+                drives.join(" ")
+            }
+        });
+        args.push(search_path);
+    }
+
+    #[cfg(not(windows))]
+    args.push(path.unwrap_or_else(|| "/".to_string()).to_string());
 
     let output = std::process::Command::new(&rg_path)
         .args(&args)

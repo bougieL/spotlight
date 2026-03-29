@@ -33,6 +33,12 @@ const searchOptions = computed<SearchOptions>(() => ({
   file_type: fileType.value || undefined,
 }));
 
+const isWindows = navigator.platform.toLowerCase().includes('win');
+
+const defaultPathPlaceholder = computed(() => {
+  return isWindows ? 'C:\\; D:\\; E:\\ ...' : '/';
+});
+
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(() => {
@@ -153,14 +159,17 @@ function highlightMatch(content: string, query: string): string {
   >
     <div class="search-input-section">
       <div class="search-input-container">
+        <label class="path-label">{{ t('search.searchPathLabel') }}</label>
         <BaseInput
           v-model="searchPath"
           type="text"
-          :placeholder="t('search.searchPath')"
+          :placeholder="defaultPathPlaceholder"
+          style="flex: 1"
         />
       </div>
 
       <div class="search-options">
+        <label class="options-label">{{ t('search.options') }}</label>
         <BaseCheckbox
           v-model="searchInContents"
           :label="t('search.searchInContents')"
@@ -325,9 +334,19 @@ function highlightMatch(content: string, query: string): string {
 
 .search-input-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.path-label {
+  font-size: 13px;
+  color: var(--spotlight-text);
+  white-space: nowrap;
+  width: 80px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .search-options {
@@ -335,6 +354,14 @@ function highlightMatch(content: string, query: string): string {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+}
+
+.options-label {
+  font-size: 13px;
+  color: var(--spotlight-text);
+  width: 80px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .error-message {

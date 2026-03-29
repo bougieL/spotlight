@@ -8,6 +8,7 @@
   "search.useRegex": "使用正则表达式",
   "search.fileType": "文件类型",
   "search.searchPath": "搜索路径",
+  "search.searchPathLabel": "搜索路径：",
   "search.results": "结果",
   "search.noResults": "未找到结果",
   "search.searching": "搜索中...",
@@ -16,7 +17,7 @@
   "search.copyPath": "复制路径",
   "search.rgNotFound": "未找到 Ripgrep (rg.exe)，请将其放置在 src-tauri/binaries/ 目录中",
   "search.rgError": "Ripgrep 搜索失败",
-  "search.options": "搜索选项",
+  "search.options": "搜索选项：",
   "search.openInExplorer": "在资源管理器中打开",
   "fileSearch.everythingNotRunning": "Everything 未运行，请先启动 Everything"
 }
