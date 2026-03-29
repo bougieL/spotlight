@@ -22,6 +22,7 @@ export interface PanelContext {
   query: Ref<string>;
   files: Ref<FileItem[]>;
   clearQuery: () => void;
+  isDetached: Ref<boolean>;
 }
 
 export const panelContext = Symbol('panelContext') as InjectionKey<PanelContext>;

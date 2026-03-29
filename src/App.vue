@@ -40,6 +40,7 @@ provide(panelContext, {
   query,
   files,
   clearQuery: () => { query.value = ''; },
+  isDetached,
 } as PanelContext);
 
 const handleSelect = async (item: SearchResultItem) => {
