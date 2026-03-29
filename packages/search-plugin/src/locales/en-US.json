@@ -1,7 +1,8 @@
 {
-  "plugin.search": "Ripgrep Search",
-  "plugin.description.search": "Search file contents using ripgrep",
-  "search.queryPlaceholder": "Search with ripgrep (rg.exe)...",
+  "plugin.search": "Search",
+  "plugin.description.search": "Search files by name or content",
+  "search.queryPlaceholder": "Search files...",
+  "search.searchInContents": "Search in file contents",
   "search.caseSensitive": "Match Case",
   "search.wholeWord": "Match Whole Word",
   "search.useRegex": "Use Regular Expression",
@@ -16,5 +17,6 @@
   "search.rgNotFound": "Ripgrep (rg.exe) not found. Please place it in src-tauri/binaries/",
   "search.rgError": "Ripgrep search failed",
   "search.options": "Search Options",
-  "search.openInExplorer": "Open in Explorer"
+  "search.openInExplorer": "Open in Explorer",
+  "fileSearch.everythingNotRunning": "Everything is not running. Please start Everything first."
 }

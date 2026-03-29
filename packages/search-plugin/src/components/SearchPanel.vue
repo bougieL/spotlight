@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
-import { tauriApi, type RipgrepResult, type SearchOptions } from '@spotlight/api';
+import { tauriApi, type RipgrepResult, type SearchOptions, type EverythingResult } from '@spotlight/api';
 import { usePanelContext } from '@spotlight/core';
 import logger from '@spotlight/logger';
 
@@ -16,10 +16,11 @@ const { t } = useI18n();
 
 const searchQuery = ref('');
 const searchPath = ref('');
-const results = ref<RipgrepResult[]>([]);
+const results = ref<(EverythingResult | RipgrepResult)[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref('');
 
+const searchInContents = ref(false);
 const caseSensitive = ref(false);
 const wholeWord = ref(false);
 const useRegex = ref(true);
@@ -44,7 +45,7 @@ onMounted(() => {
   }
 });
 
-watch([searchQuery, searchPath, caseSensitive, wholeWord, useRegex, fileType], () => {
+watch([searchQuery, searchPath, searchInContents, caseSensitive, wholeWord, useRegex, fileType], () => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
@@ -68,11 +69,17 @@ async function performSearch() {
   errorMessage.value = '';
 
   try {
-    results.value = await tauriApi.searchWithRg(
-      q,
-      searchPath.value || undefined,
-      searchOptions.value
-    );
+    if (searchInContents.value) {
+      // Search file contents with ripgrep
+      results.value = await tauriApi.searchWithRg(
+        q,
+        searchPath.value || undefined,
+        searchOptions.value
+      );
+    } else {
+      // Search file names with Everything
+      results.value = await tauriApi.searchEverything(q);
+    }
   } catch (error) {
     logger.error('[SearchPanel] Search failed:', error);
     errorMessage.value = error instanceof Error ? error.message : String(error);
@@ -82,17 +89,25 @@ async function performSearch() {
   }
 }
 
-async function openFile(file: string, line: number) {
+async function openFile(path: string) {
   try {
-    await tauriApi.executeShellCommand(`code --goto "${file}:${line}"`);
+    await tauriApi.executeShellCommand(path);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open file:', error);
   }
 }
 
-async function openInExplorer(file: string) {
+async function openAtLine(file: string, line: number) {
   try {
-    const normalized = file.replace(/\//g, '\\');
+    await tauriApi.executeShellCommand(`code --goto "${file}:${line}"`);
+  } catch (error) {
+    logger.error('[SearchPanel] Failed to open file at line:', error);
+  }
+}
+
+async function openInExplorer(path: string) {
+  try {
+    const normalized = path.replace(/\//g, '\\');
     await tauriApi.executeShellCommand(`explorer.exe /select,"${normalized}"`);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open in explorer:', error);
@@ -111,6 +126,14 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     emit('close');
   }
+}
+
+function isRipgrepResult(result: EverythingResult | RipgrepResult): result is RipgrepResult {
+  return 'content' in result && 'line' in result;
+}
+
+function isEverythingResult(result: EverythingResult | RipgrepResult): result is EverythingResult {
+  return 'size' in result && 'date_modified' in result;
 }
 
 function truncateContent(content: string, maxLength: number = 120): string {
@@ -152,31 +175,40 @@ function highlightMatch(content: string, query: string): string {
       <div class="search-options">
         <label class="option-checkbox">
           <input
-            v-model="caseSensitive"
+            v-model="searchInContents"
             type="checkbox"
           >
-          <span>{{ t('search.caseSensitive') }}</span>
+          <span>{{ t('search.searchInContents') }}</span>
         </label>
-        <label class="option-checkbox">
+        <template v-if="searchInContents">
+          <label class="option-checkbox">
+            <input
+              v-model="caseSensitive"
+              type="checkbox"
+            >
+            <span>{{ t('search.caseSensitive') }}</span>
+          </label>
+          <label class="option-checkbox">
+            <input
+              v-model="wholeWord"
+              type="checkbox"
+            >
+            <span>{{ t('search.wholeWord') }}</span>
+          </label>
+          <label class="option-checkbox">
+            <input
+              v-model="useRegex"
+              type="checkbox"
+            >
+            <span>{{ t('search.useRegex') }}</span>
+          </label>
           <input
-            v-model="wholeWord"
-            type="checkbox"
+            v-model="fileType"
+            type="text"
+            class="file-type-input"
+            :placeholder="t('search.fileType')"
           >
-          <span>{{ t('search.wholeWord') }}</span>
-        </label>
-        <label class="option-checkbox">
-          <input
-            v-model="useRegex"
-            type="checkbox"
-          >
-          <span>{{ t('search.useRegex') }}</span>
-        </label>
-        <input
-          v-model="fileType"
-          type="text"
-          class="file-type-input"
-          :placeholder="t('search.fileType')"
-        >
+        </template>
       </div>
     </div>
 
@@ -201,43 +233,101 @@ function highlightMatch(content: string, query: string): string {
       {{ t('search.noResults') }}
     </div>
 
-    <div class="results-list">
+    <!-- File name search results (Everything) -->
+    <div
+      v-if="!searchInContents"
+      class="results-list"
+    >
       <div class="results-header">
         {{ t('search.results') }} ({{ results.length }})
       </div>
       <div
         v-for="(result, index) in results"
-        :key="`${result.file}:${result.line}:${index}`"
+        :key="`file-${index}`"
         class="result-item"
       >
-        <div class="result-location">
-          <span
-            class="result-file"
-            :title="result.file"
-            @click="openInExplorer(result.file)"
-          >{{ result.file }}</span>
-          <span class="result-line">:{{ result.line }}</span>
-        </div>
-        <div
-          class="result-content"
-          v-html="highlightMatch(truncateContent(result.content), searchQuery)"
-        />
-        <div class="result-actions">
-          <button
-            class="action-btn"
-            :title="t('search.openAtLine')"
-            @click="openFile(result.file, result.line)"
-          >
-            {{ t('search.openAtLine') }}
-          </button>
-          <button
-            class="action-btn"
-            :title="t('search.copyPath')"
-            @click="copyPath(`${result.file}:${result.line}`)"
-          >
-            {{ t('search.copyPath') }}
-          </button>
-        </div>
+        <template v-if="isEverythingResult(result)">
+          <div class="result-info">
+            <div class="result-name">
+              {{ result.name }}
+            </div>
+            <div class="result-meta">
+              <span
+                class="result-path"
+                :title="result.path"
+              >{{ result.path }}</span>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button
+              class="action-btn"
+              :title="t('search.openFile')"
+              @click="openFile(result.path)"
+            >
+              {{ t('search.openFile') }}
+            </button>
+            <button
+              class="action-btn"
+              :title="t('search.openInExplorer')"
+              @click="openInExplorer(result.path)"
+            >
+              {{ t('search.openInExplorer') }}
+            </button>
+            <button
+              class="action-btn"
+              :title="t('search.copyPath')"
+              @click="copyPath(result.path)"
+            >
+              {{ t('search.copyPath') }}
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Content search results (ripgrep) -->
+    <div
+      v-if="searchInContents"
+      class="results-list"
+    >
+      <div class="results-header">
+        {{ t('search.results') }} ({{ results.length }})
+      </div>
+      <div
+        v-for="(result, index) in results"
+        :key="`content-${index}`"
+        class="result-item"
+      >
+        <template v-if="isRipgrepResult(result)">
+          <div class="result-location">
+            <span
+              class="result-file"
+              :title="result.file"
+              @click="openInExplorer(result.file)"
+            >{{ result.file }}</span>
+            <span class="result-line">:{{ result.line }}</span>
+          </div>
+          <div
+            class="result-content"
+            v-html="highlightMatch(truncateContent(result.content), searchQuery)"
+          />
+          <div class="result-actions">
+            <button
+              class="action-btn"
+              :title="t('search.openAtLine')"
+              @click="openAtLine(result.file, result.line)"
+            >
+              {{ t('search.openAtLine') }}
+            </button>
+            <button
+              class="action-btn"
+              :title="t('search.copyPath')"
+              @click="copyPath(`${result.file}:${result.line}`)"
+            >
+              {{ t('search.copyPath') }}
+            </button>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -355,27 +445,64 @@ function highlightMatch(content: string, query: string): string {
 
 .result-item {
   display: flex;
-  flex-direction: column;
-  padding: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.08));
-  gap: 4px;
+  gap: 12px;
 }
 
 .result-item:hover {
   background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
 }
 
+.result-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--spotlight-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--spotlight-placeholder);
+}
+
+.result-path {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .result-location {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
+  min-width: 0;
 }
 
 .result-file {
   color: var(--spotlight-primary, #666);
   cursor: pointer;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .result-file:hover {
@@ -384,15 +511,18 @@ function highlightMatch(content: string, query: string): string {
 
 .result-line {
   color: var(--spotlight-placeholder);
+  flex-shrink: 0;
 }
 
 .result-content {
+  flex: 1;
   font-size: 13px;
   color: var(--spotlight-text);
   font-family: 'Consolas', 'Monaco', monospace;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .result-content :deep(mark) {
@@ -404,7 +534,8 @@ function highlightMatch(content: string, query: string): string {
 
 .result-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.1s;
 }

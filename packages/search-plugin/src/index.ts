@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { tauriApi, type RipgrepResult, type SearchOptions } from '@spotlight/api';
+import { tauriApi, type EverythingResult } from '@spotlight/api';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
@@ -27,7 +27,7 @@ const PREFIXES = [
   { keyword: 'grep搜索', normalized: normalizeForSearch('grep搜索'), pinyinInitials: toPinyinInitials('grep搜索') },
 ];
 
-function getSearchQuery(input: string): { searchQuery: string; state: SearchState } | null {
+function getSearchQuery(input: string): { searchQuery: string } | null {
   const lower = input.toLowerCase().trim();
 
   for (const prefix of PREFIXES) {
@@ -35,36 +35,15 @@ function getSearchQuery(input: string): { searchQuery: string; state: SearchStat
       const remainder = input.trim().slice(prefix.keyword.length + 1);
       return {
         searchQuery: remainder,
-        state: {
-          query: remainder,
-          options: {
-            case_sensitive: false,
-            whole_word: false,
-            regex: true,
-          },
-        },
       };
     }
     if (lower === prefix.keyword) {
       return {
         searchQuery: '',
-        state: {
-          query: '',
-          options: {
-            case_sensitive: false,
-            whole_word: false,
-            regex: true,
-          },
-        },
       };
     }
   }
   return null;
-}
-
-interface SearchState {
-  query: string;
-  options: SearchOptions;
 }
 
 export class SearchPlugin extends BasePlugin {
@@ -144,44 +123,25 @@ export class SearchPlugin extends BasePlugin {
     }
 
     try {
-      const results = await tauriApi.searchWithRg(
-        searchState.state.query,
-        undefined,
-        searchState.state.options
-      );
+      // Default: search file names using Everything
+      const results = await tauriApi.searchEverything(searchState.searchQuery);
 
-      return results.map((result: RipgrepResult, index: number) => ({
+      return results.map((file: EverythingResult, index: number) => ({
         iconUrl: searchIconUrl,
-        title: `${result.file}:${result.line}`,
-        desc: result.content,
+        title: file.name,
+        desc: file.path,
         score: 800 - index,
         pluginId: this.pluginId,
-        actionId: ACTION_OPEN_AT_LINE,
-        actionData: { file: result.file, line: result.line },
+        actionId: ACTION_OPEN_FILE,
+        actionData: file.path,
       }));
     } catch (error) {
       logger.error('[SearchPlugin] Search failed:', error);
-
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      if (errorMsg.includes('not found') || errorMsg.includes('rg.exe')) {
-        return [
-          {
-            iconUrl: searchIconUrl,
-            title: translations[getLocale()]['search.rgNotFound'],
-            desc: errorMsg,
-            score: 900,
-            pluginId: this.pluginId,
-            actionId: ACTION_OPEN_PANEL,
-            actionData: '',
-          },
-        ];
-      }
-
       return [
         {
           iconUrl: searchIconUrl,
-          title: translations[getLocale()]['search.rgError'],
-          desc: errorMsg,
+          title: translations[getLocale()]['fileSearch.everythingNotRunning'],
+          desc: error instanceof Error ? error.message : String(error),
           score: 900,
           pluginId: this.pluginId,
           actionId: ACTION_OPEN_PANEL,

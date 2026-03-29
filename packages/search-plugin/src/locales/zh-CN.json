@@ -1,7 +1,8 @@
 {
-  "plugin.search": "Ripgrep 搜索",
-  "plugin.description.search": "使用 ripgrep 搜索文件内容",
-  "search.queryPlaceholder": "使用 ripgrep 搜索 (rg.exe)...",
+  "plugin.search": "搜索",
+  "plugin.description.search": "按名称或内容搜索文件",
+  "search.queryPlaceholder": "搜索文件...",
+  "search.searchInContents": "搜索文件内容",
   "search.caseSensitive": "区分大小写",
   "search.wholeWord": "全词匹配",
   "search.useRegex": "使用正则表达式",
@@ -16,5 +17,6 @@
   "search.rgNotFound": "未找到 Ripgrep (rg.exe)，请将其放置在 src-tauri/binaries/ 目录中",
   "search.rgError": "Ripgrep 搜索失败",
   "search.options": "搜索选项",
-  "search.openInExplorer": "在资源管理器中打开"
+  "search.openInExplorer": "在资源管理器中打开",
+  "fileSearch.everythingNotRunning": "Everything 未运行，请先启动 Everything"
 }
