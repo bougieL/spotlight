@@ -46,17 +46,17 @@ function getSearchQuery(input: string): { searchQuery: string } | null {
   return null;
 }
 
-export class SearchPlugin extends BasePlugin {
+export class FileSearchPlugin extends BasePlugin {
   get name(): string {
-    return translations[getLocale()]['plugin.search'] ?? 'Ripgrep Search';
+    return translations[getLocale()]['plugin.fileSearch'] ?? 'File Search';
   }
 
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.search'];
+    return translations[getLocale()]['plugin.description.fileSearch'];
   }
 
   iconUrl = searchIconUrl;
-  pluginId = 'search-plugin';
+  pluginId = 'file-search-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';
 
@@ -74,7 +74,7 @@ export class SearchPlugin extends BasePlugin {
           try {
             await tauriApi.executeShellCommand(data);
           } catch (error) {
-            logger.error('[SearchPlugin] Failed to open file:', error);
+            logger.error('[FileSearchPlugin] Failed to open file:', error);
           }
         }
       },
@@ -84,7 +84,7 @@ export class SearchPlugin extends BasePlugin {
           try {
             await tauriApi.executeShellCommand(`code --goto "${file}:${line}"`);
           } catch (error) {
-            logger.error('[SearchPlugin] Failed to open file at line:', error);
+            logger.error('[FileSearchPlugin] Failed to open file at line:', error);
           }
         }
       },
@@ -93,7 +93,7 @@ export class SearchPlugin extends BasePlugin {
           try {
             await tauriApi.setClipboardText(data);
           } catch (error) {
-            logger.error('[SearchPlugin] Failed to copy path:', error);
+            logger.error('[FileSearchPlugin] Failed to copy path:', error);
           }
         }
       },
@@ -113,7 +113,7 @@ export class SearchPlugin extends BasePlugin {
         {
           iconUrl: searchIconUrl,
           title: this.name,
-          desc: translations[getLocale()]['search.queryPlaceholder'],
+          desc: translations[getLocale()]['fileSearch.queryPlaceholder'],
           score: 900,
           pluginId: this.pluginId,
           actionId: ACTION_OPEN_PANEL,
@@ -136,7 +136,7 @@ export class SearchPlugin extends BasePlugin {
         actionData: file.path,
       }));
     } catch (error) {
-      logger.error('[SearchPlugin] Search failed:', error);
+      logger.error('[FileSearchPlugin] Search failed:', error);
       return [
         {
           iconUrl: searchIconUrl,
@@ -158,4 +158,4 @@ export class SearchPlugin extends BasePlugin {
   }
 }
 
-export const searchPlugin = new SearchPlugin();
+export const fileSearchPlugin = new FileSearchPlugin();

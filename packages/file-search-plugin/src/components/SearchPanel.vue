@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
-import { Folder } from 'lucide-vue-next';
+import { Folder, ChevronDown } from 'lucide-vue-next';
 import { tauriApi, getUserHome, openDirectoryDialog, createPluginStorage, type RipgrepResult, type SearchOptions, type FileResult } from '@spotlight/api';
 import { usePanelContext } from '@spotlight/core';
 import { BaseInput, BaseCheckbox, BaseIconButton } from '@spotlight/components';
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const storage = createPluginStorage('search-plugin');
+const storage = createPluginStorage('file-search-plugin');
 
 interface SearchSettings {
   searchPath: string;
@@ -119,12 +119,13 @@ onMounted(async () => {
 });
 
 watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex], () => {
+  // Save settings when they change (immediate, no debounce)
+  saveSettings();
+
+  // Debounce search
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
-
-  // Save settings when they change
-  saveSettings();
 
   if (!query.value.trim()) {
     results.value = [];
@@ -134,7 +135,7 @@ watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex],
 
   searchTimeout = setTimeout(() => {
     performSearch();
-  }, 200);
+  }, 300);
 });
 
 async function performSearch() {
@@ -254,7 +255,7 @@ async function openFolderDialog() {
   >
     <div class="search-input-section">
       <div class="search-input-container">
-        <label class="path-label">{{ t('search.searchPathLabel') }}</label>
+        <label class="path-label">{{ t('fileSearch.searchPathLabel') }}</label>
         <div class="path-input-wrapper">
           <BaseInput
             v-model="searchPath"
@@ -265,15 +266,28 @@ async function openFolderDialog() {
           />
           <BaseIconButton
             size="medium"
-            :title="t('search.selectFolder')"
+            :title="t('fileSearch.recentPaths')"
+            @click="showRecentDropdown = !showRecentDropdown"
+          >
+            <ChevronDown :size="16" />
+          </BaseIconButton>
+          <BaseIconButton
+            size="medium"
+            :title="t('fileSearch.selectFolder')"
             @click="openFolderDialog"
           >
             <Folder :size="16" />
           </BaseIconButton>
           <div
-            v-if="showRecentDropdown && recentPaths.length > 0"
+            v-if="showRecentDropdown"
             class="recent-paths-dropdown"
           >
+            <div
+              v-if="recentPaths.length === 0"
+              class="recent-path-item recent-path-empty"
+            >
+              {{ t('fileSearch.noRecentPaths') }}
+            </div>
             <div
               v-for="path in recentPaths"
               :key="path"
@@ -287,23 +301,23 @@ async function openFolderDialog() {
       </div>
 
       <div class="search-options">
-        <label class="options-label">{{ t('search.options') }}</label>
+        <label class="options-label">{{ t('fileSearch.options') }}</label>
         <BaseCheckbox
           v-model="searchInContents"
-          :label="t('search.searchInContents')"
+          :label="t('fileSearch.searchInContents')"
         />
         <template v-if="searchInContents">
           <BaseCheckbox
             v-model="caseSensitive"
-            :label="t('search.caseSensitive')"
+            :label="t('fileSearch.caseSensitive')"
           />
           <BaseCheckbox
             v-model="wholeWord"
-            :label="t('search.wholeWord')"
+            :label="t('fileSearch.wholeWord')"
           />
           <BaseCheckbox
             v-model="useRegex"
-            :label="t('search.useRegex')"
+            :label="t('fileSearch.useRegex')"
           />
         </template>
       </div>
@@ -322,19 +336,19 @@ async function openFolderDialog() {
       class="results-list"
     >
       <div class="results-header">
-        {{ t('search.results') }} ({{ results.length }})
+        {{ t('fileSearch.results') }} ({{ results.length }})
       </div>
       <div
         v-if="isLoading"
         class="status-message"
       >
-        {{ t('search.searching') }}
+        {{ t('fileSearch.searching') }}
       </div>
       <div
         v-else-if="!errorMessage && query && results.length === 0"
         class="status-message"
       >
-        {{ t('search.noResults') }}
+        {{ t('fileSearch.noResults') }}
       </div>
       <div
         v-for="(result, index) in results"
@@ -356,24 +370,24 @@ async function openFolderDialog() {
           <div class="result-actions">
             <button
               class="action-btn"
-              :title="t('search.openFile')"
+              :title="t('fileSearch.openFile')"
               @click="openFile(result.path)"
             >
-              {{ t('search.openFile') }}
+              {{ t('fileSearch.openFile') }}
             </button>
             <button
               class="action-btn"
-              :title="t('search.openInExplorer')"
+              :title="t('fileSearch.openInExplorer')"
               @click="openInExplorer(result.path)"
             >
-              {{ t('search.openInExplorer') }}
+              {{ t('fileSearch.openInExplorer') }}
             </button>
             <button
               class="action-btn"
-              :title="t('search.copyPath')"
+              :title="t('fileSearch.copyPath')"
               @click="copyPath(result.path)"
             >
-              {{ t('search.copyPath') }}
+              {{ t('fileSearch.copyPath') }}
             </button>
           </div>
         </template>
@@ -386,19 +400,19 @@ async function openFolderDialog() {
       class="results-list"
     >
       <div class="results-header">
-        {{ t('search.results') }} ({{ results.length }})
+        {{ t('fileSearch.results') }} ({{ results.length }})
       </div>
       <div
         v-if="isLoading"
         class="status-message"
       >
-        {{ t('search.searching') }}
+        {{ t('fileSearch.searching') }}
       </div>
       <div
         v-else-if="!errorMessage && query && results.length === 0"
         class="status-message"
       >
-        {{ t('search.noResults') }}
+        {{ t('fileSearch.noResults') }}
       </div>
       <div
         v-for="(result, index) in results"
@@ -421,17 +435,17 @@ async function openFolderDialog() {
           <div class="result-actions">
             <button
               class="action-btn"
-              :title="t('search.openAtLine')"
+              :title="t('fileSearch.openAtLine')"
               @click="openAtLine(result.file, result.line)"
             >
-              {{ t('search.openAtLine') }}
+              {{ t('fileSearch.openAtLine') }}
             </button>
             <button
               class="action-btn"
-              :title="t('search.copyPath')"
+              :title="t('fileSearch.copyPath')"
               @click="copyPath(`${result.file}:${result.line}`)"
             >
-              {{ t('search.copyPath') }}
+              {{ t('fileSearch.copyPath') }}
             </button>
           </div>
         </template>
@@ -478,14 +492,19 @@ async function openFolderDialog() {
 }
 
 .path-input-wrapper :deep(.base-input) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
-.path-input-wrapper :deep(.base-icon-button) {
+.path-input-wrapper :deep(.base-icon-button:nth-of-type(1)) {
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+}
+
+.path-input-wrapper :deep(.base-icon-button:nth-of-type(2)) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  border-left: none;
 }
 
 .recent-paths-dropdown {
@@ -515,6 +534,15 @@ async function openFolderDialog() {
 
 .recent-path-item:hover {
   background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
+}
+
+.recent-path-empty {
+  color: var(--spotlight-placeholder);
+  cursor: default;
+}
+
+.recent-path-empty:hover {
+  background-color: transparent;
 }
 
 .search-options {

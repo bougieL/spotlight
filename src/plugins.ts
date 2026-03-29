@@ -19,7 +19,7 @@ import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
 import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
 import { screenshotPlugin } from "@spotlight/screenshot-plugin";
 import { translationPlugin } from "@spotlight/translation-plugin";
-import { searchPlugin } from "@spotlight/search-plugin";
+import { fileSearchPlugin } from "@spotlight/file-search-plugin";
 
 const allPlugins = [
   appSearchPlugin,
@@ -38,7 +38,7 @@ const allPlugins = [
   colorPalettePlugin,
   screenshotPlugin,
   translationPlugin,
-  searchPlugin,
+  fileSearchPlugin,
 ];
 
 /**
