@@ -1,0 +1,18 @@
+{
+  "webpage": "网页",
+  "webpage.plugin.name": "网页插件",
+  "plugin.description.webpage": "在面板中打开网页",
+  "webpage.add": "添加网页",
+  "webpage.name": "名称",
+  "webpage.url": "地址",
+  "webpage.name.placeholder": "例如 GitHub",
+  "webpage.url.placeholder": "例如 https://github.com",
+  "webpage.save": "保存",
+  "webpage.cancel": "取消",
+  "webpage.delete": "删除",
+  "webpage.empty": "暂无配置的网页",
+  "webpage.empty.hint": "点击 + 添加网页",
+  "webpage.edit": "编辑",
+  "webpage.open": "打开",
+  "webpage.confirm.delete": "确定删除此网页？"
+}
