@@ -46,6 +46,14 @@ export default defineConfig(async () => ({
         colorPicker: resolve(__dirname, "packages/color-picker-plugin/color-picker.html"),
         screenshot: resolve(__dirname, "packages/screenshot-plugin/screenshot.html"),
       },
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router'],
+          'vendor-components': ['@spotlight/components', '@spotlight/input'],
+          'vendor-ai': ['@spotlight/ai-core'],
+          'vendor-marked': ['marked'],
+        },
+      },
     },
   },
 

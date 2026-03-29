@@ -1,6 +1,7 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 import { on, type UnlistenFn } from '@spotlight/api';
 import { tauriApi } from '@spotlight/api';
+import { settingsPlugin } from '@spotlight/settings-plugin';
 
 export function useWindowFocus(
   searchInputRef: Ref<{ focus: () => void } | null>,
@@ -19,7 +20,6 @@ export function useWindowFocus(
 
     // Hide window when it loses focus (check setting, skip in dev mode)
     if (!import.meta.env.DEV) {
-      const { settingsPlugin } = await import('@spotlight/settings-plugin');
       const hideOnBlur = await settingsPlugin.getHideOnBlur();
       if (hideOnBlur) {
         unlistenWindowBlur = await on.windowBlur(() => {
