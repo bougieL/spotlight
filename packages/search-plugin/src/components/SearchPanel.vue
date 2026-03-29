@@ -316,20 +316,6 @@ async function openFolderDialog() {
       {{ errorMessage }}
     </div>
 
-    <div
-      v-if="isLoading"
-      class="status-message"
-    >
-      {{ t('search.searching') }}
-    </div>
-
-    <div
-      v-if="!isLoading && !errorMessage && query && results.length === 0"
-      class="status-message"
-    >
-      {{ t('search.noResults') }}
-    </div>
-
     <!-- File name search results (Everything) -->
     <div
       v-if="!searchInContents"
@@ -337,6 +323,18 @@ async function openFolderDialog() {
     >
       <div class="results-header">
         {{ t('search.results') }} ({{ results.length }})
+      </div>
+      <div
+        v-if="isLoading"
+        class="status-message"
+      >
+        {{ t('search.searching') }}
+      </div>
+      <div
+        v-else-if="!errorMessage && query && results.length === 0"
+        class="status-message"
+      >
+        {{ t('search.noResults') }}
       </div>
       <div
         v-for="(result, index) in results"
@@ -389,6 +387,18 @@ async function openFolderDialog() {
     >
       <div class="results-header">
         {{ t('search.results') }} ({{ results.length }})
+      </div>
+      <div
+        v-if="isLoading"
+        class="status-message"
+      >
+        {{ t('search.searching') }}
+      </div>
+      <div
+        v-else-if="!errorMessage && query && results.length === 0"
+        class="status-message"
+      >
+        {{ t('search.noResults') }}
       </div>
       <div
         v-for="(result, index) in results"
