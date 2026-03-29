@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
-import { tauriApi, type RipgrepResult, type SearchOptions, type EverythingResult } from '@spotlight/api';
+import { Folder } from 'lucide-vue-next';
+import { tauriApi, getUserHome, openDirectoryDialog, createPluginStorage, type RipgrepResult, type SearchOptions, type FileResult } from '@spotlight/api';
 import { usePanelContext } from '@spotlight/core';
-import { BaseInput, BaseCheckbox } from '@spotlight/components';
+import { BaseInput, BaseCheckbox, BaseIconButton } from '@spotlight/components';
 import logger from '@spotlight/logger';
 
 const { query } = usePanelContext();
@@ -15,42 +16,115 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+const storage = createPluginStorage('search-plugin');
+
+interface SearchSettings {
+  searchPath: string;
+  searchInContents: boolean;
+  caseSensitive: boolean;
+  wholeWord: boolean;
+  useRegex: boolean;
+  recentPaths: string[];
+}
+
+const defaultSettings: SearchSettings = {
+  searchPath: '',
+  searchInContents: false,
+  caseSensitive: false,
+  wholeWord: false,
+  useRegex: false,
+  recentPaths: [],
+};
+
+const MAX_RECENT_PATHS = 10;
+
 const searchPath = ref('');
-const results = ref<(EverythingResult | RipgrepResult)[]>([]);
+const results = ref<(FileResult | RipgrepResult)[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref('');
+const userHome = ref('');
+const recentPaths = ref<string[]>([]);
+const showRecentDropdown = ref(false);
 
 const searchInContents = ref(false);
 const caseSensitive = ref(false);
 const wholeWord = ref(false);
-const useRegex = ref(true);
-const fileType = ref('');
+const useRegex = ref(false);
 
 const searchOptions = computed<SearchOptions>(() => ({
   case_sensitive: caseSensitive.value,
   whole_word: wholeWord.value,
   regex: useRegex.value,
-  file_type: fileType.value || undefined,
 }));
 
 const isWindows = navigator.platform.toLowerCase().includes('win');
 
 const defaultPathPlaceholder = computed(() => {
-  return isWindows ? 'C:\\; D:\\; E:\\ ...' : '/';
+  return userHome.value || (isWindows ? 'C:\\Users\\...' : '~/');
 });
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-onMounted(() => {
+async function loadSettings() {
+  try {
+    const saved = await storage.get<SearchSettings>('searchSettings', defaultSettings);
+    searchPath.value = saved.searchPath;
+    searchInContents.value = saved.searchInContents;
+    caseSensitive.value = saved.caseSensitive;
+    wholeWord.value = saved.wholeWord;
+    useRegex.value = saved.useRegex;
+    recentPaths.value = saved.recentPaths || [];
+  } catch (error) {
+    logger.error('[SearchPanel] Failed to load settings:', error);
+  }
+}
+
+async function saveSettings() {
+  try {
+    await storage.set<SearchSettings>('searchSettings', {
+      searchPath: searchPath.value,
+      searchInContents: searchInContents.value,
+      caseSensitive: caseSensitive.value,
+      wholeWord: wholeWord.value,
+      useRegex: useRegex.value,
+      recentPaths: recentPaths.value,
+    });
+  } catch (error) {
+    logger.error('[SearchPanel] Failed to save settings:', error);
+  }
+}
+
+function addRecentPath(path: string) {
+  if (!path.trim()) return;
+
+  // Remove if already exists
+  const filtered = recentPaths.value.filter(p => p !== path);
+  // Add to front
+  filtered.unshift(path);
+  // Keep only MAX_RECENT_PATHS
+  recentPaths.value = filtered.slice(0, MAX_RECENT_PATHS);
+  saveSettings();
+}
+
+onMounted(async () => {
+  try {
+    userHome.value = await getUserHome();
+  } catch (error) {
+    logger.error('[SearchPanel] Failed to get user home:', error);
+  }
+  await loadSettings();
   if (query.value && query.value.trim()) {
     performSearch();
   }
 });
 
-watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex, fileType], () => {
+watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex], () => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
+
+  // Save settings when they change
+  saveSettings();
 
   if (!query.value.trim()) {
     results.value = [];
@@ -79,8 +153,12 @@ async function performSearch() {
         searchOptions.value
       );
     } else {
-      // Search file names with Everything
-      results.value = await tauriApi.searchEverything(q);
+      // Search file names with ripgrep
+      results.value = await tauriApi.searchFilesWithRg(q, searchPath.value || undefined);
+    }
+    // Add path to recent paths if search was successful
+    if (searchPath.value.trim()) {
+      addRecentPath(searchPath.value);
     }
   } catch (error) {
     logger.error('[SearchPanel] Search failed:', error);
@@ -130,12 +208,12 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-function isRipgrepResult(result: EverythingResult | RipgrepResult): result is RipgrepResult {
+function isRipgrepResult(result: FileResult | RipgrepResult): result is RipgrepResult {
   return 'content' in result && 'line' in result;
 }
 
-function isEverythingResult(result: EverythingResult | RipgrepResult): result is EverythingResult {
-  return 'size' in result && 'date_modified' in result;
+function isFileResult(result: FileResult | RipgrepResult): result is FileResult {
+  return 'name' in result && 'path' in result && !('content' in result);
 }
 
 function truncateContent(content: string, maxLength: number = 120): string {
@@ -149,6 +227,23 @@ function highlightMatch(content: string, query: string): string {
   const regex = new RegExp(`(${escaped})`, 'gi');
   return content.replace(regex, '<mark>$1</mark>');
 }
+
+function selectRecentPath(path: string) {
+  searchPath.value = path;
+  showRecentDropdown.value = false;
+}
+
+async function openFolderDialog() {
+  try {
+    const selected = await openDirectoryDialog(searchPath.value || undefined);
+    if (selected) {
+      searchPath.value = selected;
+      showRecentDropdown.value = false;
+    }
+  } catch (error) {
+    logger.error('[SearchPanel] Failed to open folder dialog:', error);
+  }
+}
 </script>
 
 <template>
@@ -160,12 +255,35 @@ function highlightMatch(content: string, query: string): string {
     <div class="search-input-section">
       <div class="search-input-container">
         <label class="path-label">{{ t('search.searchPathLabel') }}</label>
-        <BaseInput
-          v-model="searchPath"
-          type="text"
-          :placeholder="defaultPathPlaceholder"
-          style="flex: 1"
-        />
+        <div class="path-input-wrapper">
+          <BaseInput
+            v-model="searchPath"
+            type="text"
+            :placeholder="defaultPathPlaceholder"
+            style="flex: 1"
+            @focus="showRecentDropdown = true"
+          />
+          <BaseIconButton
+            size="medium"
+            :title="t('search.selectFolder')"
+            @click="openFolderDialog"
+          >
+            <Folder :size="16" />
+          </BaseIconButton>
+          <div
+            v-if="showRecentDropdown && recentPaths.length > 0"
+            class="recent-paths-dropdown"
+          >
+            <div
+              v-for="path in recentPaths"
+              :key="path"
+              class="recent-path-item"
+              @click="selectRecentPath(path)"
+            >
+              {{ path }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="search-options">
@@ -186,12 +304,6 @@ function highlightMatch(content: string, query: string): string {
           <BaseCheckbox
             v-model="useRegex"
             :label="t('search.useRegex')"
-          />
-          <BaseInput
-            v-model="fileType"
-            type="text"
-            :placeholder="t('search.fileType')"
-            style="width: 100px"
           />
         </template>
       </div>
@@ -231,7 +343,7 @@ function highlightMatch(content: string, query: string): string {
         :key="`file-${index}`"
         class="result-item"
       >
-        <template v-if="isEverythingResult(result)">
+        <template v-if="isFileResult(result)">
           <div class="result-info">
             <div class="result-name">
               {{ result.name }}
@@ -347,6 +459,52 @@ function highlightMatch(content: string, query: string): string {
   width: 80px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.path-input-wrapper {
+  display: flex;
+  position: relative;
+  flex: 1;
+}
+
+.path-input-wrapper :deep(.base-input) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.path-input-wrapper :deep(.base-icon-button) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none;
+}
+
+.recent-paths-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--spotlight-bg);
+  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.15));
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.recent-path-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--spotlight-text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-path-item:hover {
+  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
 }
 
 .search-options {

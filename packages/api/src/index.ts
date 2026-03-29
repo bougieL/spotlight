@@ -41,8 +41,8 @@ export interface TauriApi {
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   executeShellCommand: (command: string) => Promise<void>;
-  searchEverything: (query: string) => Promise<EverythingResult[]>;
   searchWithRg: (query: string, path?: string, options?: SearchOptions) => Promise<RipgrepResult[]>;
+  searchFilesWithRg: (query: string, path?: string, caseSensitive?: boolean) => Promise<FileResult[]>;
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
@@ -54,17 +54,15 @@ export interface ScreenCapture {
   height: number;
 }
 
-export interface EverythingResult {
-  name: string;
-  path: string;
-  size: string;
-  date_modified: string;
-}
-
 export interface RipgrepResult {
   file: string;
   line: number;
   content: string;
+}
+
+export interface FileResult {
+  name: string;
+  path: string;
 }
 
 export interface SearchOptions {
@@ -77,9 +75,6 @@ export interface SearchOptions {
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
-export const searchEverything = (query: string): Promise<EverythingResult[]> =>
-  invoke<EverythingResult[]>('search_everything', { query });
-
 export const searchWithRg = (
   query: string,
   path?: string,
@@ -87,10 +82,30 @@ export const searchWithRg = (
 ): Promise<RipgrepResult[]> =>
   invoke<RipgrepResult[]>('search_with_rg', { query, path, options });
 
+export const searchFilesWithRg = (
+  query: string,
+  path?: string,
+  caseSensitive?: boolean
+): Promise<FileResult[]> =>
+  invoke<FileResult[]>('search_files_with_rg', { query, path, caseSensitive });
+
 export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
 
+export const getUserHome = (): Promise<string> =>
+  invoke<string>('get_user_home');
+
 export const exitApp = (): Promise<void> => invoke('exit_app');
+
+export async function openDirectoryDialog(defaultPath?: string): Promise<string | null> {
+  const { open } = await import('@tauri-apps/plugin-dialog');
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    defaultPath,
+  });
+  return selected as string | null;
+}
 
 export const tauriApi: TauriApi = {
   hideWindow: () => invoke('hide_window'),
@@ -138,10 +153,11 @@ export const tauriApi: TauriApi = {
 
   executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
 
-  searchEverything: (query: string) => invoke<EverythingResult[]>('search_everything', { query }),
-
   searchWithRg: (query: string, path?: string, options?: SearchOptions) =>
     invoke<RipgrepResult[]>('search_with_rg', { query, path, options }),
+
+  searchFilesWithRg: (query: string, path?: string, caseSensitive?: boolean) =>
+    invoke<FileResult[]>('search_files_with_rg', { query, path, caseSensitive }),
 
   getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
 

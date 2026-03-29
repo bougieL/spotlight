@@ -19,5 +19,6 @@
   "search.rgError": "Ripgrep 搜索失败",
   "search.options": "搜索选项：",
   "search.openInExplorer": "在资源管理器中打开",
+  "search.selectFolder": "选择文件夹",
   "fileSearch.everythingNotRunning": "Everything 未运行，请先启动 Everything"
 }

@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { tauriApi, type EverythingResult } from '@spotlight/api';
+import { tauriApi, type FileResult } from '@spotlight/api';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
@@ -12,7 +12,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const searchIconUrl = new URL('./assets/search.svg', import.meta.url).href;
+const searchIconUrl = new URL('./assets/filesearch.svg', import.meta.url).href;
 
 const ACTION_OPEN_FILE = 'open-file';
 const ACTION_OPEN_AT_LINE = 'open-at-line';
@@ -123,10 +123,10 @@ export class SearchPlugin extends BasePlugin {
     }
 
     try {
-      // Default: search file names using Everything
-      const results = await tauriApi.searchEverything(searchState.searchQuery);
+      // Default: search file names using ripgrep
+      const results = await tauriApi.searchFilesWithRg(searchState.searchQuery);
 
-      return results.map((file: EverythingResult, index: number) => ({
+      return results.map((file: FileResult, index: number) => ({
         iconUrl: searchIconUrl,
         title: file.name,
         desc: file.path,

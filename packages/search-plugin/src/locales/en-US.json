@@ -19,5 +19,6 @@
   "search.rgError": "Ripgrep search failed",
   "search.options": "Search Options",
   "search.openInExplorer": "Open in Explorer",
+  "search.selectFolder": "Select Folder",
   "fileSearch.everythingNotRunning": "Everything is not running. Please start Everything first."
 }
