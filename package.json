@@ -35,6 +35,7 @@
     "@spotlight/notes-plugin": "*",
     "@spotlight/qrcode-plugin": "*",
     "@spotlight/recent-plugin": "*",
+    "@spotlight/search-plugin": "*",
     "@spotlight/settings-plugin": "*",
     "@spotlight/shortcuts-plugin": "*",
     "@spotlight/translation-plugin": "*",

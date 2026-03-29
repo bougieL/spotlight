@@ -42,6 +42,7 @@ export interface TauriApi {
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   executeShellCommand: (command: string) => Promise<void>;
   searchEverything: (query: string) => Promise<EverythingResult[]>;
+  searchWithRg: (query: string, path?: string, options?: SearchOptions) => Promise<RipgrepResult[]>;
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
@@ -60,11 +61,31 @@ export interface EverythingResult {
   date_modified: string;
 }
 
+export interface RipgrepResult {
+  file: string;
+  line: number;
+  content: string;
+}
+
+export interface SearchOptions {
+  case_sensitive: boolean;
+  whole_word: boolean;
+  regex: boolean;
+  file_type?: string;
+}
+
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
 export const searchEverything = (query: string): Promise<EverythingResult[]> =>
   invoke<EverythingResult[]>('search_everything', { query });
+
+export const searchWithRg = (
+  query: string,
+  path?: string,
+  options?: SearchOptions
+): Promise<RipgrepResult[]> =>
+  invoke<RipgrepResult[]>('search_with_rg', { query, path, options });
 
 export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
@@ -118,6 +139,9 @@ export const tauriApi: TauriApi = {
   executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
 
   searchEverything: (query: string) => invoke<EverythingResult[]>('search_everything', { query }),
+
+  searchWithRg: (query: string, path?: string, options?: SearchOptions) =>
+    invoke<RipgrepResult[]>('search_with_rg', { query, path, options }),
 
   getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
 

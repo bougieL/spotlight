@@ -78,6 +78,34 @@ export async function getChromeBookmarks(): Promise<ChromeBookmark[]> {
   ];
 }
 
+export interface RipgrepResult {
+  file: string;
+  line: number;
+  content: string;
+}
+
+export interface SearchOptions {
+  case_sensitive: boolean;
+  whole_word: boolean;
+  regex: boolean;
+  file_type?: string;
+}
+
+export async function searchWithRg(
+  _query: string,
+  _path?: string,
+  _options?: SearchOptions
+): Promise<RipgrepResult[]> {
+  // Mock implementation returns empty results for testing
+  return [
+    {
+      file: 'example/src/main.ts',
+      line: 42,
+      content: '// Mock search result for testing',
+    },
+  ];
+}
+
 let mockAutostartEnabled = false;
 
 export async function getAutostartEnabled(): Promise<boolean> {
@@ -109,6 +137,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return Promise.resolve();
     case 'get_chrome_bookmarks':
       return getChromeBookmarks();
+    case 'search_with_rg':
+      return searchWithRg(args?.query as string, args?.path as string | undefined, args?.options as SearchOptions | undefined);
     case 'execute_shell_command':
       return executeShellCommand(args?.command as string);
     case 'read_plugin_settings':
