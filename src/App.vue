@@ -62,7 +62,7 @@ const handleClosePanel = () => {
   window.history.length > 1 ? router.back() : router.push({ name: ROUTE_NAMES.SEARCH });
 };
 
-const handleOpenSettings = () => router.push({ name: 'settings-plugin' });
+const handleOpenSettings = () => router.push({ name: 'settings-plugin:main' });
 
 const handleDetach = async () => {
   const panelPath = route.path;
