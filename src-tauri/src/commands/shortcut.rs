@@ -1,13 +1,44 @@
 use std::sync::Mutex;
 use tauri::{AppHandle, Manager};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+use raw_window_handle::HasWindowHandle;
 
 static CURRENT_SHORTCUT: Mutex<Option<Shortcut>> = Mutex::new(None);
+
+#[cfg(windows)]
+fn bring_window_to_top(hwnd: isize) {
+    use windows::Win32::Foundation::HWND;
+    use windows::Win32::UI::WindowsAndMessaging::{SetWindowPos, HWND_TOPMOST, SWP_NOSIZE, SWP_NOMOVE, SWP_SHOWWINDOW};
+    unsafe {
+        let _ = SetWindowPos(
+            HWND(hwnd as *mut std::ffi::c_void),
+            HWND_TOPMOST,
+            0, 0, 0, 0,
+            SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW,
+        );
+    }
+}
+
+#[cfg(not(windows))]
+fn bring_window_to_top(_hwnd: isize) {}
 
 fn show_window(app_handle: &AppHandle) {
     if let Some(window) = app_handle.get_webview_window("main") {
         let _ = window.show();
         let _ = window.set_focus();
+
+        // Bring window to top of all windows including other topmost windows
+        #[cfg(windows)]
+        {
+            use raw_window_handle::RawWindowHandle;
+            if let Ok(handle) = window.window_handle() {
+                if let RawWindowHandle::Win32(h) = handle.as_raw() {
+                    bring_window_to_top(h.hwnd.get() as isize);
+                }
+            }
+        }
+        #[cfg(not(windows))]
+        let _ = app_handle;
     }
 }
 

@@ -30,4 +30,4 @@ pub use shell::execute_shell_command;
 pub use shortcut::{get_global_shortcut, register_global_shortcut};
 pub use storage::{get_plugin_storage_dir, read_plugin_settings, write_plugin_settings};
 pub use search::{search_with_rg, search_files_with_rg, get_user_home};
-pub use window::{close_overlay_window, create_overlay_window, detach_window, exit_app, hide_window, resize_window};
+pub use window::{close_overlay_window, create_overlay_window, detach_window, exit_app, hide_window, resize_window, list_windows, minimize_window, maximize_window, restore_window, close_window, set_window_always_on_top, focus_window};

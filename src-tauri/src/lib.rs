@@ -10,7 +10,8 @@ use commands::{
     save_temp_image, search_with_rg, search_files_with_rg, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
     write_plugin_settings, create_overlay_window, close_overlay_window, exit_app,
-    detach_window,
+    detach_window, list_windows, minimize_window, maximize_window, restore_window,
+    close_window, set_window_always_on_top, focus_window,
 };
 use tauri::Manager;
 
@@ -66,7 +67,14 @@ pub fn run() {
             search_with_rg,
             search_files_with_rg,
             get_user_home,
-            detach_window
+            detach_window,
+            list_windows,
+            minimize_window,
+            maximize_window,
+            restore_window,
+            close_window,
+            set_window_always_on_top,
+            focus_window,
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

@@ -1,0 +1,15 @@
+{
+  "windowManager": "窗口管理器",
+  "windowManager.description": "管理和控制系统窗口",
+  "search.placeholder": "搜索窗口...",
+  "window.minimize": "最小化",
+  "window.maximize": "最大化",
+  "window.restore": "还原",
+  "window.close": "关闭",
+  "window.alwaysOnTop": "置顶",
+  "window.removeAlwaysOnTop": "取消置顶",
+  "window.focus": "聚焦",
+  "window.noWindows": "未找到窗口",
+  "window.process": "进程",
+  "keywords": "window|windows|manager|窗口|管理"
+}
