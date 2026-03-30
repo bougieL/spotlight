@@ -116,6 +116,14 @@ onMounted(async () => {
   if (query.value && query.value.trim()) {
     performSearch();
   }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.recent-paths-dropdown') && !target.closest('.path-input-wrapper')) {
+      showRecentDropdown.value = false;
+    }
+  });
 });
 
 watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex], () => {
@@ -140,7 +148,10 @@ watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex],
 
 async function performSearch() {
   const q = query.value.trim();
-  if (!q) return;
+  if (!q) {
+    results.value = [];
+    return;
+  }
 
   isLoading.value = true;
   errorMessage.value = '';
@@ -189,7 +200,7 @@ async function openAtLine(file: string, line: number) {
 async function openInExplorer(path: string) {
   try {
     const normalized = path.replace(/\//g, '\\');
-    await tauriApi.executeShellCommand(`explorer.exe /select,"${normalized}"`);
+    await tauriApi.executeShellCommand(normalized);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open in explorer:', error);
   }
@@ -345,7 +356,13 @@ async function openFolderDialog() {
         {{ t('fileSearch.searching') }}
       </div>
       <div
-        v-else-if="!errorMessage && query && results.length === 0"
+        v-else-if="!query"
+        class="status-message"
+      >
+        {{ t('fileSearch.enterSearchQuery') }}
+      </div>
+      <div
+        v-else-if="results.length === 0"
         class="status-message"
       >
         {{ t('fileSearch.noResults') }}
@@ -409,7 +426,13 @@ async function openFolderDialog() {
         {{ t('fileSearch.searching') }}
       </div>
       <div
-        v-else-if="!errorMessage && query && results.length === 0"
+        v-else-if="!query"
+        class="status-message"
+      >
+        {{ t('fileSearch.enterSearchQuery') }}
+      </div>
+      <div
+        v-else-if="results.length === 0"
         class="status-message"
       >
         {{ t('fileSearch.noResults') }}
@@ -578,6 +601,7 @@ async function openFolderDialog() {
 
 .results-list {
   flex: 1;
+  min-height: 100px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

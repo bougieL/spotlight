@@ -11,6 +11,7 @@
   "fileSearch.searchPathLabel": "搜索路径：",
   "fileSearch.results": "结果",
   "fileSearch.noResults": "未找到结果",
+  "fileSearch.enterSearchQuery": "请输入搜索关键词",
   "fileSearch.searching": "搜索中...",
   "fileSearch.openFile": "打开文件",
   "fileSearch.openAtLine": "在行号处打开",

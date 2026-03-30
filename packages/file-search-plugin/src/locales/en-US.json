@@ -11,6 +11,7 @@
   "fileSearch.searchPathLabel": "Search Path:",
   "fileSearch.results": "Results",
   "fileSearch.noResults": "No results found",
+  "fileSearch.enterSearchQuery": "Enter a search query",
   "fileSearch.searching": "Searching...",
   "fileSearch.openFile": "Open File",
   "fileSearch.openAtLine": "Open at Line",

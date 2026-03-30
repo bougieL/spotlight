@@ -229,12 +229,12 @@ pub fn search_with_rg(
         let search_paths: Vec<String> = if let Some(p) = path {
             // User provided path, split by semicolon if multiple
             p.split(';')
-                .map(|s| s.trim().to_string())
+                .map(|s| s.trim().to_string().replace('\\', "/"))
                 .filter(|s| !s.is_empty())
                 .collect()
         } else {
             // Default to user home directory
-            vec![get_user_home_dir()]
+            vec![get_user_home_dir().replace('\\', "/")]
         };
         for sp in search_paths {
             args.push(sp);
@@ -261,7 +261,7 @@ pub fn search_with_rg(
     Ok(parse_rg_output(&stdout))
 }
 
-// Search files by name only (using ripgrep -l)
+// Search files by name only (using ripgrep -g glob pattern)
 #[tauri::command]
 pub fn search_files_with_rg(
     app: tauri::AppHandle,
@@ -281,16 +281,24 @@ pub fn search_files_with_rg(
 
     let mut args = vec![
         "-l".to_string(),
+        "--binary".to_string(),
         "-e".to_string(),
-        query.clone(),
+        "".to_string(),  // match empty pattern (all content)
     ];
 
-    // Apply case sensitive option
-    if let Some(cs) = case_sensitive {
-        if !cs {
-            args.push("-i".to_string());
-        }
-    }
+    // Use glob pattern to match filename
+    let case_flag = if let Some(cs) = case_sensitive {
+        if cs { "-s" } else { "-i" }
+    } else {
+        "-i"  // default case insensitive
+    };
+
+    // Build glob pattern - matches query anywhere in filename (including extensions)
+    let glob_pattern = format!("*{}*", query);
+
+    args.push("-g".to_string());
+    args.push(glob_pattern);
+    args.push(case_flag.to_string());
 
     args.push("--".to_string());
 
@@ -298,12 +306,12 @@ pub fn search_files_with_rg(
     {
         let search_paths: Vec<String> = if let Some(p) = path {
             p.split(';')
-                .map(|s| s.trim().to_string())
+                .map(|s| s.trim().to_string().replace('\\', "/"))
                 .filter(|s| !s.is_empty())
                 .collect()
         } else {
             // Default to user home directory
-            vec![get_user_home_dir()]
+            vec![get_user_home_dir().replace('\\', "/")]
         };
         for sp in search_paths {
             args.push(sp);
