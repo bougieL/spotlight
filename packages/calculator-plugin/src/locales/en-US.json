@@ -1,5 +1,7 @@
 {
-  "calculator": "Calculator",
-  "calculator.placeholder": "e.g. 2+3*4",
-  "plugin.description.calculator": "Perform math calculations"
+  "calculator": {
+    "name": "Calculator",
+    "placeholder": "e.g. 2+3*4",
+    "description": "Perform math calculations"
+  }
 }

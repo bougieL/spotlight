@@ -1,10 +1,14 @@
 {
-  "screenshot": "Screenshot",
-  "takeScreenshot": "Take a screenshot",
-  "screenshotCopied": "Screenshot copied to clipboard",
-  "screenshotSaved": "Screenshot saved",
-  "pressEscToCancel": "Press ESC to cancel",
-  "selectRegion": "Click and drag to select region",
-  "plugin.description.screenshot": "Capture screen screenshots",
-  "tray.screenshot": "Screenshot"
+  "screenshot": {
+    "name": "Screenshot",
+    "takeScreenshot": "Take a screenshot",
+    "copied": "Screenshot copied to clipboard",
+    "saved": "Screenshot saved",
+    "pressEscToCancel": "Press ESC to cancel",
+    "selectRegion": "Click and drag to select region",
+    "description": "Capture screen screenshots"
+  },
+  "tray": {
+    "screenshot": "Screenshot"
+  }
 }

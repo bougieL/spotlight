@@ -1,17 +1,19 @@
 {
-  "calendar": "日历",
-  "today": "今天",
-  "holiday": "节假日",
-  "workday": "工作日",
-  "lunar": "农历",
-  "spring_festival": "春节",
-  "qingming": "清明节",
-  "labor_day": "劳动节",
-  "dragon_boat": "端午节",
-  "mid_autumn": "中秋节",
-  "national_day": "国庆节",
-  "new_year": "元旦",
-  "lantern_festival": "元宵节",
-  "double_ninth": "重阳节",
-  "plugin.description.calendar": "查看日历和节假日"
+  "calendar": {
+    "name": "日历",
+    "today": "今天",
+    "holiday": "节假日",
+    "workday": "工作日",
+    "lunar": "农历",
+    "spring_festival": "春节",
+    "qingming": "清明节",
+    "labor_day": "劳动节",
+    "dragon_boat": "端午节",
+    "mid_autumn": "中秋节",
+    "national_day": "国庆节",
+    "new_year": "元旦",
+    "lantern_festival": "元宵节",
+    "double_ninth": "重阳节",
+    "description": "查看日历和节假日"
+  }
 }

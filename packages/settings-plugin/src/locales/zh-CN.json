@@ -1,24 +1,41 @@
 {
-  "settings": "Spotlight 设置",
-  "settings.theme": "主题",
-  "settings.theme.light": "浅色",
-  "settings.theme.dark": "深色",
-  "settings.theme.system": "跟随系统",
-  "settings.language": "语言",
-  "settings.language.en": "English",
-  "settings.language.zh": "中文",
-  "settings.shortcut": "快捷键",
-  "settings.shortcut.hint": "按下快捷键唤出 Spotlight",
-  "settings.shortcut.recording": "录制中",
-  "settings.shortcut.pressKeys": "请按下组合键...",
-  "settings.shortcut.altSpaceError": "Alt+Space 在 Windows 上无法使用",
-  "settings.shortcut.reset": "重置为 Alt+Space",
-  "settings.autostart": "开机自启",
-  "settings.autostart.enable": "开机时启动 Spotlight",
-  "settings.hideOnBlur": "失焦隐藏",
-  "settings.hideOnBlur.enable": "窗口失焦时自动隐藏",
-  "settings.plugins": "插件管理",
-  "settings.plugins.description": "启用或禁用插件",
-  "tray.show": "显示",
-  "tray.quit": "退出"
+  "settings": {
+    "name": "Spotlight 设置",
+    "theme": {
+      "name": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "system": "跟随系统"
+    },
+    "language": {
+      "name": "语言",
+      "en": "English",
+      "zh": "中文"
+    },
+    "shortcut": {
+      "name": "快捷键",
+      "hint": "按下快捷键唤出 Spotlight",
+      "recording": "录制中",
+      "pressKeys": "请按下组合键...",
+      "altSpaceError": "Alt+Space 在 Windows 上无法使用",
+      "reset": "重置为 Alt+Space"
+    },
+    "autostart": {
+      "name": "开机自启",
+      "enable": "开机时启动 Spotlight"
+    },
+    "hideOnBlur": {
+      "name": "失焦隐藏",
+      "enable": "窗口失焦时自动隐藏"
+    },
+    "plugins": {
+      "name": "插件管理",
+      "description": "启用或禁用插件"
+    },
+    "description": ""
+  },
+  "tray": {
+    "show": "显示",
+    "quit": "退出"
+  }
 }

@@ -166,7 +166,7 @@ function handleKeydown(event: KeyboardEvent) {
     </div>
 
     <div v-else-if="filteredWindows.length === 0" class="message">
-      {{ t('window.noWindows') }}
+      {{ t('windowManager.window.noWindows') }}
     </div>
 
     <div v-else class="window-list">
@@ -192,7 +192,7 @@ function handleKeydown(event: KeyboardEvent) {
           <button
             v-if="window.isMinimized"
             class="action-btn"
-            :title="t('window.restore')"
+            :title="t('windowManager.window.restore')"
             @click.stop="restoreWindow(window.hwnd)"
           >
             <Maximize2 :size="16" />
@@ -200,7 +200,7 @@ function handleKeydown(event: KeyboardEvent) {
           <button
             v-else-if="window.isMaximized"
             class="action-btn"
-            :title="t('window.restore')"
+            :title="t('windowManager.window.restore')"
             @click.stop="restoreWindow(window.hwnd)"
           >
             <Square :size="16" />
@@ -208,14 +208,14 @@ function handleKeydown(event: KeyboardEvent) {
           <button
             v-else
             class="action-btn"
-            :title="t('window.maximize')"
+            :title="t('windowManager.window.maximize')"
             @click.stop="maximizeWindow(window.hwnd)"
           >
             <Maximize2 :size="16" />
           </button>
           <button
             class="action-btn"
-            :title="t('window.minimize')"
+            :title="t('windowManager.window.minimize')"
             @click.stop="minimizeWindow(window.hwnd)"
           >
             <Minus :size="16" />
@@ -224,8 +224,8 @@ function handleKeydown(event: KeyboardEvent) {
             class="action-btn"
             :title="
               window.isAlwaysOnTop
-                ? t('window.removeAlwaysOnTop')
-                : t('window.alwaysOnTop')
+                ? t('windowManager.window.removeAlwaysOnTop')
+                : t('windowManager.window.alwaysOnTop')
             "
             @click.stop="toggleAlwaysOnTop(window.hwnd)"
           >
@@ -234,7 +234,7 @@ function handleKeydown(event: KeyboardEvent) {
           </button>
           <button
             class="action-btn close"
-            :title="t('window.close')"
+            :title="t('windowManager.window.close')"
             @click.stop="closeWindow(window.hwnd)"
           >
             <X :size="16" />

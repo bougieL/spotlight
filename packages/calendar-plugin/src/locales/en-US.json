@@ -1,17 +1,19 @@
 {
-  "calendar": "Calendar",
-  "today": "Today",
-  "holiday": "Holiday",
-  "workday": "Workday",
-  "lunar": "Lunar",
-  "spring_festival": "Spring Festival",
-  "qingming": "Qingming Festival",
-  "labor_day": "Labor Day",
-  "dragon_boat": "Dragon Boat Festival",
-  "mid_autumn": "Mid-Autumn Festival",
-  "national_day": "National Day",
-  "new_year": "New Year's Day",
-  "lantern_festival": "Lantern Festival",
-  "double_ninth": "Double Ninth Festival",
-  "plugin.description.calendar": "View calendar and holidays"
+  "calendar": {
+    "name": "Calendar",
+    "today": "Today",
+    "holiday": "Holiday",
+    "workday": "Workday",
+    "lunar": "Lunar",
+    "spring_festival": "Spring Festival",
+    "qingming": "Qingming Festival",
+    "labor_day": "Labor Day",
+    "dragon_boat": "Dragon Boat Festival",
+    "mid_autumn": "Mid-Autumn Festival",
+    "national_day": "National Day",
+    "new_year": "New Year's Day",
+    "lantern_festival": "Lantern Festival",
+    "double_ninth": "Double Ninth Festival",
+    "description": "View calendar and holidays"
+  }
 }

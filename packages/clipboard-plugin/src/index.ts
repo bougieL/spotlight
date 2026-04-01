@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
@@ -38,11 +38,13 @@ function generateId(): string {
 }
 
 export class ClipboardPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['clipboard'] ?? 'Clipboard';
+    return this.i18n.t('clipboard.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.clipboard'];
+    return this.i18n.t('clipboard.description');
   }
   iconUrl = clipboardIconUrl;
   pluginId = 'clipboard-plugin';

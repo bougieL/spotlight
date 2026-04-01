@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
@@ -69,12 +69,14 @@ const LANGUAGE_NAMES: Record<string, string> = {
 };
 
 export class TranslationPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['translation'] ?? 'Translation';
+    return this.i18n.t('translation.name');
   }
 
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.translation'];
+    return this.i18n.t('translation.description');
   }
 
   iconUrl = translationIconUrl;
@@ -115,7 +117,7 @@ export class TranslationPlugin extends BasePlugin {
   async getSettings(): Promise<TranslationSettings> {
     return this.storage.get<TranslationSettings>(STORAGE_KEY, {
       lastFromLang: 'auto',
-      lastToLang: getLocale() === 'zh-CN' ? 'en' : 'zh',
+      lastToLang: this.i18n.locale.value === 'zh-CN' ? 'en' : 'zh',
       selectedModelId: null,
     });
   }

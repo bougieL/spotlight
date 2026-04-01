@@ -1,7 +1,7 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type FileResult } from '@spotlight/api';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -47,12 +47,14 @@ function getSearchQuery(input: string): { searchQuery: string } | null {
 }
 
 export class FileSearchPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['plugin.fileSearch'] ?? 'File Search';
+    return this.i18n.t('fileSearch.name');
   }
 
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.fileSearch'];
+    return this.i18n.t('fileSearch.description');
   }
 
   iconUrl = searchIconUrl;
@@ -113,7 +115,7 @@ export class FileSearchPlugin extends BasePlugin {
         {
           iconUrl: searchIconUrl,
           title: this.name,
-          desc: translations[getLocale()]['fileSearch.queryPlaceholder'],
+          desc: this.i18n.t('fileSearch.queryPlaceholder'),
           score: 900,
           pluginId: this.pluginId,
           actionId: ACTION_OPEN_PANEL,
@@ -140,7 +142,7 @@ export class FileSearchPlugin extends BasePlugin {
       return [
         {
           iconUrl: searchIconUrl,
-          title: translations[getLocale()]['fileSearch.everythingNotRunning'],
+          title: this.i18n.t('fileSearch.everythingNotRunning'),
           desc: error instanceof Error ? error.message : String(error),
           score: 900,
           pluginId: this.pluginId,

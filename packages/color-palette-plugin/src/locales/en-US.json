@@ -1,16 +1,17 @@
 {
-  "colorPalette": "Color Palette",
-  "colorPalette.description": "Quick access to color palettes",
-  "colorPalette.favorites": "Favorites",
-  "colorPalette.noFavorites": "No favorite colors yet",
-  "colorPalette.addToFavorites": "Add to favorites",
-  "colorPalette.removeFromFavorites": "Remove from favorites",
-  "colorPalette.copied": "Copied!",
-  "colorPalette.copyHex": "Copy HEX",
-  "colorPalette.copyRgb": "Copy RGB",
-  "colorPalette.basic": "Basic Colors",
-  "colorPalette.gradient": "Gradient Colors",
-  "colorPalette.web": "Web Colors",
-  "colorPalette.picker": "Color Picker",
-  "plugin.description.colorPalette": "Quick access to color palettes"
+  "colorPalette": {
+    "name": "Color Palette",
+    "description": "Quick access to color palettes",
+    "favorites": "Favorites",
+    "noFavorites": "No favorite colors yet",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "copied": "Copied!",
+    "copyHex": "Copy HEX",
+    "copyRgb": "Copy RGB",
+    "basic": "Basic Colors",
+    "gradient": "Gradient Colors",
+    "web": "Web Colors",
+    "picker": "Color Picker"
+  }
 }

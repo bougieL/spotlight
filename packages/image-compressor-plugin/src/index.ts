@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -27,12 +27,14 @@ export interface CompressedImage {
 }
 
 export class ImageCompressorPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['imageCompressor'] ?? 'Image Compressor';
+    return this.i18n.t('imageCompressor.name');
   }
 
   get description(): string | undefined {
-    return translations[getLocale()]['imageCompressor.description'];
+    return this.i18n.t('imageCompressor.description');
   }
 
   iconUrl = imageCompressorIconUrl;
@@ -49,9 +51,8 @@ export class ImageCompressorPlugin extends BasePlugin {
   }
 
   private getKeywords() {
-    const locale = getLocale();
-    const keywordsStr = translations[locale]['keywords'] ?? 'image|compress|图片|压缩';
-    return keywordsStr.split('|').map((k) => ({
+    const keywordsStr = this.i18n.t('imageCompressor.keywords');
+    return keywordsStr.split('|').map((k: string) => ({
       keyword: k,
       normalized: normalizeForSearch(k),
       pinyinInitials: toPinyinInitials(k),

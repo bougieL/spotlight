@@ -1,15 +1,17 @@
 {
-  "clipboard": "Clipboard",
-  "clipboard.placeholder": "No clipboard history",
-  "clipboard.search": "Search clipboard...",
-  "clipboard.empty": "No items",
-  "clipboard.copied": "Copied!",
-  "clipboard.clear": "Clear",
-  "clipboard.confirmClear": "Clear all clipboard history?",
-  "clipboard.all": "All",
-  "clipboard.favorites": "Favorites",
-  "clipboard.text": "Text",
-  "clipboard.image": "Image",
-  "clipboard.files": "Files",
-  "plugin.description.clipboard": "Access and manage clipboard history"
+  "clipboard": {
+    "name": "Clipboard",
+    "description": "Access and manage clipboard history",
+    "placeholder": "No clipboard history",
+    "search": "Search clipboard...",
+    "empty": "No items",
+    "copied": "Copied!",
+    "clear": "Clear",
+    "confirmClear": "Clear all clipboard history?",
+    "all": "All",
+    "favorites": "Favorites",
+    "text": "Text",
+    "image": "Image",
+    "files": "Files"
+  }
 }

@@ -2,7 +2,7 @@ import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/c
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type AppInfo } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -48,11 +48,13 @@ interface CachedApp {
 }
 
 export class AppSearchPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['plugin.app-search'] ?? 'App Search';
+    return this.i18n.t('appSearch.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.appSearch'];
+    return this.i18n.t('appSearch.description');
   }
   iconUrl = appIconUrl;
   pluginId = 'app-search-plugin';

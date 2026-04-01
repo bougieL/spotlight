@@ -1,15 +1,17 @@
 {
-  "windowManager": "Window Manager",
-  "windowManager.description": "Manage and control windows on your system",
-  "search.placeholder": "Search windows...",
-  "window.minimize": "Minimize",
-  "window.maximize": "Maximize",
-  "window.restore": "Restore",
-  "window.close": "Close",
-  "window.alwaysOnTop": "Always on Top",
-  "window.removeAlwaysOnTop": "Remove Always on Top",
-  "window.focus": "Focus",
-  "window.noWindows": "No windows found",
-  "window.process": "Process",
-  "keywords": "window|windows|manager|窗口|管理"
+  "windowManager": {
+    "name": "Window Manager",
+    "description": "Manage and control windows on your system",
+    "keywords": "window|windows|manager|窗口|管理",
+    "search.placeholder": "Search windows...",
+    "window.minimize": "Minimize",
+    "window.maximize": "Maximize",
+    "window.restore": "Restore",
+    "window.close": "Close",
+    "window.alwaysOnTop": "Always on Top",
+    "window.removeAlwaysOnTop": "Remove Always on Top",
+    "window.focus": "Focus",
+    "window.noWindows": "No windows found",
+    "window.process": "Process"
+  }
 }

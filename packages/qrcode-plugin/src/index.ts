@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -15,11 +15,13 @@ const qrcodeIconUrl = new URL('./assets/qrcode.svg', import.meta.url).href;
 const ACTION_OPEN = 'open';
 
 export class QrCodePlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['qrcode'] ?? 'QR Code';
+    return this.i18n.t('qrcode.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.qrcode'];
+    return this.i18n.t('qrcode.description');
   }
   iconUrl = qrcodeIconUrl;
   pluginId = 'qrcode-plugin';

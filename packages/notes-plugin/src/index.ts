@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -42,11 +42,13 @@ function generateId(): string {
 }
 
 export class NotesPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['notes'] ?? 'Notes';
+    return this.i18n.t('notes.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.notes'];
+    return this.i18n.t('notes.description');
   }
   iconUrl = notesIconUrl;
   pluginId = 'notes-plugin';

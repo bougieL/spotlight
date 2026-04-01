@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi, registerTrayItem, unRegisterTrayItem } from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -17,11 +17,13 @@ const ACTION_SCREENSHOT = 'screenshot';
 const OVERLAY_WINDOW_LABEL = 'screenshot-overlay';
 
 export class ScreenshotPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['screenshot'] ?? 'Screenshot';
+    return this.i18n.t('screenshot.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.screenshot'];
+    return this.i18n.t('screenshot.description');
   }
   iconUrl = screenshotIconUrl;
   pluginId = 'screenshot-plugin';
@@ -72,7 +74,7 @@ export class ScreenshotPlugin extends BasePlugin {
   }
 
   async onMount(): Promise<void> {
-    const label = translations[getLocale()]['tray.screenshot'] || 'Screenshot';
+    const label = this.i18n.t('tray.screenshot');
     await registerTrayItem({
       id: 'screenshot',
       text: label,

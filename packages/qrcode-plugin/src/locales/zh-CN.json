@@ -1,12 +1,14 @@
 {
-  "qrcode": "二维码",
-  "qrcode.placeholder": "输入文本以生成二维码",
-  "qrcode.generate": "生成",
-  "qrcode.copy": "复制",
-  "qrcode.copied": "已复制！",
-  "qrcode.empty": "请先输入文本",
-  "qrcode.error": "生成二维码失败",
-  "qrcode.history": "历史记录",
-  "qrcode.noHistory": "暂无历史记录",
-  "plugin.description.qrcode": "生成和解码二维码"
+  "qrcode": {
+    "name": "二维码",
+    "placeholder": "输入文本以生成二维码",
+    "generate": "生成",
+    "copy": "复制",
+    "copied": "已复制！",
+    "empty": "请先输入文本",
+    "error": "生成二维码失败",
+    "history": "历史记录",
+    "noHistory": "暂无历史记录",
+    "description": "生成和解码二维码"
+  }
 }

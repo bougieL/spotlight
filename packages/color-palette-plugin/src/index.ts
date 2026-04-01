@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { isColorString, normalizeColor } from './utils/colorUtils';
 import enUS from './locales/en-US.json';
@@ -16,12 +16,14 @@ const paletteIconUrl = new URL('./assets/palette.svg', import.meta.url).href;
 const ACTION_OPEN = 'open';
 
 export class ColorPalettePlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['colorPalette'] ?? 'Color Palette';
+    return this.i18n.t('colorPalette.name');
   }
 
   get description(): string | undefined {
-    return translations[getLocale()]['colorPalette.description'];
+    return this.i18n.t('colorPalette.description');
   }
 
   iconUrl = paletteIconUrl;

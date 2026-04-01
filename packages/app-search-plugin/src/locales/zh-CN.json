@@ -1,4 +1,6 @@
 {
-  "plugin.app-search": "应用搜索",
-  "plugin.description.appSearch": "搜索并启动已安装的应用程序"
+  "appSearch": {
+    "name": "应用搜索",
+    "description": "搜索并启动已安装的应用程序"
+  }
 }

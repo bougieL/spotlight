@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi } from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -17,11 +17,13 @@ const ACTION_PICK = 'pick';
 const OVERLAY_WINDOW_LABEL = 'color-picker-overlay';
 
 export class ColorPickerPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['colorPicker'] ?? 'Color Picker';
+    return this.i18n.t('colorPicker.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.colorPicker'];
+    return this.i18n.t('colorPicker.description');
   }
   iconUrl = colorPickerIconUrl;
   pluginId = 'color-picker-plugin';

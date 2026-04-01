@@ -1,12 +1,14 @@
 {
-  "qrcode": "QR Code",
-  "qrcode.placeholder": "Enter text to generate QR code",
-  "qrcode.generate": "Generate",
-  "qrcode.copy": "Copy",
-  "qrcode.copied": "Copied!",
-  "qrcode.empty": "Please enter text first",
-  "qrcode.error": "Failed to generate QR code",
-  "qrcode.history": "History",
-  "qrcode.noHistory": "No history yet",
-  "plugin.description.qrcode": "Generate and decode QR codes"
+  "qrcode": {
+    "name": "QR Code",
+    "placeholder": "Enter text to generate QR code",
+    "generate": "Generate",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "empty": "Please enter text first",
+    "error": "Failed to generate QR code",
+    "history": "History",
+    "noHistory": "No history yet",
+    "description": "Generate and decode QR codes"
+  }
 }

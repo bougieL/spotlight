@@ -2,8 +2,12 @@ import { ref, reactive, computed, provide, inject, type InjectionKey, type Compu
 
 export type Locale = 'en-US' | 'zh-CN';
 
-type TranslationDict = Record<string, string>;
-type LocaleTranslations = Partial<Record<Locale, TranslationDict>>;
+type FlattenedTranslation = Record<string, string>;
+type LocaleTranslations = Partial<Record<Locale, FlattenedTranslation>>;
+
+interface NestedTranslation {
+  [key: string]: string | NestedTranslation;
+}
 
 interface I18nContext {
   locale: ComputedRef<Locale>;
@@ -14,7 +18,7 @@ interface I18nContext {
 
 const I18N_KEY: InjectionKey<I18nContext> = Symbol('i18n');
 
-const translations: Record<Locale, TranslationDict> = reactive({
+const translations: Record<Locale, FlattenedTranslation> = reactive({
   'en-US': {},
   'zh-CN': {},
 });
@@ -25,11 +29,25 @@ const currentLocale = ref<Locale>('en-US');
 
 export { currentLocale };
 
-export function registerTranslations(pluginTranslations: LocaleTranslations): void {
+function flattenObject(obj: NestedTranslation, prefix = ''): FlattenedTranslation {
+  const result: FlattenedTranslation = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'object' && value !== null) {
+      Object.assign(result, flattenObject(value as NestedTranslation, newKey));
+    } else {
+      result[newKey] = value as string;
+    }
+  }
+  return result;
+}
+
+export function registerTranslations(pluginTranslations: Partial<Record<Locale, NestedTranslation>>): void {
   for (const locale of Object.keys(translations) as Locale[]) {
-    const pluginDict = pluginTranslations[locale];
-    if (pluginDict) {
-      Object.assign(translations[locale], pluginDict);
+    const nestedDict = pluginTranslations[locale];
+    if (nestedDict) {
+      const flattened = flattenObject(nestedDict);
+      Object.assign(translations[locale], flattened);
     }
   }
 }
@@ -59,11 +77,12 @@ export function createI18nContext(): I18nContext {
     currentLocale.value = newLocale;
   };
 
-  const registerTranslations = (pluginTranslations: LocaleTranslations): void => {
+  const registerTranslations = (pluginTranslations: Partial<Record<Locale, NestedTranslation>>): void => {
     for (const loc of Object.keys(translations) as Locale[]) {
-      const pluginDict = pluginTranslations[loc];
-      if (pluginDict) {
-        Object.assign(translations[loc], pluginDict);
+      const nestedDict = pluginTranslations[loc];
+      if (nestedDict) {
+        const flattened = flattenObject(nestedDict);
+        Object.assign(translations[loc], flattened);
       }
     }
   };

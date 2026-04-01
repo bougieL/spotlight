@@ -1,7 +1,7 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -19,11 +19,13 @@ const ACTION_OPEN = 'open';
 const ACTION_CALCULATE = 'calculate';
 
 export class CalculatorPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['calculator'] ?? 'Calculator';
+    return this.i18n.t('calculator.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.calculator'];
+    return this.i18n.t('calculator.description');
   }
   iconUrl = calculatorIconUrl;
   pluginId = 'calculator-plugin';

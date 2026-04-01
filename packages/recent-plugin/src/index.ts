@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { formatTime } from '@spotlight/utils';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -37,11 +37,13 @@ function generateId(): string {
 }
 
 export class RecentPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['recent'] ?? 'Recent';
+    return this.i18n.t('recent.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.recent'];
+    return this.i18n.t('recent.description');
   }
   iconUrl = recentIconUrl;
   pluginId = 'recent-plugin';
@@ -116,7 +118,7 @@ export class RecentPlugin extends BasePlugin {
         {
           iconUrl: recentIconUrl,
           title: this.name,
-          desc: translations[getLocale()]['recent.empty'] ?? 'No recent items',
+          desc: this.i18n.t('recent.empty'),
           score: 900,
           pluginId: this.pluginId,
           actionId: 'noop',

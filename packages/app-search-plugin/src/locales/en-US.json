@@ -1,4 +1,6 @@
 {
-  "plugin.app-search": "App Search",
-  "plugin.description.appSearch": "Search and launch installed applications"
+  "appSearch": {
+    "name": "App Search",
+    "description": "Search and launch installed applications"
+  }
 }

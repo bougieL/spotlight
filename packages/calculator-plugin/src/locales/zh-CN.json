@@ -1,5 +1,7 @@
 {
-  "calculator": "计算器",
-  "calculator.placeholder": "例如 2+3*4",
-  "plugin.description.calculator": "进行数学计算"
+  "calculator": {
+    "name": "计算器",
+    "placeholder": "例如 2+3*4",
+    "description": "进行数学计算"
+  }
 }

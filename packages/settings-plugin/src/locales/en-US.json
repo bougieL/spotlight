@@ -1,24 +1,41 @@
 {
-  "settings": "Spotlight Settings",
-  "settings.theme": "Theme",
-  "settings.theme.light": "Light",
-  "settings.theme.dark": "Dark",
-  "settings.theme.system": "System",
-  "settings.language": "Language",
-  "settings.language.en": "English",
-  "settings.language.zh": "中文",
-  "settings.shortcut": "Shortcut",
-  "settings.shortcut.hint": "Press the shortcut to bring up Spotlight",
-  "settings.shortcut.recording": "Recording",
-  "settings.shortcut.pressKeys": "Press keys...",
-  "settings.shortcut.altSpaceError": "Alt+Space cannot be used on Windows",
-  "settings.shortcut.reset": "Reset to Alt+Space",
-  "settings.autostart": "Auto Start",
-  "settings.autostart.enable": "Launch on system startup",
-  "settings.hideOnBlur": "Hide on Blur",
-  "settings.hideOnBlur.enable": "Hide window when it loses focus",
-  "settings.plugins": "Plugins",
-  "settings.plugins.description": "Enable or disable plugins",
-  "tray.show": "Show",
-  "tray.quit": "Quit"
+  "settings": {
+    "name": "Spotlight Settings",
+    "theme": {
+      "name": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "name": "Language",
+      "en": "English",
+      "zh": "中文"
+    },
+    "shortcut": {
+      "name": "Shortcut",
+      "hint": "Press the shortcut to bring up Spotlight",
+      "recording": "Recording",
+      "pressKeys": "Press keys...",
+      "altSpaceError": "Alt+Space cannot be used on Windows",
+      "reset": "Reset to Alt+Space"
+    },
+    "autostart": {
+      "name": "Auto Start",
+      "enable": "Launch on system startup"
+    },
+    "hideOnBlur": {
+      "name": "Hide on Blur",
+      "enable": "Hide window when it loses focus"
+    },
+    "plugins": {
+      "name": "Plugins",
+      "description": "Enable or disable plugins"
+    },
+    "description": ""
+  },
+  "tray": {
+    "show": "Show",
+    "quit": "Quit"
+  }
 }

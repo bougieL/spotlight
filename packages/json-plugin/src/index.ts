@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
-import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -15,11 +15,13 @@ const jsonIconUrl = new URL('./assets/JSON.svg', import.meta.url).href;
 const ACTION_OPEN = 'open-json-editor';
 
 export class JsonPlugin extends BasePlugin {
+  private readonly i18n = useI18n();
+
   get name(): string {
-    return translations[getLocale()]['json'] ?? 'JSON Editor';
+    return this.i18n.t('jsonPlugin.name');
   }
   get description(): string | undefined {
-    return translations[getLocale()]['plugin.description.json'];
+    return this.i18n.t('jsonPlugin.description');
   }
   iconUrl = jsonIconUrl;
   pluginId = 'json-plugin';

@@ -1,18 +1,20 @@
 {
-  "imageCompressor": "图片压缩",
-  "imageCompressor.description": "压缩图片以减小文件大小",
-  "selectImages": "选择图片",
-  "dragDropHint": "拖放图片到此处或点击选择",
-  "compressing": "压缩中...",
-  "original": "原始",
-  "compressed": "压缩后",
-  "ratio": "压缩率",
-  "save": "保存",
-  "saveAll": "保存全部",
-  "quality": "质量",
-  "format": "格式",
-  "lossless": "无损",
-  "noImages": "没有图片可压缩",
-  "compressionComplete": "压缩完成",
-  "keywords": "image|compress|resize|jpg|png|webp|图片|压缩"
+  "imageCompressor": {
+    "name": "图片压缩",
+    "description": "压缩图片以减小文件大小",
+    "selectImages": "选择图片",
+    "dragDropHint": "拖放图片到此处或点击选择",
+    "compressing": "压缩中...",
+    "original": "原始",
+    "compressed": "压缩后",
+    "ratio": "压缩率",
+    "save": "保存",
+    "saveAll": "保存全部",
+    "quality": "质量",
+    "format": "格式",
+    "lossless": "无损",
+    "noImages": "没有图片可压缩",
+    "compressionComplete": "压缩完成",
+    "keywords": "image|compress|resize|jpg|png|webp|图片|压缩"
+  }
 }
