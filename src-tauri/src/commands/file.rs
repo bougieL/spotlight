@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use glob::glob;
 
 #[tauri::command]
 pub fn save_temp_image(data_url: String) -> Result<String, String> {
@@ -40,4 +41,91 @@ pub fn save_pasted_file(data_url: String, file_name: String) -> Result<String, S
     fs::write(&file_path, file_data).map_err(|e| e.to_string())?;
 
     Ok(file_path.to_string_lossy().to_string().replace('\\', "/"))
+}
+
+#[tauri::command]
+pub fn save_image_file(file_path: String, data_url: String) -> Result<(), String> {
+    let parts: Vec<&str> = data_url.splitn(2, ',').collect();
+    if parts.len() != 2 {
+        return Err("Invalid data URL format".to_string());
+    }
+
+    let base64_data = parts[1];
+    let image_data =
+        base64::Engine::decode(&base64::engine::general_purpose::STANDARD, base64_data)
+            .map_err(|e| e.to_string())?;
+
+    fs::write(&file_path, image_data).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn compress_png_lossless(file_path: String) -> Result<Vec<u8>, String> {
+    // Use oxipng for lossless PNG optimization
+    let options = oxipng::Options::max_compression();
+
+    // Create a temp output file
+    let temp_dir = std::env::temp_dir();
+    let output_file_name = format!("spotlight_optimized_{}.png", uuid::Uuid::new_v4());
+    let output_path: PathBuf = temp_dir.join(output_file_name);
+
+    oxipng::optimize(
+        &oxipng::InFile::Path(file_path.into()),
+        &oxipng::OutFile::from_path(output_path.clone()),
+        &options,
+    )
+    .map_err(|e| e.to_string())?;
+
+    let output_data = fs::read(&output_path).map_err(|e| e.to_string())?;
+
+    // Clean up temp output file
+    let _ = fs::remove_file(&output_path);
+
+    Ok(output_data)
+}
+
+#[tauri::command]
+pub fn glob_image_files(dir_path: String) -> Result<Vec<String>, String> {
+    let image_extensions = ["png", "jpg", "jpeg", "gif", "webp", "bmp"];
+
+    let pattern = format!("{}/*.{{{}}}",
+        dir_path.replace('\\', "/"),
+        image_extensions.join(",")
+    );
+
+    let mut files: Vec<String> = Vec::new();
+
+    for entry in glob(&pattern).map_err(|e| e.to_string())? {
+        match entry {
+            Ok(path) => {
+                if path.is_file() {
+                    files.push(path.to_string_lossy().to_string().replace('\\', "/"));
+                }
+            }
+            Err(_) => continue,
+        }
+    }
+
+    // Also search in subdirectories
+    let subdir_pattern = format!("{}/**/*.{{{}}}",
+        dir_path.replace('\\', "/"),
+        image_extensions.join(",")
+    );
+
+    for entry in glob(&subdir_pattern).map_err(|e| e.to_string())? {
+        match entry {
+            Ok(path) => {
+                if path.is_file() {
+                    let file_str = path.to_string_lossy().to_string().replace('\\', "/");
+                    if !files.contains(&file_str) {
+                        files.push(file_str);
+                    }
+                }
+            }
+            Err(_) => continue,
+        }
+    }
+
+    Ok(files)
 }

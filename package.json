@@ -28,6 +28,7 @@
     "@spotlight/components": "*",
     "@spotlight/core": "*",
     "@spotlight/i18n": "*",
+    "@spotlight/image-compressor-plugin": "*",
     "@spotlight/json-plugin": "*",
     "@spotlight/logger": "*",
     "@spotlight/notes-plugin": "*",

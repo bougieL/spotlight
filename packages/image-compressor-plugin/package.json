@@ -1,5 +1,5 @@
 {
-  "name": "@spotlight/window-manager-plugin",
+  "name": "@spotlight/image-compressor-plugin",
   "version": "1.0.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -8,8 +8,8 @@
     ".": "./src/index.ts"
   },
   "peerDependencies": {
-    "@spotlight/api": "*",
     "@spotlight/core": "*",
+    "@spotlight/api": "*",
     "lucide-vue-next": "^0.577.0"
   }
 }

@@ -21,6 +21,7 @@ import { screenshotPlugin } from "@spotlight/screenshot-plugin";
 import { translationPlugin } from "@spotlight/translation-plugin";
 import { fileSearchPlugin } from "@spotlight/file-search-plugin";
 import { windowManagerPlugin } from "@spotlight/window-manager-plugin";
+import { imageCompressorPlugin } from "@spotlight/image-compressor-plugin";
 
 const allPlugins = [
   appSearchPlugin,
@@ -41,6 +42,7 @@ const allPlugins = [
   translationPlugin,
   fileSearchPlugin,
   windowManagerPlugin,
+  imageCompressorPlugin,
 ];
 
 /**

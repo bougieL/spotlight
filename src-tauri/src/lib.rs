@@ -7,7 +7,7 @@ use commands::{
     get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image, get_clipboard_text,
     get_global_shortcut, get_installed_applications, get_plugin_storage_dir, get_user_home, hide_window, launch_app,
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
-    save_temp_image, search_with_rg, search_files_with_rg, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
+    save_temp_image, save_image_file, compress_png_lossless, glob_image_files, search_with_rg, search_files_with_rg, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
     write_plugin_settings, create_overlay_window, close_overlay_window, exit_app,
     detach_window, list_windows, minimize_window, maximize_window, restore_window,
@@ -37,6 +37,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             save_temp_image,
             save_pasted_file,
+            save_image_file,
+            compress_png_lossless,
+            glob_image_files,
             get_clipboard_file_paths,
             get_clipboard_text,
             get_clipboard_image,

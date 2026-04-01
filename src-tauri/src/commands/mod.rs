@@ -22,7 +22,7 @@ pub use clipboard::{
     get_clipboard_file_paths, get_clipboard_image, get_clipboard_text, set_clipboard_files,
     set_clipboard_image, set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor,
 };
-pub use file::{save_pasted_file, save_temp_image};
+pub use file::{save_pasted_file, save_temp_image, save_image_file, compress_png_lossless, glob_image_files};
 pub use launcher::launch_app;
 pub use log::write_log;
 pub use screen::{capture_full_screen};

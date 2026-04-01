@@ -26,6 +26,7 @@ export interface TauriApi {
   detachWindow: (options: { url: string; label: string; title: string }) => Promise<void>;
   exitApp: () => Promise<void>;
   saveTempImage: (dataUrl: string) => Promise<string>;
+  saveImageFile: (filePath: string, dataUrl: string) => Promise<void>;
   getClipboardFilePaths: () => Promise<string[]>;
   getClipboardText: () => Promise<string>;
   getClipboardImage: () => Promise<string>;
@@ -72,6 +73,16 @@ export interface SearchOptions {
   file_type?: string;
 }
 
+export interface WindowInfo {
+  hwnd: number;
+  title: string;
+  processName: string;
+  isVisible: boolean;
+  isMinimized: boolean;
+  isMaximized: boolean;
+  isAlwaysOnTop: boolean;
+}
+
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
@@ -96,6 +107,36 @@ export const getUserHome = (): Promise<string> =>
   invoke<string>('get_user_home');
 
 export const exitApp = (): Promise<void> => invoke('exit_app');
+
+export const saveImageFile = (filePath: string, dataUrl: string): Promise<void> =>
+  invoke<void>('save_image_file', { filePath, dataUrl });
+
+export const compressPngLossless = (filePath: string): Promise<number[]> =>
+  invoke<number[]>('compress_png_lossless', { filePath });
+
+export const globImageFiles = (dirPath: string): Promise<string[]> =>
+  invoke<string[]>('glob_image_files', { dirPath });
+
+export const listWindows = (): Promise<WindowInfo[]> =>
+  invoke<WindowInfo[]>('list_windows');
+
+export const minimizeWindow = (hwnd: number): Promise<void> =>
+  invoke<void>('minimize_window', { hwnd });
+
+export const maximizeWindow = (hwnd: number): Promise<void> =>
+  invoke<void>('maximize_window', { hwnd });
+
+export const restoreWindow = (hwnd: number): Promise<void> =>
+  invoke<void>('restore_window', { hwnd });
+
+export const closeWindow = (hwnd: number): Promise<void> =>
+  invoke<void>('close_window', { hwnd });
+
+export const setWindowAlwaysOnTop = (hwnd: number, onTop: boolean): Promise<void> =>
+  invoke<void>('set_window_always_on_top', { hwnd, onTop });
+
+export const focusWindow = (hwnd: number): Promise<void> =>
+  invoke<void>('focus_window', { hwnd });
 
 export async function openDirectoryDialog(defaultPath?: string): Promise<string | null> {
   const { open } = await import('@tauri-apps/plugin-dialog');
@@ -122,6 +163,9 @@ export const tauriApi: TauriApi = {
   exitApp: () => invoke('exit_app'),
 
   saveTempImage: (dataUrl: string) => invoke<string>('save_temp_image', { dataUrl }),
+
+  saveImageFile: (filePath: string, dataUrl: string) =>
+    invoke<void>('save_image_file', { filePath, dataUrl }),
 
   getClipboardFilePaths: () => invoke<string[]>('get_clipboard_file_paths'),
 

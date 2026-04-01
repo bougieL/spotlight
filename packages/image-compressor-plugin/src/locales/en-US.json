@@ -1,0 +1,18 @@
+{
+  "imageCompressor": "Image Compressor",
+  "imageCompressor.description": "Compress images to reduce file size",
+  "selectImages": "Select Images",
+  "dragDropHint": "Drag & drop images here or click to select",
+  "compressing": "Compressing...",
+  "original": "Original",
+  "compressed": "Compressed",
+  "ratio": "Ratio",
+  "save": "Save",
+  "saveAll": "Save All",
+  "quality": "Quality",
+  "format": "Format",
+  "lossless": "lossless",
+  "noImages": "No images to compress",
+  "compressionComplete": "Compression complete",
+  "keywords": "image|compress|resize|jpg|png|webp|图片|压缩"
+}

@@ -2,9 +2,21 @@ import type { SearchResultItem, SearchParams, PluginActions, ActionContext } fro
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, translations, getLocale } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import {
+  listWindows,
+  minimizeWindow,
+  maximizeWindow,
+  restoreWindow,
+  closeWindow,
+  setWindowAlwaysOnTop,
+  focusWindow,
+  type WindowInfo,
+} from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
+
+export type { WindowInfo };
 
 registerTranslations({
   'en-US': enUS,
@@ -12,58 +24,6 @@ registerTranslations({
 });
 
 const windowIconUrl = new URL('./assets/window.svg', import.meta.url).href;
-
-export interface WindowInfo {
-  hwnd: number;
-  title: string;
-  processName: string;
-  isVisible: boolean;
-  isMinimized: boolean;
-  isMaximized: boolean;
-  isAlwaysOnTop: boolean;
-}
-
-export interface WindowApi {
-  listWindows: () => Promise<WindowInfo[]>;
-  minimizeWindow: (hwnd: number) => Promise<void>;
-  maximizeWindow: (hwnd: number) => Promise<void>;
-  restoreWindow: (hwnd: number) => Promise<void>;
-  closeWindow: (hwnd: number) => Promise<void>;
-  setWindowAlwaysOnTop: (hwnd: number, onTop: boolean) => Promise<void>;
-  focusWindow: (hwnd: number) => Promise<void>;
-}
-
-let windowApi: WindowApi | null = null;
-
-function getWindowApi(): WindowApi {
-  if (!windowApi) {
-    // Dynamically import to support both Tauri and mock environments
-    const invoke = (window as unknown as { __TAURI_INTERNALS__?: { invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown> } }).__TAURI_INTERNALS__?.invoke;
-    if (invoke) {
-      windowApi = {
-        listWindows: () => invoke('list_windows') as Promise<WindowInfo[]>,
-        minimizeWindow: (hwnd: number) => invoke('minimize_window', { hwnd }) as Promise<void>,
-        maximizeWindow: (hwnd: number) => invoke('maximize_window', { hwnd }) as Promise<void>,
-        restoreWindow: (hwnd: number) => invoke('restore_window', { hwnd }) as Promise<void>,
-        closeWindow: (hwnd: number) => invoke('close_window', { hwnd }) as Promise<void>,
-        setWindowAlwaysOnTop: (hwnd: number, onTop: boolean) => invoke('set_window_always_on_top', { hwnd, onTop }) as Promise<void>,
-        focusWindow: (hwnd: number) => invoke('focus_window', { hwnd }) as Promise<void>,
-      };
-    } else {
-      // Mock implementation for development/testing
-      windowApi = {
-        listWindows: async () => [],
-        minimizeWindow: async () => { logger.info('Mock: minimizeWindow'); },
-        maximizeWindow: async () => { logger.info('Mock: maximizeWindow'); },
-        restoreWindow: async () => { logger.info('Mock: restoreWindow'); },
-        closeWindow: async () => { logger.info('Mock: closeWindow'); },
-        setWindowAlwaysOnTop: async () => { logger.info('Mock: setWindowAlwaysOnTop'); },
-        focusWindow: async () => { logger.info('Mock: focusWindow'); },
-      };
-    }
-  }
-  return windowApi;
-}
 
 const ACTION_OPEN = 'open';
 const ACTION_MINIMIZE = 'minimize';
@@ -95,7 +55,7 @@ export class WindowManagerPlugin extends BasePlugin {
       [ACTION_MINIMIZE]: async (data) => {
         if (typeof data !== 'number') return;
         try {
-          await getWindowApi().minimizeWindow(data);
+          await minimizeWindow(data);
           logger.info(`Window minimized: hwnd=${data}`);
         } catch (error) {
           logger.error('Failed to minimize window', error);
@@ -104,7 +64,7 @@ export class WindowManagerPlugin extends BasePlugin {
       [ACTION_MAXIMIZE]: async (data) => {
         if (typeof data !== 'number') return;
         try {
-          await getWindowApi().maximizeWindow(data);
+          await maximizeWindow(data);
           logger.info(`Window maximized: hwnd=${data}`);
         } catch (error) {
           logger.error('Failed to maximize window', error);
@@ -113,7 +73,7 @@ export class WindowManagerPlugin extends BasePlugin {
       [ACTION_RESTORE]: async (data) => {
         if (typeof data !== 'number') return;
         try {
-          await getWindowApi().restoreWindow(data);
+          await restoreWindow(data);
           logger.info(`Window restored: hwnd=${data}`);
         } catch (error) {
           logger.error('Failed to restore window', error);
@@ -122,7 +82,7 @@ export class WindowManagerPlugin extends BasePlugin {
       [ACTION_CLOSE]: async (data) => {
         if (typeof data !== 'number') return;
         try {
-          await getWindowApi().closeWindow(data);
+          await closeWindow(data);
           logger.info(`Window closed: hwnd=${data}`);
         } catch (error) {
           logger.error('Failed to close window', error);
@@ -132,7 +92,7 @@ export class WindowManagerPlugin extends BasePlugin {
         if (!data || typeof data !== 'object') return;
         const { hwnd, onTop } = data as { hwnd: number; onTop: boolean };
         try {
-          await getWindowApi().setWindowAlwaysOnTop(hwnd, onTop);
+          await setWindowAlwaysOnTop(hwnd, onTop);
           logger.info(`Window always on top set: hwnd=${hwnd}, onTop=${onTop}`);
         } catch (error) {
           logger.error('Failed to set window always on top', error);
@@ -141,7 +101,7 @@ export class WindowManagerPlugin extends BasePlugin {
       [ACTION_FOCUS]: async (data) => {
         if (typeof data !== 'number') return;
         try {
-          await getWindowApi().focusWindow(data);
+          await focusWindow(data);
           logger.info(`Window focused: hwnd=${data}`);
         } catch (error) {
           logger.error('Failed to focus window', error);
@@ -152,7 +112,7 @@ export class WindowManagerPlugin extends BasePlugin {
 
   async getWindows(): Promise<WindowInfo[]> {
     try {
-      return await getWindowApi().listWindows();
+      return await listWindows();
     } catch (error) {
       logger.error('Failed to list windows', error);
       return [];
