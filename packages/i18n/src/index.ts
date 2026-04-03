@@ -1,4 +1,5 @@
 import { ref, reactive, computed, provide, inject, type InjectionKey, type ComputedRef } from 'vue';
+import logger from '@spotlight/logger';
 
 export type Locale = 'en-US' | 'zh-CN';
 
@@ -64,7 +65,12 @@ export function createI18nContext(): I18nContext {
   const locale = computed(() => currentLocale.value);
 
   const t = (key: string, params?: Record<string, string>): string => {
-    let result = translations[locale.value][key] ?? key;
+    const translation = translations[locale.value][key];
+    if (translation === undefined) {
+      logger.error(`[i18n] Translation key not found: "${key}" (locale: ${locale.value})`);
+      return key;
+    }
+    let result = translation;
     if (params) {
       for (const [k, v] of Object.entries(params)) {
         result = result.replace(`{{${k}}}`, v);

@@ -1,4 +1,4 @@
-import { translations, getLocale, registerTranslations } from '@spotlight/i18n';
+import { useI18n, registerTranslations } from '@spotlight/i18n';
 import enUSTime from './locales/en-US.json';
 import zhCNTime from './locales/zh-CN.json';
 
@@ -8,32 +8,31 @@ registerTranslations({
 });
 
 export function formatTime(timestamp: number): string {
+  const { t, locale } = useI18n();
   const date = new Date(timestamp);
   const now = new Date();
   const diff = now.getTime() - date.getTime();
 
-  const locale = getLocale();
-
   if (diff < 60000) {
-    return translations[locale]['time.justNow'] ?? 'Just now';
+    return t('time.justNow');
   }
   if (diff < 3600000) {
     const mins = Math.floor(diff / 60000);
-    const template = translations[locale]['time.minutesAgo'] ?? '{n}m ago';
+    const template = t('time.minutesAgo');
     return template.replace('{n}', String(mins));
   }
   if (diff < 86400000) {
     const hours = Math.floor(diff / 3600000);
-    const template = translations[locale]['time.hoursAgo'] ?? '{n}h ago';
+    const template = t('time.hoursAgo');
     return template.replace('{n}', String(hours));
   }
   if (diff < 172800000) {
-    return translations[locale]['time.yesterday'] ?? 'Yesterday';
+    return t('time.yesterday');
   }
   if (diff < 604800000) {
     const days = Math.floor(diff / 86400000);
-    const template = translations[locale]['time.daysAgo'] ?? '{n}d ago';
+    const template = t('time.daysAgo');
     return template.replace('{n}', String(days));
   }
-  return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(locale.value, { year: 'numeric', month: 'short', day: 'numeric' });
 }

@@ -216,7 +216,7 @@ function handleKeydown(event: KeyboardEvent) {
       <h3>{{ isEditing ? t('shortcuts.edit') : t('shortcuts.add') }}</h3>
 
       <div class="form-group">
-        <label>{{ t('shortcuts.name') }}</label>
+        <label>{{ t('shortcuts.nameLabel') }}</label>
         <input
           v-model="formName"
           type="text"
@@ -236,7 +236,7 @@ function handleKeydown(event: KeyboardEvent) {
       </div>
 
       <div class="form-group">
-        <label>{{ t('shortcuts.description') }}</label>
+        <label>{{ t('shortcuts.descLabel') }}</label>
         <input
           v-model="formDescription"
           type="text"

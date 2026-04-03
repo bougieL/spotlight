@@ -129,7 +129,7 @@ onMounted(async () => {
   >
     <section class="settings-section">
       <h3 class="section-title">
-        {{ t('settings.theme') }}
+        {{ t('settings.theme.name') }}
       </h3>
       <div class="option-group">
         <button
@@ -151,7 +151,7 @@ onMounted(async () => {
 
     <section class="settings-section">
       <h3 class="section-title">
-        {{ t('settings.language') }}
+        {{ t('settings.language.name') }}
       </h3>
       <div class="option-group">
         <button
@@ -169,7 +169,7 @@ onMounted(async () => {
     <section class="settings-section">
       <div class="section-header">
         <h3 class="section-title">
-          {{ t('settings.shortcut') }}
+          {{ t('settings.shortcut.name') }}
         </h3>
         <p
           v-if="hotkeyError"
@@ -193,7 +193,7 @@ onMounted(async () => {
 
     <section class="settings-section">
       <h3 class="section-title">
-        {{ t('settings.autostart') }}
+        {{ t('settings.autostart.name') }}
       </h3>
       <div class="autostart-item">
         <div class="autostart-info">
@@ -208,7 +208,7 @@ onMounted(async () => {
 
     <section class="settings-section">
       <h3 class="section-title">
-        {{ t('settings.hideOnBlur') }}
+        {{ t('settings.hideOnBlur.name') }}
       </h3>
       <div class="autostart-item">
         <div class="autostart-info">
@@ -224,7 +224,7 @@ onMounted(async () => {
     <section class="settings-section">
       <div class="section-header">
         <h3 class="section-title">
-          {{ t('settings.plugins') }}
+          {{ t('settings.plugins.name') }}
         </h3>
         <p class="section-description">
           {{ t('settings.plugins.description') }}

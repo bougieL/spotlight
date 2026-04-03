@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Package } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { translations, useLocale } from '@spotlight/i18n';
+import { useI18n } from '@spotlight/i18n';
 import type { SearchResultItem } from '@spotlight/core';
 import { usePanelContext } from '@spotlight/core';
 import { recentPlugin } from '@spotlight/recent-plugin';
@@ -12,14 +12,14 @@ const emit = defineEmits<{
   (e: 'select', item: SearchResultItem): void;
 }>();
 
+const { t } = useI18n();
 const { query, files } = usePanelContext();
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
-const locale = useLocale();
 const listRef = ref<HTMLElement | null>(null);
 
 const translateTitle = (title: string): string => {
-  return translations[locale.value][title] ?? title;
+  return t(title);
 };
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -148,7 +148,7 @@ onUnmounted(() => {
 .spotlight-result-item {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 12px 24px;
   cursor: pointer;
   transition: background-color 0.15s;
 }
