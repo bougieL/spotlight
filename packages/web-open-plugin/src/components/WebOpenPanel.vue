@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Globe, Trash2, Clock, X } from 'lucide-vue-next';
 import { webOpenPlugin } from '../index';
+import { closeAllChildWebviews } from '@spotlight/api';
 
 const { t } = useI18n();
+const router = useRouter();
 
 const url = ref('');
 const recentUrls = ref<string[]>([]);
 const error = ref('');
-const activeWebviewLabel = ref<string | null>(null);
-const webviewBounds = ref({ x: 0, y: 0, width: 800, height: 600 });
 
 const emit = defineEmits<{ (e: 'close'): void }>();
 
 onMounted(async () => {
+  await closeAllChildWebviews();
   recentUrls.value = await webOpenPlugin.getRecentUrls();
 });
 
@@ -42,6 +44,13 @@ function formatUrl(urlString: string): string {
   }
 }
 
+function normalizeUrl(urlString: string): string {
+  if (urlString.startsWith('http://') || urlString.startsWith('https://')) {
+    return urlString;
+  }
+  return 'https://' + urlString;
+}
+
 async function handleOpen() {
   error.value = '';
 
@@ -51,42 +60,22 @@ async function handleOpen() {
     return;
   }
 
-  // Add protocol if missing
-  if (!urlToOpen.startsWith('http://') && !urlToOpen.startsWith('https://')) {
-    urlToOpen = 'https://' + urlToOpen;
-  }
-
   if (!isValidUrl(urlToOpen)) {
     error.value = t('webOpen.invalidUrl');
     return;
   }
 
-  // Position the webview in the center of the screen
-  webviewBounds.value = {
-    x: 100,
-    y: 100,
-    width: Math.min(1200, window.innerWidth - 200),
-    height: Math.min(800, window.innerHeight - 200),
-  };
-
-  await webOpenPlugin.openUrl(urlToOpen, webviewBounds.value);
-
-  activeWebviewLabel.value = `webview-${Date.now()}`;
-  url.value = '';
+  urlToOpen = normalizeUrl(urlToOpen);
+  await webOpenPlugin.addRecentUrl(urlToOpen);
   recentUrls.value = await webOpenPlugin.getRecentUrls();
+
+  // Navigate to view route with URL as query param
+  router.push({ name: 'web-open-plugin:view', query: { url: urlToOpen } });
 }
 
 async function openRecentUrl(recentUrl: string) {
-  webviewBounds.value = {
-    x: 100,
-    y: 100,
-    width: Math.min(1200, window.innerWidth - 200),
-    height: Math.min(800, window.innerHeight - 200),
-  };
-
-  await webOpenPlugin.openUrl(recentUrl, webviewBounds.value);
-
-  activeWebviewLabel.value = `webview-${Date.now()}`;
+  // Navigate to view route with URL as query param
+  router.push({ name: 'web-open-plugin:view', query: { url: recentUrl } });
 }
 
 async function handleClearHistory() {
@@ -94,9 +83,13 @@ async function handleClearHistory() {
   recentUrls.value = [];
 }
 
+function handleClose() {
+  emit('close');
+}
+
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    emit('close');
+    handleClose();
   }
 }
 </script>
@@ -106,7 +99,7 @@ function handleKeydown(event: KeyboardEvent) {
     <div class="panel-header">
       <Globe class="header-icon" />
       <span class="header-title">{{ t('webOpen.name') }}</span>
-      <button class="close-btn" @click="$emit('close')">
+      <button class="close-btn" @click="handleClose">
         <X :size="18" />
       </button>
     </div>

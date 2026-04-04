@@ -83,6 +83,13 @@ export interface WindowInfo {
   isAlwaysOnTop: boolean;
 }
 
+export interface ChildWebviewOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
@@ -137,6 +144,25 @@ export const setWindowAlwaysOnTop = (hwnd: number, onTop: boolean): Promise<void
 
 export const focusWindow = (hwnd: number): Promise<void> =>
   invoke<void>('focus_window', { hwnd });
+
+export const createChildWebview = (
+  url: string,
+  label: string,
+  options: ChildWebviewOptions
+): Promise<string> =>
+  invoke<string>('create_child_webview', { url, label, ...options });
+
+export const closeChildWebview = (label: string): Promise<void> =>
+  invoke<void>('close_child_webview', { label });
+
+export const resizeChildWebview = (
+  label: string,
+  options: ChildWebviewOptions
+): Promise<void> =>
+  invoke<void>('resize_child_webview', { label, ...options });
+
+export const closeAllChildWebviews = (): Promise<void> =>
+  invoke<void>('close_all_child_webviews');
 
 export async function openDirectoryDialog(defaultPath?: string): Promise<string | null> {
   const { open } = await import('@tauri-apps/plugin-dialog');

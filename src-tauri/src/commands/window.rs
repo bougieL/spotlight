@@ -475,11 +475,6 @@ pub async fn create_child_webview(
     width: f64,
     height: f64,
 ) -> Result<(), String> {
-    // Close existing webview with same label if it exists
-    if let Some(existing) = app.get_webview_window(&label) {
-        let _ = existing.close();
-    }
-
     // Get the main window - use get_window to access Window type which has add_child
     let main_window = app.get_window("main").ok_or("Main window not found")?;
 
@@ -489,7 +484,7 @@ pub async fn create_child_webview(
         WebviewUrl::External(url.parse().map_err(|e: url::ParseError| e.to_string())?),
     );
 
-    let _webview = main_window
+    main_window
         .add_child(webview_builder, tauri::Position::Logical(tauri::LogicalPosition { x, y }), tauri::Size::Logical(tauri::LogicalSize { width, height }))
         .map_err(|e| e.to_string())?;
 
@@ -498,11 +493,38 @@ pub async fn create_child_webview(
 
 #[tauri::command]
 pub async fn close_child_webview(app: tauri::AppHandle, label: String) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window(&label) {
-        window.close().map_err(|e| e.to_string())?;
-    } else {
-        return Err(format!("Child webview '{}' not found", label));
+    // Try app.get_webview to get the webview and close it
+    if let Some(webview) = app.get_webview(&label) {
+        webview.close().map_err(|e| e.to_string())?;
+        return Ok(());
     }
+
+    // Fallback: try via webview_windows
+    if let Some(window) = app.webview_windows().get(&label) {
+        window.close().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    Err(format!("Child webview '{}' not found", label))
+}
+
+#[tauri::command]
+pub async fn close_all_child_webviews(app: tauri::AppHandle) -> Result<(), String> {
+    let webview_prefix = "webview-";
+
+    // Close all webviews that start with webview-
+    let labels: Vec<_> = app.webview_windows()
+        .keys()
+        .filter(|label| label.starts_with(webview_prefix))
+        .cloned()
+        .collect();
+
+    for label in labels {
+        if let Some(window) = app.webview_windows().get(&label) {
+            window.close().map_err(|e| e.to_string())?;
+        }
+    }
+
     Ok(())
 }
 

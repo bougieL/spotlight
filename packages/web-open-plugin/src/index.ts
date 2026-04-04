@@ -1,8 +1,7 @@
-import { invoke } from '@tauri-apps/api/core';
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
-import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import { createPluginStorage, type PluginStorage, createChildWebview, closeChildWebview } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -64,14 +63,14 @@ export class WebOpenPlugin extends BasePlugin {
   async openUrl(
     url: string,
     options: { x: number; y: number; width: number; height: number }
-  ): Promise<void> {
+  ): Promise<string> {
     const label = `webview-${Date.now()}`;
-    await invoke('create_child_webview', { url, label, ...options });
-    await this.addRecentUrl(url);
+    await createChildWebview(url, label, options);
+    return label;
   }
 
   async closeUrl(label: string): Promise<void> {
-    await invoke('close_child_webview', { label });
+    await closeChildWebview(label);
   }
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
@@ -105,6 +104,7 @@ export class WebOpenPlugin extends BasePlugin {
   getPanelRoutes() {
     return [
       { name: 'main', componentLoader: () => import('./components/WebOpenPanel.vue') },
+      { name: 'view', componentLoader: () => import('./components/WebViewPage.vue') },
     ];
   }
 }
