@@ -22,6 +22,7 @@ import { translationPlugin } from "@spotlight/translation-plugin";
 import { fileSearchPlugin } from "@spotlight/file-search-plugin";
 import { windowManagerPlugin } from "@spotlight/window-manager-plugin";
 import { imageCompressorPlugin } from "@spotlight/image-compressor-plugin";
+import { webOpenPlugin } from "@spotlight/web-open-plugin";
 
 const allPlugins = [
   appSearchPlugin,
@@ -43,6 +44,7 @@ const allPlugins = [
   fileSearchPlugin,
   windowManagerPlugin,
   imageCompressorPlugin,
+  webOpenPlugin,
 ];
 
 /**

@@ -1,0 +1,12 @@
+{
+  "webOpen": {
+    "name": "Web Open",
+    "description": "Quick open web pages",
+    "placeholder": "Enter URL or search query",
+    "open": "Open",
+    "recentUrls": "Recent URLs",
+    "clearHistory": "Clear History",
+    "noHistory": "No recent URLs",
+    "invalidUrl": "Please enter a valid URL"
+  }
+}

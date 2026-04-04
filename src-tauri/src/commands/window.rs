@@ -459,3 +459,68 @@ pub fn set_window_always_on_top(hwnd: isize, on_top: bool) -> Result<(), String>
 pub fn focus_window(hwnd: isize) -> Result<(), String> {
     window_manager::focus_window_impl(hwnd)
 }
+
+// =============================================================================
+// Child Webview Commands - Add webviews as children to the main window
+// Uses Window::add_child API from Tauri
+// =============================================================================
+
+#[tauri::command]
+pub async fn create_child_webview(
+    app: tauri::AppHandle,
+    url: String,
+    label: String,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    // Close existing webview with same label if it exists
+    if let Some(existing) = app.get_webview_window(&label) {
+        let _ = existing.close();
+    }
+
+    // Get the main window - use get_window to access Window type which has add_child
+    let main_window = app.get_window("main").ok_or("Main window not found")?;
+
+    // Use WebviewBuilder and Window::add_child to add webview to window
+    let webview_builder = tauri::webview::WebviewBuilder::new(
+        &label,
+        WebviewUrl::External(url.parse().map_err(|e: url::ParseError| e.to_string())?),
+    );
+
+    let _webview = main_window
+        .add_child(webview_builder, tauri::Position::Logical(tauri::LogicalPosition { x, y }), tauri::Size::Logical(tauri::LogicalSize { width, height }))
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn close_child_webview(app: tauri::AppHandle, label: String) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window(&label) {
+        window.close().map_err(|e| e.to_string())?;
+    } else {
+        return Err(format!("Child webview '{}' not found", label));
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn resize_child_webview(
+    app: tauri::AppHandle,
+    label: String,
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    let window = app.get_webview_window(&label).ok_or("Child webview not found")?;
+    window
+        .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
+        .map_err(|e| e.to_string())?;
+    window
+        .set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }))
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
