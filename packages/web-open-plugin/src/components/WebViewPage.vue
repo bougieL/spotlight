@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { createChildWebview, closeChildWebview } from '@spotlight/api';
 
@@ -36,7 +36,7 @@ onMounted(async () => {
   webviewLabel.value = await createChildWebview(url, `webview-${Date.now()}`, bounds);
 });
 
-onUnmounted(async () => {
+onBeforeUnmount(async () => {
   if (webviewLabel.value) {
     await closeChildWebview(webviewLabel.value);
   }
@@ -51,7 +51,7 @@ onUnmounted(async () => {
 .webview-page {
   width: 100%;
   height: 100%;
-  min-height: 800px;
+  min-height: 500px;
   background-color: var(--bg-primary, #fff);
 }
 </style>
