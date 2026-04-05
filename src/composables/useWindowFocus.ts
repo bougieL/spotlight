@@ -28,6 +28,13 @@ export function useWindowFocus(
 
     const window = getCurrentWindow();
 
+    // Check if window is already focused when mounting (e.g., on initial show)
+    const alreadyFocused = await window.isFocused();
+    if (alreadyFocused) {
+      logger.info('[useWindowFocus] window already focused on mount, focusing input');
+      focusInput();
+    }
+
     unlistenFocusChanged = await window.onFocusChanged(async (event) => {
       const focused = event.payload;
       logger.info(`[useWindowFocus] focusChanged event received, focused: ${focused}`);
