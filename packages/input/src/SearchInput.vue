@@ -104,7 +104,11 @@ const focus = () => {
   inputRef.value?.focus();
 };
 
-defineExpose({ focus });
+const getInputRect = () => {
+  return inputRef.value?.getBoundingClientRect() ?? null;
+};
+
+defineExpose({ focus, getInputRect });
 
 const handlePaste = async (event: ClipboardEvent) => {
   event.preventDefault();

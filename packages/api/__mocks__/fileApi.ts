@@ -152,6 +152,8 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return getAutostartEnabled();
     case 'set_autostart_enabled':
       return setAutostartEnabled(args?.enabled as boolean);
+    case 'simulate_mouse_click':
+      return Promise.resolve();
     default:
       return invoke(command, args);
   }

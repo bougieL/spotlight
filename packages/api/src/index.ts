@@ -48,6 +48,7 @@ export interface TauriApi {
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
+  simulateMouseClick: (x: number, y: number) => Promise<void>;
 }
 
 export interface ScreenCapture {
@@ -178,6 +179,9 @@ export async function openDirectoryDialog(defaultPath?: string): Promise<string 
   return selected as string | null;
 }
 
+export const simulateMouseClick = (x: number, y: number): Promise<void> =>
+  invoke<void>('simulate_mouse_click', { x, y });
+
 export const tauriApi: TauriApi = {
   showWindow: () => invoke('show_window'),
 
@@ -240,4 +244,6 @@ export const tauriApi: TauriApi = {
   setAutostartEnabled: (enabled: boolean) => invoke<void>('set_autostart_enabled', { enabled }),
 
   convertFileSrc,
+
+  simulateMouseClick: (x: number, y: number) => invoke<void>('simulate_mouse_click', { x, y }),
 };

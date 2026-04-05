@@ -1,4 +1,4 @@
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use raw_window_handle::HasWindowHandle;
 
 #[cfg(windows)]
@@ -6,7 +6,11 @@ use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_NCRENDERING_POL
 #[cfg(windows)]
 use windows::Win32::Foundation::HWND;
 #[cfg(windows)]
-use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORDER, WS_THICKFRAME, SetWindowLongW, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED, HWND_TOP};
+use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORDER, WS_THICKFRAME, SetWindowLongW, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED, HWND_TOP, SetCursorPos, GetCursorPos};
+#[cfg(windows)]
+use windows::Win32::Foundation::POINT;
+#[cfg(windows)]
+use windows::Win32::UI::Input::KeyboardAndMouse::{SendInput, INPUT, INPUT_MOUSE, MOUSEINPUT, MOUSEEVENTF_LEFTDOWN, MOUSEEVENTF_LEFTUP};
 
 #[tauri::command]
 pub fn show_window(app: tauri::AppHandle) -> Result<(), String> {
@@ -14,6 +18,7 @@ pub fn show_window(app: tauri::AppHandle) -> Result<(), String> {
     window.show().map_err(|e| e.to_string())?;
     window.unminimize().map_err(|e| e.to_string())?;
     window.set_focus().map_err(|e| e.to_string())?;
+    app.emit("tauri://focus", ()).map_err(|e: tauri::Error| e.to_string())?;
     Ok(())
 }
 
@@ -207,6 +212,62 @@ pub async fn detach_window(
 #[tauri::command]
 pub fn exit_app(app: tauri::AppHandle) -> Result<(), String> {
     app.exit(0);
+    Ok(())
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn simulate_mouse_click(x: i32, y: i32) -> Result<(), String> {
+    unsafe {
+        let mut original_pos = POINT::default();
+        GetCursorPos(&mut original_pos).map_err(|e| e.to_string())?;
+        
+        let _ = SetCursorPos(x, y);
+        
+        let inputs = [
+            INPUT {
+                r#type: INPUT_MOUSE,
+                Anonymous: windows::Win32::UI::Input::KeyboardAndMouse::INPUT_0 {
+                    mi: MOUSEINPUT {
+                        dx: 0,
+                        dy: 0,
+                        mouseData: 0,
+                        dwFlags: MOUSEEVENTF_LEFTDOWN,
+                        time: 0,
+                        dwExtraInfo: 0,
+                    },
+                },
+            },
+            INPUT {
+                r#type: INPUT_MOUSE,
+                Anonymous: windows::Win32::UI::Input::KeyboardAndMouse::INPUT_0 {
+                    mi: MOUSEINPUT {
+                        dx: 0,
+                        dy: 0,
+                        mouseData: 0,
+                        dwFlags: MOUSEEVENTF_LEFTUP,
+                        time: 0,
+                        dwExtraInfo: 0,
+                    },
+                },
+            },
+        ];
+        
+        let result = SendInput(&inputs, std::mem::size_of::<INPUT>() as i32);
+        
+        let _ = SetCursorPos(original_pos.x, original_pos.y);
+        
+        if result == 0 {
+            return Err("SendInput failed".to_string());
+        }
+    }
+    
+    Ok(())
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+pub fn simulate_mouse_click(_x: i32, _y: i32) -> Result<(), String> {
     Ok(())
 }
 

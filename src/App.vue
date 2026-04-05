@@ -29,7 +29,7 @@ const activePluginIcon = computed(() => pluginId.value ? pluginRegistry.getPlugi
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
-const searchInputRef = ref<{ focus: () => void } | null>(null);
+const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 const mainRef = ref<HTMLElement | null>(null);
 
 useWindowResize(mainRef);

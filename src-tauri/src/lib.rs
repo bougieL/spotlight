@@ -14,6 +14,7 @@ use commands::{
     detach_window, list_windows, minimize_window, maximize_window, restore_window,
     close_window, set_window_always_on_top, focus_window,
     create_child_webview, close_child_webview, resize_child_webview, close_all_child_webviews,
+    simulate_mouse_click,
 };
 use tauri::Manager;
 
@@ -91,6 +92,7 @@ pub fn run() {
             close_child_webview,
             resize_child_webview,
             close_all_child_webviews,
+            simulate_mouse_click,
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
