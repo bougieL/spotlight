@@ -123,9 +123,9 @@ export interface Plugin extends PluginMetadata {
  * Get the URL path for a plugin public file.
  * @param pluginId - The plugin directory name (e.g. "color-picker-plugin")
  * @param filePath - The file path within the plugin's public directory
- * @returns The URL path for accessing the file (e.g. "/plugins/color-picker-plugin/icon.svg")
+ * @returns The URL path for accessing the file (e.g. "/packages/color-picker-plugin/icon.svg")
  */
 export function getPluginPublicUrl(pluginId: string, filePath: string): string {
   const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
-  return `/plugins/${pluginId}/${normalizedPath}`;
+  return `${window.location.origin}/packages/${pluginId}/${normalizedPath}`;
 }
