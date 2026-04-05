@@ -1,4 +1,4 @@
-import type { BasePlugin, SearchResultItem, SearchParams, ActionContext } from '@spotlight/core';
+import type { BasePlugin, SearchResultItem, SearchParams, ActionContext, QuickCommand, NavigateToPluginOptions } from '@spotlight/core';
 import logger from '@spotlight/logger';
 import { calculateDetailedScore } from './scorer';
 
@@ -20,10 +20,16 @@ interface RegisteredPlugin {
 export class PluginRegistry {
   private plugins: RegisteredPlugin[] = [];
   private disabledPlugins: Set<string> = new Set();
-  private navigateToPlugin: ((pluginId: string, route?: string, query?: Record<string, string>) => void) | null = null;
+  private navigateToPlugin: ((pluginId: string, options?: NavigateToPluginOptions) => void) | null = null;
 
-  setNavigateToPlugin(fn: (pluginId: string, route?: string, query?: Record<string, string>) => void): void {
+  setNavigateToPlugin(fn: (pluginId: string, options?: NavigateToPluginOptions) => void): void {
     this.navigateToPlugin = fn;
+  }
+
+  private buildActionContext(): ActionContext {
+    return {
+      navigateToPlugin: this.navigateToPlugin ?? (() => {}),
+    };
   }
 
   register(plugin: BasePlugin): void {
@@ -32,7 +38,7 @@ export class PluginRegistry {
       return;
     }
 
-    const ctx: ActionContext = { navigateToPlugin: this.navigateToPlugin };
+    const ctx = this.buildActionContext();
     const actions = plugin.registerAction(ctx);
 
     this.plugins.push({ plugin, actions });
@@ -169,6 +175,13 @@ export class PluginRegistry {
 
   getPlugins(): BasePlugin[] {
     return this.plugins.map((p) => p.plugin);
+  }
+
+  getQuickCommands(): QuickCommand[] {
+    const ctx = this.buildActionContext();
+    return this.plugins
+      .filter((p) => !this.isPluginDisabled(p.plugin.pluginId))
+      .flatMap((p) => p.plugin.registerQuickCommands?.(ctx) ?? []);
   }
 }
 
