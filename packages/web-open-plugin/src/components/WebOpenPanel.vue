@@ -14,7 +14,7 @@ const recentUrls = ref<string[]>([]);
 const bookmarks = ref<Bookmark[]>([]);
 const error = ref('');
 
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits<{ (_e: 'close'): void }>();
 
 onMounted(async () => {
   await closeAllChildWebviews();
@@ -106,7 +106,10 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="web-open-panel" @keydown="handleKeydown">
+  <div
+    class="web-open-panel"
+    @keydown="handleKeydown"
+  >
     <div class="url-input-container">
       <input
         v-model="url"
@@ -114,22 +117,36 @@ function handleKeydown(event: KeyboardEvent) {
         class="url-input"
         :placeholder="t('webOpen.placeholder')"
         @keydown.enter="handleOpen"
-      />
+      >
       <button
         v-if="url.trim() && isValidUrl(url.trim())"
         class="bookmark-btn"
-        @click="toggleBookmark(url.trim())"
         :title="t('webOpen.addBookmark')"
+        @click="toggleBookmark(url.trim())"
       >
-        <Star v-if="!bookmarks.some(b => b.url === normalizeUrl(url.trim()))" :size="18" />
-        <StarOff v-else :size="18" />
+        <Star
+          v-if="!bookmarks.some(b => b.url === normalizeUrl(url.trim()))"
+          :size="18"
+        />
+        <StarOff
+          v-else
+          :size="18"
+        />
       </button>
-      <button class="open-btn" @click="handleOpen">
+      <button
+        class="open-btn"
+        @click="handleOpen"
+      >
         {{ t('webOpen.open') }}
       </button>
     </div>
 
-    <p v-if="error" class="error-message">{{ error }}</p>
+    <p
+      v-if="error"
+      class="error-message"
+    >
+      {{ error }}
+    </p>
 
     <div class="bookmarks-section">
       <div class="section-header">
@@ -137,26 +154,35 @@ function handleKeydown(event: KeyboardEvent) {
         <span>{{ t('webOpen.bookmarks') }}</span>
       </div>
 
-      <div v-if="bookmarks.length === 0" class="empty-state">
+      <div
+        v-if="bookmarks.length === 0"
+        class="empty-state"
+      >
         {{ t('webOpen.noBookmarks') }}
       </div>
 
-      <ul v-else class="list">
+      <ul
+        v-else
+        class="list"
+      >
         <li
           v-for="bookmark in bookmarks"
           :key="bookmark.url"
           class="list-item"
           @click="openBookmark(bookmark)"
         >
-          <Globe :size="14" class="item-icon" />
+          <Globe
+            :size="14"
+            class="item-icon"
+          />
           <div class="item-content">
             <span class="item-title">{{ bookmark.title }}</span>
             <span class="item-url">{{ formatUrl(bookmark.url) }}</span>
           </div>
           <button
             class="remove-bookmark-btn"
-            @click.stop="toggleBookmark(bookmark.url)"
             :title="t('webOpen.removeBookmark')"
+            @click.stop="toggleBookmark(bookmark.url)"
           >
             <StarOff :size="14" />
           </button>
@@ -178,18 +204,27 @@ function handleKeydown(event: KeyboardEvent) {
         </button>
       </div>
 
-      <div v-if="recentUrls.length === 0" class="empty-state">
+      <div
+        v-if="recentUrls.length === 0"
+        class="empty-state"
+      >
         {{ t('webOpen.noHistory') }}
       </div>
 
-      <ul v-else class="list">
+      <ul
+        v-else
+        class="list"
+      >
         <li
           v-for="recentUrl in recentUrls"
           :key="recentUrl"
           class="list-item"
           @click="openRecentUrl(recentUrl)"
         >
-          <Globe :size="14" class="item-icon" />
+          <Globe
+            :size="14"
+            class="item-icon"
+          />
           <span class="item-url">{{ formatUrl(recentUrl) }}</span>
         </li>
       </ul>
