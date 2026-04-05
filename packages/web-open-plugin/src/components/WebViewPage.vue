@@ -36,7 +36,7 @@ onMounted(async () => {
 
   const bounds = getPanelBounds();
   const currentWindow = getCurrentWindow();
-  webviewLabel.value = await createChildWebview(url, `webview-${Date.now()}`, { ...bounds, parentLabel: currentWindow.label });
+  webviewLabel.value = await createChildWebview(url, { label: `webview-${Date.now()}`, ...bounds, parentLabel: currentWindow.label });
 
   if (containerRef.value && webviewLabel.value) {
     resizeObserver = new ResizeObserver(() => {
@@ -57,7 +57,10 @@ onBeforeUnmount(async () => {
 </script>
 
 <template>
-  <div ref="containerRef" class="webview-page"></div>
+  <div
+    ref="containerRef"
+    class="webview-page"
+  />
 </template>
 
 <style scoped>
