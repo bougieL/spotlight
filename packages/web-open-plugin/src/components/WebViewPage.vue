@@ -33,7 +33,7 @@ onMounted(async () => {
   }
 
   const bounds = getPanelBounds();
-  webviewLabel.value = await createChildWebview(url, `webview-${Date.now()}`, bounds);
+  webviewLabel.value = await createChildWebview(url, `panel-${Date.now()}`, bounds);
 });
 
 onBeforeUnmount(async () => {

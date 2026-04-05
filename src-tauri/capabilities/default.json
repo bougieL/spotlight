@@ -10,6 +10,7 @@
     "core:window:allow-show",
     "core:window:allow-set-focus",
     "opener:default",
+    "opener:allow-open-url",
     "dialog:default",
     "fs:allow-read-file",
     "global-shortcut:allow-register",
@@ -19,6 +20,7 @@
       "identifier": "http:default",
       "allow": [
         { "url": "https://**" },
+        { "url": "http://**" },
         { "url": "data:**" }
       ]
     }

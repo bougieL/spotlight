@@ -478,11 +478,38 @@ pub async fn create_child_webview(
     // Get the main window - use get_window to access Window type which has add_child
     let main_window = app.get_window("main").ok_or("Main window not found")?;
 
+    // Script to intercept window.open and links with target="_blank"
+    let initialization_script = r#"
+        // Intercept window.open to open in same window
+        window.open = function(url, name, specs) {
+            if (url) {
+                window.location.href = url;
+            }
+            return null;
+        };
+        // Intercept clicks on links with target="_blank"
+        document.addEventListener('click', function(e) {
+            var target = e.target.closest('a[target="_blank"]');
+            if (target) {
+                e.preventDefault();
+                window.location.href = target.href;
+            }
+        }, true);
+        // Intercept context menu on links
+        document.addEventListener('contextmenu', function(e) {
+            var link = e.target.closest('a');
+            if (link) {
+                e.preventDefault();
+            }
+        }, true);
+    "#;
+
     // Use WebviewBuilder and Window::add_child to add webview to window
     let webview_builder = tauri::webview::WebviewBuilder::new(
         &label,
         WebviewUrl::External(url.parse().map_err(|e: url::ParseError| e.to_string())?),
-    );
+    )
+    .initialization_script(initialization_script);
 
     main_window
         .add_child(webview_builder, tauri::Position::Logical(tauri::LogicalPosition { x, y }), tauri::Size::Logical(tauri::LogicalSize { width, height }))
@@ -504,7 +531,7 @@ pub async fn close_child_webview(app: tauri::AppHandle, label: String) -> Result
 
 #[tauri::command]
 pub async fn close_all_child_webviews(app: tauri::AppHandle) -> Result<(), String> {
-    let webview_prefix = "webview-";
+    let webview_prefix = "panel-";
 
     // Get all webview labels from webview_windows
     let labels: Vec<_> = app.webview_windows()
