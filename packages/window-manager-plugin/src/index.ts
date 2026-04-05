@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { listWindows, focusWindow, type WindowInfo } from '@spotlight/api';
@@ -17,7 +16,7 @@ const windowIconUrl = new URL('./assets/window.svg', import.meta.url).href;
 const ACTION_OPEN = 'open';
 const ACTION_FOCUS = 'focus';
 
-class WindowManagerPlugin extends BasePlugin {
+class WindowManagerPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

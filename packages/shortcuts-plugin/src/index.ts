@@ -1,7 +1,6 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
-import { createPluginStorage, executeShellCommand, type PluginStorage } from '@spotlight/api';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
+import { createPluginStorage, executeShellCommand, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { generateId } from '@spotlight/utils';
 import logger from '@spotlight/logger';
@@ -20,7 +19,7 @@ const STORAGE_KEY = 'shortcuts';
 const ACTION_OPEN = 'open';
 const ACTION_EXECUTE = 'execute';
 
-class ShortcutsPlugin extends BasePlugin {
+class ShortcutsPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

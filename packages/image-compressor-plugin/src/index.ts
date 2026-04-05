@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -14,7 +13,7 @@ const imageCompressorIconUrl = new URL('./assets/image-compressor.svg', import.m
 
 const ACTION_OPEN = 'open';
 
-class ImageCompressorPlugin extends BasePlugin {
+class ImageCompressorPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

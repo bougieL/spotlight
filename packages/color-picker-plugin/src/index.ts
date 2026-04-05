@@ -1,5 +1,5 @@
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, Plugin } from '@spotlight/core';
+import { getPluginPublicUrl } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi } from '@spotlight/api';
 import logger from '@spotlight/logger';
@@ -16,7 +16,7 @@ const colorPickerIconUrl = new URL('./assets/color-picker.svg', import.meta.url)
 const ACTION_PICK = 'pick';
 const OVERLAY_WINDOW_LABEL = 'color-picker-overlay';
 
-export class ColorPickerPlugin extends BasePlugin {
+export class ColorPickerPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {
@@ -60,6 +60,10 @@ export class ColorPickerPlugin extends BasePlugin {
     }
 
     return [];
+  }
+
+  getPublicUrl(filePath: string): string {
+    return getPluginPublicUrl(this.pluginId, filePath);
   }
 
   async startColorPicker(): Promise<void> {

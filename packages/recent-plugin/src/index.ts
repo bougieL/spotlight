@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { formatTime, generateId } from '@spotlight/utils';
@@ -32,7 +31,7 @@ interface RecentData {
   items: RecentItem[];
 }
 
-class RecentPlugin extends BasePlugin {
+class RecentPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

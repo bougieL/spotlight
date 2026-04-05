@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -18,7 +17,7 @@ const notesIconUrl = new URL('./assets/notes.svg', import.meta.url).href;
 const STORAGE_KEY = 'notes_data';
 const ACTION_OPEN = 'open';
 
-class NotesPlugin extends BasePlugin {
+class NotesPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

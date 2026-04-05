@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
@@ -14,7 +13,7 @@ const calendarIconUrl = new URL('./assets/calendar.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
 
-export class CalendarPlugin extends BasePlugin {
+export class CalendarPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

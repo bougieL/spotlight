@@ -104,71 +104,19 @@ export interface PluginMetadata {
   iconUrl: string;
 }
 
-export abstract class BasePlugin implements PluginMetadata {
-  abstract get name(): string;
-  abstract pluginId: string;
-  abstract version: string;
-  abstract get description(): string | undefined;
-  author?: string;
-  abstract iconUrl: string;
-
-  abstract search(_params: SearchParams): Promise<SearchResultItem[]>;
-
-  abstract registerAction(ctx: ActionContext): PluginActions;
-
-  /**
-   * Returns multiple panel routes for this plugin.
-   * Each route represents a different view within the plugin.
-   * The first route is treated as the default/main route.
-   *
-   * Example:
-   * ```ts
-   * getPanelRoutes() {
-   *   return [
-   *     { name: 'main', componentLoader: () => import('./MainPanel.vue') },
-   *     { name: 'models', componentLoader: () => import('./ModelsEditor.vue') },
-   *   ];
-   * }
-   * ```
-   */
+/**
+ * Plugin interface that all plugins must implement.
+ * Each plugin provides search, actions, and optional lifecycle hooks.
+ */
+export interface Plugin extends PluginMetadata {
+  readonly pluginId: string;
+  search(params: SearchParams): Promise<SearchResultItem[]>;
+  registerAction(ctx: ActionContext): PluginActions;
   getPanelRoutes?(): PanelRoute[];
-
-  /**
-   * Called when the plugin is registered and the app is ready.
-   * Override this to start background tasks or initialize resources.
-   */
   onMount?(): void | Promise<void>;
-
-  /**
-   * Called when the app is shutting down or the plugin is being unloaded.
-   * Override this to stop background tasks and clean up resources.
-   */
   onUnmount?(): void | Promise<void>;
-
-  /**
-   * Returns quick commands that appear when user types / in the search input.
-   * Each command has a trigger string, description, and execute handler.
-   *
-   * Example:
-   * ```ts
-   * registerQuickCommands(ctx) {
-   *   return [
-   *     {
-   *       trigger: 'calc',
-   *       description: 'Open calculator',
-   *       execute: () => { ctx.navigateToPlugin('calculator-plugin'); },
-   *     },
-   *   ];
-   * }
-   * ```
-   */
-  registerQuickCommands?(_ctx: ActionContext): QuickCommand[];
-
-  getPublicUrl(filePath: string): string {
-    const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
-    const path = `/packages/${this.pluginId}/${normalizedPath}`;
-    return `${window.location.protocol}//${window.location.host}${path}`;
-  }
+  registerQuickCommands?(ctx: ActionContext): QuickCommand[];
+  getPublicUrl?(filePath: string): string;
 }
 
 /**

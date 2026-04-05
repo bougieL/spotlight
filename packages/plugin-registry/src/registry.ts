@@ -1,4 +1,4 @@
-import type { BasePlugin, SearchResultItem, SearchParams, ActionContext, QuickCommand, NavigateToPluginOptions } from '@spotlight/core';
+import type { Plugin, PluginActions, SearchResultItem, SearchParams, ActionContext, QuickCommand, NavigateToPluginOptions } from '@spotlight/core';
 import logger from '@spotlight/logger';
 import { calculateDetailedScore } from './scorer';
 
@@ -13,8 +13,8 @@ interface ScoredResult {
 }
 
 interface RegisteredPlugin {
-  plugin: BasePlugin;
-  actions: ReturnType<BasePlugin['registerAction']>;
+  plugin: Plugin;
+  actions: PluginActions;
 }
 
 export class PluginRegistry {
@@ -32,7 +32,7 @@ export class PluginRegistry {
     };
   }
 
-  register(plugin: BasePlugin): void {
+  register(plugin: Plugin): void {
     if (!this.navigateToPlugin) {
       logger.warn('[PluginRegistry] navigateToPlugin not set, cannot register plugin');
       return;
@@ -83,11 +83,11 @@ export class PluginRegistry {
     return this.plugins.find((p) => p.plugin.pluginId === pluginId);
   }
 
-  private getPluginById(pluginId: string): BasePlugin | undefined {
+  private getPluginById(pluginId: string): Plugin | undefined {
     return this.getPluginEntryById(pluginId)?.plugin;
   }
 
-  getPlugin(pluginId: string): BasePlugin | undefined {
+  getPlugin(pluginId: string): Plugin | undefined {
     return this.getPluginById(pluginId);
   }
 
@@ -173,7 +173,7 @@ export class PluginRegistry {
     return uniqueResults;
   }
 
-  getPlugins(): BasePlugin[] {
+  getPlugins(): Plugin[] {
     return this.plugins.map((p) => p.plugin);
   }
 

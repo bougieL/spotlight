@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, createChildWebview, closeChildWebview } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -26,7 +25,7 @@ const STORAGE_KEYS = {
 
 const MAX_RECENT_URLS = 10;
 
-class WebOpenPlugin extends BasePlugin {
+class WebOpenPlugin implements Plugin {
   private readonly i18n = useI18n();
   iconUrl = webOpenIconUrl;
   pluginId = 'web-open-plugin';

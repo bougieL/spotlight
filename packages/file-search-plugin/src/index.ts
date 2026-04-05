@@ -1,7 +1,6 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext, QuickCommand } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
-import { tauriApi, type FileResult } from '@spotlight/api';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, QuickCommand, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
+import { tauriApi, type FileResult } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -46,7 +45,7 @@ function getSearchQuery(input: string): { searchQuery: string } | null {
   return null;
 }
 
-export class FileSearchPlugin extends BasePlugin {
+export class FileSearchPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

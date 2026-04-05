@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -35,7 +34,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-class SettingsPlugin extends BasePlugin {
+class SettingsPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import { isColorString, normalizeColor } from './utils/colorUtils';
@@ -15,7 +14,7 @@ const paletteIconUrl = new URL('./assets/palette.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
 
-export class ColorPalettePlugin extends BasePlugin {
+export class ColorPalettePlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

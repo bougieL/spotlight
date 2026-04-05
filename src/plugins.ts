@@ -1,5 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router';
-import type { BasePlugin } from '@spotlight/core';
+import type { Plugin } from '@spotlight/core';
 import { pluginRegistry } from "@spotlight/plugin-registry";
 import logger from '@spotlight/logger';
 
@@ -15,7 +15,7 @@ export { pluginRegistry };
  *
  * The glob pattern matches all index.ts files inside packages/*-plugin/src/
  */
-const pluginModules = import.meta.glob<{ default: BasePlugin }>(
+const pluginModules = import.meta.glob<{ default: Plugin }>(
   '../../packages/*-plugin/src/index.ts',
   { eager: true }
 );
@@ -24,12 +24,12 @@ const pluginModules = import.meta.glob<{ default: BasePlugin }>(
  * Collect all plugin instances from discovered modules.
  * Filters out any modules that don't export a valid BasePlugin.
  */
-const allPlugins: BasePlugin[] = [];
+const allPlugins: Plugin[] = [];
 
 for (const [path, mod] of Object.entries(pluginModules)) {
   const plugin = mod.default;
   if (plugin && typeof plugin === 'object' && 'pluginId' in plugin && 'search' in plugin) {
-    allPlugins.push(plugin as BasePlugin);
+    allPlugins.push(plugin as Plugin);
     logger.info(`[Plugins] Auto-discovered: ${plugin.pluginId}`);
   } else {
     logger.warn(`[Plugins] Module ${path} does not export a valid plugin`);
@@ -76,7 +76,7 @@ export function registerAllPlugins(): void {
  * Get a specific plugin by its ID.
  * Returns undefined if not found.
  */
-export function getPluginById(pluginId: string): BasePlugin | undefined {
+export function getPluginById(pluginId: string): Plugin | undefined {
   return allPlugins.find(p => p.pluginId === pluginId);
 }
 

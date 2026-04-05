@@ -1,5 +1,5 @@
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, Plugin } from '@spotlight/core';
+import { getPluginPublicUrl } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi, registerTrayItem, unRegisterTrayItem } from '@spotlight/api';
 import logger from '@spotlight/logger';
@@ -16,7 +16,7 @@ const screenshotIconUrl = new URL('../assets/screenshot.svg', import.meta.url).h
 const ACTION_SCREENSHOT = 'screenshot';
 const OVERLAY_WINDOW_LABEL = 'screenshot-overlay';
 
-export class ScreenshotPlugin extends BasePlugin {
+export class ScreenshotPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {
@@ -60,6 +60,10 @@ export class ScreenshotPlugin extends BasePlugin {
     }
 
     return [];
+  }
+
+  getPublicUrl(filePath: string): string {
+    return getPluginPublicUrl(this.pluginId, filePath);
   }
 
   async startScreenshot(): Promise<void> {

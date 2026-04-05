@@ -1,5 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
@@ -20,7 +19,7 @@ const STORAGE_KEY = 'clipboard_data';
 const ACTION_OPEN = 'open';
 const MAX_ITEMS = 50;
 
-class ClipboardPlugin extends BasePlugin {
+class ClipboardPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {

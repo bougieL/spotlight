@@ -1,8 +1,7 @@
-import type { SearchResultItem, SearchParams, PluginActions } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, Plugin } from '@spotlight/core';
+import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi } from '@spotlight/api';
 import { toPinyin, toPinyinInitials, normalizeForSearch, fuzzyMatch } from '@spotlight/utils/pinyin';
-import { registerTranslations, useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -84,7 +83,7 @@ function matchSearchEngine(query: string): { engine: SearchEngine; searchQuery: 
   return null;
 }
 
-class ChromeBookmarksPlugin extends BasePlugin {
+class ChromeBookmarksPlugin implements Plugin {
   get name(): string {
     const { t } = useI18n();
     return t('plugin.chrome-bookmarks');

@@ -1,7 +1,6 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
-import { BasePlugin } from '@spotlight/core';
-import { createPluginStorage, type PluginStorage } from '@spotlight/api';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
+import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -18,7 +17,7 @@ const STORAGE_KEY = 'calculator_expressions';
 const ACTION_OPEN = 'open';
 const ACTION_CALCULATE = 'calculate';
 
-export class CalculatorPlugin extends BasePlugin {
+export class CalculatorPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {
