@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { windowManagerPlugin, type WindowInfo } from '../index';
+import { windowManagerPlugin } from '../index';
+import type { WindowInfo } from '@spotlight/api';
+import { minimizeWindow, maximizeWindow, restoreWindow, closeWindow, toggleAlwaysOnTop, focusWindowByHwnd } from '../windowActions';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
 import { toPinyinInitials } from '@spotlight/utils/pinyin';
@@ -57,89 +59,62 @@ async function loadWindows() {
   }
 }
 
-async function minimizeWindow(hwnd: number) {
+function updateWindowState(hwnd: number, updates: Partial<WindowInfo>): void {
+  windows.value = windows.value.map((w) =>
+    w.hwnd === hwnd ? { ...w, ...updates } : w
+  );
+}
+
+async function handleMinimize(hwnd: number) {
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'minimize'
-    ](hwnd);
-    // Optimistically update local state
-    const win = windows.value.find((w) => w.hwnd === hwnd);
-    if (win) {
-      win.isMinimized = true;
-      win.isMaximized = false;
-    }
+    await minimizeWindow(hwnd);
+    updateWindowState(hwnd, { isMinimized: true, isMaximized: false });
   } catch (e) {
     logger.error('Failed to minimize window:', e);
   }
 }
 
-async function maximizeWindow(hwnd: number) {
+async function handleMaximize(hwnd: number) {
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'maximize'
-    ](hwnd);
-    // Optimistically update local state
-    const win = windows.value.find((w) => w.hwnd === hwnd);
-    if (win) {
-      win.isMaximized = true;
-      win.isMinimized = false;
-    }
+    await maximizeWindow(hwnd);
+    updateWindowState(hwnd, { isMaximized: true, isMinimized: false });
   } catch (e) {
     logger.error('Failed to maximize window:', e);
   }
 }
 
-async function restoreWindow(hwnd: number) {
+async function handleRestore(hwnd: number) {
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'restore'
-    ](hwnd);
-    // Optimistically update local state
-    const win = windows.value.find((w) => w.hwnd === hwnd);
-    if (win) {
-      win.isMinimized = false;
-      win.isMaximized = false;
-    }
+    await restoreWindow(hwnd);
+    updateWindowState(hwnd, { isMinimized: false, isMaximized: false });
   } catch (e) {
     logger.error('Failed to restore window:', e);
   }
 }
 
-async function closeWindow(hwnd: number) {
+async function handleClose(hwnd: number) {
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'close'
-    ](hwnd);
-    // Remove window from list
-    const index = windows.value.findIndex((w) => w.hwnd === hwnd);
-    if (index > -1) {
-      windows.value.splice(index, 1);
-    }
+    await closeWindow(hwnd);
+    windows.value = windows.value.filter((w) => w.hwnd !== hwnd);
   } catch (e) {
     logger.error('Failed to close window:', e);
   }
 }
 
-async function toggleAlwaysOnTop(hwnd: number) {
+async function handleToggleAlwaysOnTop(hwnd: number) {
   const windowInfo = windows.value.find((w) => w.hwnd === hwnd);
   if (!windowInfo) return;
-  const isOnTop = windowInfo.isAlwaysOnTop;
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'always_on_top'
-    ]({ hwnd, onTop: !isOnTop });
-    // Optimistically update local state
-    windowInfo.isAlwaysOnTop = !isOnTop;
+    await toggleAlwaysOnTop(hwnd, !windowInfo.isAlwaysOnTop);
+    updateWindowState(hwnd, { isAlwaysOnTop: !windowInfo.isAlwaysOnTop });
   } catch (e) {
     logger.error('Failed to toggle always on top', e);
   }
 }
 
-async function focusWindow(hwnd: number) {
+async function handleFocus(hwnd: number) {
   try {
-    await windowManagerPlugin.registerAction({ navigateToPlugin: () => {} })[
-      'focus'
-    ](hwnd);
+    await focusWindowByHwnd(hwnd);
   } catch (e) {
     logger.error('Failed to focus window:', e);
   }
@@ -162,7 +137,7 @@ function handleKeydown(event: KeyboardEvent) {
       v-if="loading"
       class="message"
     >
-      Loading...
+      {{ t('windowManager.window.loading') }}
     </div>
 
     <div
@@ -187,7 +162,7 @@ function handleKeydown(event: KeyboardEvent) {
         v-for="window in filteredWindows"
         :key="window.hwnd"
         class="window-item"
-        @click="focusWindow(window.hwnd)"
+        @click="handleFocus(window.hwnd)"
       >
         <div class="window-info">
           <div class="window-title">
@@ -199,13 +174,13 @@ function handleKeydown(event: KeyboardEvent) {
               v-if="window.isMinimized"
               class="state-badge minimized"
             >
-              Min
+              {{ t('windowManager.window.minimized') }}
             </span>
             <span
               v-if="window.isMaximized"
               class="state-badge maximized"
             >
-              Max
+              {{ t('windowManager.window.maximized') }}
             </span>
           </div>
         </div>
@@ -214,7 +189,7 @@ function handleKeydown(event: KeyboardEvent) {
             v-if="window.isMinimized"
             class="action-btn"
             :title="t('windowManager.window.restore')"
-            @click.stop="restoreWindow(window.hwnd)"
+            @click.stop="handleRestore(window.hwnd)"
           >
             <Maximize2 :size="16" />
           </button>
@@ -222,7 +197,7 @@ function handleKeydown(event: KeyboardEvent) {
             v-else-if="window.isMaximized"
             class="action-btn"
             :title="t('windowManager.window.restore')"
-            @click.stop="restoreWindow(window.hwnd)"
+            @click.stop="handleRestore(window.hwnd)"
           >
             <Square :size="16" />
           </button>
@@ -230,14 +205,14 @@ function handleKeydown(event: KeyboardEvent) {
             v-else
             class="action-btn"
             :title="t('windowManager.window.maximize')"
-            @click.stop="maximizeWindow(window.hwnd)"
+            @click.stop="handleMaximize(window.hwnd)"
           >
             <Maximize2 :size="16" />
           </button>
           <button
             class="action-btn"
             :title="t('windowManager.window.minimize')"
-            @click.stop="minimizeWindow(window.hwnd)"
+            @click.stop="handleMinimize(window.hwnd)"
           >
             <Minus :size="16" />
           </button>
@@ -248,7 +223,7 @@ function handleKeydown(event: KeyboardEvent) {
                 ? t('windowManager.window.removeAlwaysOnTop')
                 : t('windowManager.window.alwaysOnTop')
             "
-            @click.stop="toggleAlwaysOnTop(window.hwnd)"
+            @click.stop="handleToggleAlwaysOnTop(window.hwnd)"
           >
             <PinOff
               v-if="window.isAlwaysOnTop"
@@ -262,7 +237,7 @@ function handleKeydown(event: KeyboardEvent) {
           <button
             class="action-btn close"
             :title="t('windowManager.window.close')"
-            @click.stop="closeWindow(window.hwnd)"
+            @click.stop="handleClose(window.hwnd)"
           >
             <X :size="16" />
           </button>

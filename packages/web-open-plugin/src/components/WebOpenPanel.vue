@@ -3,7 +3,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Globe, Trash2, Clock, Star, StarOff } from 'lucide-vue-next';
-import { webOpenPlugin, type Bookmark } from '../index';
+import { webOpenPlugin } from '../index';
+import type { Bookmark } from '../types';
 import { closeAllChildWebviews } from '@spotlight/api';
 
 const { t } = useI18n();

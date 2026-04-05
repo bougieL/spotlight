@@ -2,21 +2,10 @@ import type { SearchResultItem, SearchParams, PluginActions, ActionContext } fro
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
-import {
-  listWindows,
-  minimizeWindow,
-  maximizeWindow,
-  restoreWindow,
-  closeWindow,
-  setWindowAlwaysOnTop,
-  focusWindow,
-  type WindowInfo,
-} from '@spotlight/api';
+import { listWindows, focusWindow, type WindowInfo } from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
-
-export type { WindowInfo };
 
 registerTranslations({
   'en-US': enUS,
@@ -26,14 +15,9 @@ registerTranslations({
 const windowIconUrl = new URL('./assets/window.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
-const ACTION_MINIMIZE = 'minimize';
-const ACTION_MAXIMIZE = 'maximize';
-const ACTION_RESTORE = 'restore';
-const ACTION_CLOSE = 'close';
-const ACTION_ALWAYS_ON_TOP = 'always_on_top';
 const ACTION_FOCUS = 'focus';
 
-export class WindowManagerPlugin extends BasePlugin {
+class WindowManagerPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {
@@ -53,52 +37,6 @@ export class WindowManagerPlugin extends BasePlugin {
     return {
       [ACTION_OPEN]: async () => {
         ctx.navigateToPlugin(this.pluginId);
-      },
-      [ACTION_MINIMIZE]: async (data) => {
-        if (typeof data !== 'number') return;
-        try {
-          await minimizeWindow(data);
-          logger.info(`Window minimized: hwnd=${data}`);
-        } catch (error) {
-          logger.error('Failed to minimize window', error);
-        }
-      },
-      [ACTION_MAXIMIZE]: async (data) => {
-        if (typeof data !== 'number') return;
-        try {
-          await maximizeWindow(data);
-          logger.info(`Window maximized: hwnd=${data}`);
-        } catch (error) {
-          logger.error('Failed to maximize window', error);
-        }
-      },
-      [ACTION_RESTORE]: async (data) => {
-        if (typeof data !== 'number') return;
-        try {
-          await restoreWindow(data);
-          logger.info(`Window restored: hwnd=${data}`);
-        } catch (error) {
-          logger.error('Failed to restore window', error);
-        }
-      },
-      [ACTION_CLOSE]: async (data) => {
-        if (typeof data !== 'number') return;
-        try {
-          await closeWindow(data);
-          logger.info(`Window closed: hwnd=${data}`);
-        } catch (error) {
-          logger.error('Failed to close window', error);
-        }
-      },
-      [ACTION_ALWAYS_ON_TOP]: async (data) => {
-        if (!data || typeof data !== 'object') return;
-        const { hwnd, onTop } = data as { hwnd: number; onTop: boolean };
-        try {
-          await setWindowAlwaysOnTop(hwnd, onTop);
-          logger.info(`Window always on top set: hwnd=${hwnd}, onTop=${onTop}`);
-        } catch (error) {
-          logger.error('Failed to set window always on top', error);
-        }
       },
       [ACTION_FOCUS]: async (data) => {
         if (typeof data !== 'number') return;
@@ -142,7 +80,6 @@ export class WindowManagerPlugin extends BasePlugin {
       ];
     }
 
-    // Search through open windows if query doesn't match keywords
     const windows = await this.getWindows();
     const normalizedQuery = normalizeForSearch(query).toLowerCase();
 

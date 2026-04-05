@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { type CompressedImage } from '../index';
+import type { CompressedImage } from '../types';
 import { useI18n } from '@spotlight/i18n';
 import { open } from '@tauri-apps/plugin-dialog';
 import { tauriApi, compressPngLossless, globImageFiles } from '@spotlight/api';

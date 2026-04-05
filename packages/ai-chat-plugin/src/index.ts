@@ -3,13 +3,9 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import type { ModelConfig, ChatMessage, Session, AIChatSettings } from '@spotlight/ai-core';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
-
-import type { ModelConfig, ChatMessage, Session, AIChatSettings } from '@spotlight/ai-core';
-export type { ModelConfig, ChatMessage, Session, AIChatSettings };
-
-export { openaiAdapter, anthropicAdapter } from '@spotlight/ai-core';
 
 registerTranslations({
   'en-US': enUS,
@@ -31,7 +27,7 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
-export class AIChatPlugin extends BasePlugin {
+class AIChatPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

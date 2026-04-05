@@ -4,7 +4,7 @@ import { MessageSquare, Settings, Send } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton, BaseButton, BaseSelect } from '@spotlight/components';
 import MessageList from './MessageList.vue';
-import type { Session, ModelConfig } from '../index';
+import type { Session, ModelConfig } from '@spotlight/ai-core';
 
 const props = defineProps<{
   activeSession: Session | null;

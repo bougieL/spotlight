@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
-import { aiChatPlugin, type Session, type ChatMessage, type ModelConfig } from '../index';
+import { aiChatPlugin } from '../index';
+import type { Session, ChatMessage, ModelConfig } from '@spotlight/ai-core';
 import SessionsSidebar from './SessionsSidebar.vue';
 import ChatArea from './ChatArea.vue';
 
@@ -183,7 +184,7 @@ async function processStream() {
   if (!model) return;
 
   try {
-    const { openaiAdapter, anthropicAdapter } = await import('../index');
+    const { openaiAdapter, anthropicAdapter } = await import('@spotlight/ai-core');
     const adapter = model.endpointType === 'anthropic' ? anthropicAdapter : openaiAdapter;
     const generator = adapter.streamChat({
       messages: allMessages,

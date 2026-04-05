@@ -3,6 +3,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import type { Note, Category, NotesData } from './types';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -16,32 +17,11 @@ const notesIconUrl = new URL('./assets/notes.svg', import.meta.url).href;
 const STORAGE_KEY = 'notes_data';
 const ACTION_OPEN = 'open';
 
-export interface Note {
-  id: string;
-  categoryId: string | null;
-  title: string;
-  content: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  createdAt: number;
-}
-
-export interface NotesData {
-  categories: Category[];
-  notes: Note[];
-  activeNoteId: string | null;
-}
-
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
-export class NotesPlugin extends BasePlugin {
+class NotesPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

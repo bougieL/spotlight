@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useI18n } from '@spotlight/i18n';
-import type { Note, Category } from '../index';
+import type { Note, Category } from '../types';
 
 interface Props {
   note: Note | null;

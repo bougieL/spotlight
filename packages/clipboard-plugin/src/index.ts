@@ -6,6 +6,7 @@ import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/u
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
+import type { ClipboardItemType, ClipboardItem, ClipboardData } from './types';
 
 registerTranslations({
   'en-US': enUS,
@@ -18,26 +19,11 @@ const STORAGE_KEY = 'clipboard_data';
 const ACTION_OPEN = 'open';
 const MAX_ITEMS = 50;
 
-export type ClipboardItemType = 'text' | 'image' | 'files';
-
-export interface ClipboardItem {
-  id: string;
-  type: ClipboardItemType;
-  content: string;
-  timestamp: number;
-  favorite?: boolean;
-}
-
-export interface ClipboardData {
-  items: ClipboardItem[];
-  favorites: ClipboardItem[];
-}
-
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
-export class ClipboardPlugin extends BasePlugin {
+class ClipboardPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

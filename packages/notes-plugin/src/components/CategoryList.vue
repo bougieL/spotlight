@@ -2,7 +2,7 @@
 import { FolderPlus, Trash2, Folder } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton } from '@spotlight/components';
-import type { Category } from '../index';
+import type { Category } from '../types';
 
 interface Props {
   categories: Category[];

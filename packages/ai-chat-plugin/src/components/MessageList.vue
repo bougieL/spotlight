@@ -2,7 +2,7 @@
 import { ref, nextTick, watch, onMounted } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import MessageBubble from './MessageBubble.vue';
-import type { ChatMessage } from '../index';
+import type { ChatMessage } from '@spotlight/ai-core';
 
 interface Props {
   messages: ChatMessage[];

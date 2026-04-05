@@ -4,7 +4,7 @@ import { Copy, Check } from 'lucide-vue-next';
 import { marked } from 'marked';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton } from '@spotlight/components';
-import type { ChatMessage } from '../index';
+import type { ChatMessage } from '@spotlight/ai-core';
 
 interface Props {
   message: ChatMessage;

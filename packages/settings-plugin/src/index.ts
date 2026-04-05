@@ -3,14 +3,13 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n, type Locale } from '@spotlight/i18n';
 import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import type { ThemeMode } from './types';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
 const DEFAULT_HOTKEY = 'Alt+Space';
 
-export type ThemeMode = 'light' | 'dark' | 'system';
-
-export interface ThemeSetting {
+interface ThemeSetting {
   mode: ThemeMode;
 }
 
@@ -36,7 +35,7 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-export class SettingsPlugin extends BasePlugin {
+class SettingsPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

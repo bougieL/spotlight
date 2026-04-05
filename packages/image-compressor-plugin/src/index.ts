@@ -14,19 +14,7 @@ const imageCompressorIconUrl = new URL('./assets/image-compressor.svg', import.m
 
 const ACTION_OPEN = 'open';
 
-export interface CompressedImage {
-  id: string;
-  originalFile: File;
-  originalSize: number;
-  compressedBlob: Blob | null;
-  compressedSize: number;
-  compressedUrl: string | null;
-  quality: number;
-  format: 'jpeg' | 'png' | 'webp' | 'gif' | 'bmp';
-  isLossless: boolean;
-}
-
-export class ImageCompressorPlugin extends BasePlugin {
+class ImageCompressorPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

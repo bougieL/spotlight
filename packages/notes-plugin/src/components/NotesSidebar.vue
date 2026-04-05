@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Category, Note } from '../index';
+import type { Category, Note } from '../types';
 import CategoryList from './CategoryList.vue';
 import NoteList from './NoteList.vue';
 

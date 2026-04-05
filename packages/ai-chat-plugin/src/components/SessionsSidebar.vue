@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { MessageSquare, Plus, Settings, Pin, Trash2, Edit2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton, BaseModal, BaseInput, BaseButton, BaseContextMenu } from '@spotlight/components';
-import type { Session, ModelConfig } from '../index';
+import type { Session, ModelConfig } from '@spotlight/ai-core';
 
 const props = defineProps<{
   sessions: Session[];

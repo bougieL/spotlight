@@ -4,6 +4,7 @@ import { createPluginStorage, executeShellCommand, type PluginStorage } from '@s
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
+import type { ShortcutItem, ShortcutsData } from './types';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -18,23 +19,11 @@ const STORAGE_KEY = 'shortcuts';
 const ACTION_OPEN = 'open';
 const ACTION_EXECUTE = 'execute';
 
-export interface ShortcutItem {
-  id: string;
-  name: string;
-  command: string;
-  description?: string;
-  iconUrl?: string;
-}
-
-export interface ShortcutsData {
-  items: ShortcutItem[];
-}
-
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
-export class ShortcutsPlugin extends BasePlugin {
+class ShortcutsPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

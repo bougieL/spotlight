@@ -17,7 +17,7 @@ const recentIconUrl = new URL('./assets/clock.svg', import.meta.url).href;
 const STORAGE_KEY = 'recent_items';
 const MAX_RECENT_ITEMS = 10;
 
-export interface RecentItem {
+interface RecentItem {
   id: string;
   title: string;
   desc?: string;
@@ -28,7 +28,7 @@ export interface RecentItem {
   timestamp: number;
 }
 
-export interface RecentData {
+interface RecentData {
   items: RecentItem[];
 }
 
@@ -36,7 +36,7 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
-export class RecentPlugin extends BasePlugin {
+class RecentPlugin extends BasePlugin {
   private readonly i18n = useI18n();
 
   get name(): string {

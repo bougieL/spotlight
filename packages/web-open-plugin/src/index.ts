@@ -3,6 +3,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, createChildWebview, closeChildWebview } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import type { Bookmark } from './types';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
 
@@ -25,13 +26,7 @@ const STORAGE_KEYS = {
 
 const MAX_RECENT_URLS = 10;
 
-export interface Bookmark {
-  url: string;
-  title: string;
-  addedAt: number;
-}
-
-export class WebOpenPlugin extends BasePlugin {
+class WebOpenPlugin extends BasePlugin {
   private readonly i18n = useI18n();
   iconUrl = webOpenIconUrl;
   pluginId = 'web-open-plugin';

@@ -49,7 +49,7 @@ const SEARCH_ENGINES: SearchEngine[] = [
   },
 ];
 
-export interface ChromeBookmark {
+interface ChromeBookmark {
   id: string;
   name: string;
   url: string;
@@ -84,7 +84,7 @@ function matchSearchEngine(query: string): { engine: SearchEngine; searchQuery: 
   return null;
 }
 
-export class ChromeBookmarksPlugin extends BasePlugin {
+class ChromeBookmarksPlugin extends BasePlugin {
   get name(): string {
     const { t } = useI18n();
     return t('plugin.chrome-bookmarks');

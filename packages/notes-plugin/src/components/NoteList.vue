@@ -2,7 +2,7 @@
 import { FileText, Plus, Trash2 } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton } from '@spotlight/components';
-import type { Note } from '../index';
+import type { Note } from '../types';
 
 interface Props {
   notes: Note[];
