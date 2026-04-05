@@ -84,6 +84,7 @@ class WindowManagerPlugin implements Plugin {
 
     const matchingWindows = windows
       .filter((w) => {
+        if (!w.title || !w.processName) return false;
         const titleNorm = normalizeForSearch(w.title).toLowerCase();
         const processNorm = normalizeForSearch(w.processName).toLowerCase();
         return titleNorm.includes(normalizedQuery) || processNorm.includes(normalizedQuery);
