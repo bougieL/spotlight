@@ -16,7 +16,7 @@ export { pluginRegistry };
  * The glob pattern matches all index.ts files inside packages/*-plugin/src/
  */
 const pluginModules = import.meta.glob<{ default: Plugin }>(
-  '../../packages/*-plugin/src/index.ts',
+  '../packages/*-plugin/src/index.ts',
   { eager: true }
 );
 
