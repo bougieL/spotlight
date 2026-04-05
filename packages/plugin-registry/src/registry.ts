@@ -44,8 +44,8 @@ export class PluginRegistry {
     this.plugins.push({ plugin, actions });
   }
 
-  unregister(name: string): void {
-    this.plugins = this.plugins.filter((p) => p.plugin.name !== name);
+  unregister(pluginId: string): void {
+    this.plugins = this.plugins.filter((p) => p.plugin.pluginId !== pluginId);
   }
 
   async setDisabledPlugins(pluginIds: string[], skipLifecycle = false): Promise<void> {
@@ -163,7 +163,7 @@ export class PluginRegistry {
     const seenTitles = new Set<string>();
 
     for (const item of finalResults) {
-      const key = item.title.toLowerCase();
+      const key = `${item.title.toLowerCase()}::${item.pluginId}::${item.actionId}`;
       if (!seenTitles.has(key)) {
         seenTitles.add(key);
         uniqueResults.push(item);

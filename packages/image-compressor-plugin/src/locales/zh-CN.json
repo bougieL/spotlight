@@ -5,6 +5,7 @@
     "selectImages": "选择图片",
     "dragDropHint": "拖放图片到此处或点击选择",
     "compressing": "压缩中...",
+    "recompress": "重新压缩",
     "original": "原始",
     "compressed": "压缩后",
     "ratio": "压缩率",

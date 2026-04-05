@@ -5,6 +5,7 @@
     "selectImages": "Select Images",
     "dragDropHint": "Drag & drop images here or click to select",
     "compressing": "Compressing...",
+    "recompress": "Recompress",
     "original": "Original",
     "compressed": "Compressed",
     "ratio": "Ratio",

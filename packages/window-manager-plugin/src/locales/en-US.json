@@ -12,6 +12,9 @@
     "window.removeAlwaysOnTop": "Remove Always on Top",
     "window.focus": "Focus",
     "window.noWindows": "No windows found",
-    "window.process": "Process"
+    "window.process": "Process",
+    "window.loading": "Loading...",
+    "window.minimized": "Min",
+    "window.maximized": "Max"
   }
 }

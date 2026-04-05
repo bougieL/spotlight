@@ -221,7 +221,6 @@ const handlePaste = async (event: ClipboardEvent) => {
       >
       <button
         v-if="props.isPanelMode"
-        ref="menuButtonRef"
         class="settings-button"
         aria-label="Menu"
         @click.stop="handleMenuClick"

@@ -369,7 +369,7 @@ async function loadImagesFromPaths(filePaths: string[]) {
             :disabled="isCompressing"
             @click="compressAll"
           >
-            {{ isCompressing ? t('compressing') : 'Recompress' }}
+            {{ isCompressing ? t('compressing') : t('recompress') }}
           </button>
           <button
             v-if="hasImages"
@@ -594,7 +594,7 @@ async function loadImagesFromPaths(filePaths: string[]) {
   color: var(--spotlight-text);
   white-space: nowrap;
   overflow: hidden;
-  text-of-limit: ellipsis;
+  text-overflow: ellipsis;
 }
 
 .sizes {

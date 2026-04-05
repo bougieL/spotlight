@@ -130,11 +130,11 @@ function formatDate(timestamp: number): string {
         <div class="form-group">
           <label class="form-label">{{ t('aiChat.systemPrompt') }}</label>
           <textarea
-            :model-value="editSessionSystemPrompt"
+            :value="editSessionSystemPrompt"
             class="form-textarea"
             :placeholder="t('aiChat.systemPromptPlaceholder')"
             rows="4"
-            @update:model-value="emit('update:editSessionSystemPrompt', $event)"
+            @input="emit('update:editSessionSystemPrompt', ($event.target as HTMLTextAreaElement).value)"
           />
         </div>
       </div>

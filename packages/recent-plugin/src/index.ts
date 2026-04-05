@@ -155,7 +155,7 @@ export class RecentPlugin extends BasePlugin {
         iconUrl: item.iconUrl,
         title: item.title,
         desc: item.desc || formatTime(item.timestamp),
-        score: 1000 - (Date.now() - item.timestamp) / 100000,
+        score: Math.max(0, 1000 - (Date.now() - item.timestamp) / 100000),
         pluginId: item.pluginId,
         actionId: item.actionId,
         actionData: item.actionData,

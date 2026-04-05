@@ -12,6 +12,9 @@
     "window.removeAlwaysOnTop": "取消置顶",
     "window.focus": "聚焦",
     "window.noWindows": "未找到窗口",
-    "window.process": "进程"
+    "window.process": "进程",
+    "window.loading": "加载中...",
+    "window.minimized": "最小化",
+    "window.maximized": "最大化"
   }
 }

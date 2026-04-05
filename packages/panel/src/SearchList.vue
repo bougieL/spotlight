@@ -143,7 +143,7 @@ onUnmounted(() => {
   >
     <div
       v-for="(item, index) in displayResults"
-      :key="item.title + index"
+      :key="`${item.title}-${item.actionId}-${index}`"
       class="spotlight-result-item"
       :class="{ 'is-selected': index === selectedIndex }"
       @click="selectItem(item)"

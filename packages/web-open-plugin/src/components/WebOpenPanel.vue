@@ -238,8 +238,8 @@ function handleKeydown(event: KeyboardEvent) {
   flex-direction: column;
   height: 100%;
   padding: 16px;
-  background-color: var(--bg-primary, #fff);
-  color: var(--text-primary, #1a1a1a);
+  background-color: var(--spotlight-bg);
+  color: var(--spotlight-text);
 }
 
 .url-input-container {
@@ -251,21 +251,21 @@ function handleKeydown(event: KeyboardEvent) {
 .url-input {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--spotlight-border);
   border-radius: 8px;
   font-size: 14px;
-  background-color: var(--bg-secondary, #f5f5f5);
-  color: var(--text-primary, #1a1a1a);
+  background-color: var(--spotlight-item-hover);
+  color: var(--spotlight-text);
   outline: none;
   transition: border-color 0.15s;
 }
 
 .url-input:focus {
-  border-color: var(--accent-color, #007aff);
+  border-color: var(--spotlight-primary);
 }
 
 .url-input::placeholder {
-  color: var(--placeholder-color, #999);
+  color: var(--spotlight-placeholder);
 }
 
 .bookmark-btn {
@@ -278,20 +278,20 @@ function handleKeydown(event: KeyboardEvent) {
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
-  color: var(--icon-color, #666);
+  color: var(--spotlight-icon);
   transition: color 0.15s;
   flex-shrink: 0;
 }
 
 .bookmark-btn:hover {
-  color: var(--accent-color, #007aff);
+  color: var(--spotlight-primary);
 }
 
 .open-btn {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background-color: var(--accent-color, #007aff);
+  background-color: var(--spotlight-primary);
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -332,32 +332,17 @@ function handleKeydown(event: KeyboardEvent) {
   gap: 6px;
   margin-bottom: 8px;
   font-size: 12px;
-  color: var(--text-secondary, #666);
-}
-
-.clear-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: auto;
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  font-size: 11px;
-  color: var(--text-secondary, #666);
-  transition: background-color 0.15s;
+  color: var(--spotlight-text-secondary);
 }
 
 .clear-btn:hover {
-  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
+  background-color: var(--spotlight-item-hover);
 }
 
 .empty-state {
   padding: 20px;
   text-align: center;
-  color: var(--text-secondary, #999);
+  color: var(--spotlight-text-secondary);
   font-size: 13px;
 }
 
@@ -398,7 +383,7 @@ function handleKeydown(event: KeyboardEvent) {
 .item-title {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary, #1a1a1a);
+  color: var(--spotlight-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -406,7 +391,7 @@ function handleKeydown(event: KeyboardEvent) {
 
 .item-url {
   font-size: 12px;
-  color: var(--text-secondary, #666);
+  color: var(--spotlight-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
