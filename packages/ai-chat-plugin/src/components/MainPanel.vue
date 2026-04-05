@@ -9,7 +9,7 @@ import ChatArea from './ChatArea.vue';
 const router = useRouter();
 const { t } = useI18n();
 
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits<{ (_e: 'close'): void }>();
 
 const sessions = ref<Session[]>([]);
 const models = ref<ModelConfig[]>([]);
@@ -233,7 +233,11 @@ function handleKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="main-panel" tabindex="0" @keydown="handleKeydown">
+  <div
+    class="main-panel"
+    tabindex="0"
+    @keydown="handleKeydown"
+  >
     <SessionsSidebar
       :sessions="sessions"
       :active-session-id="activeSessionId"

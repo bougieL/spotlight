@@ -31,6 +31,7 @@ export default [
       'vue/no-v-html': 'off',
       'no-console': 'warn',
       'no-debugger': 'warn',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'max-params': ['error', 2],
     },
   },

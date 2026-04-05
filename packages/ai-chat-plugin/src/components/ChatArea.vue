@@ -18,13 +18,13 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'sendMessage'): void;
-  (e: 'update:inputText', value: string): void;
-  (e: 'startEditingSystemPrompt'): void;
-  (e: 'saveSystemPrompt'): void;
-  (e: 'cancelEditingSystemPrompt'): void;
-  (e: 'update:editingSystemPrompt', value: string): void;
-  (e: 'selectModel', modelId: string): void;
+  (_e: 'sendMessage'): void;
+  (_e: 'update:inputText', _value: string): void;
+  (_e: 'startEditingSystemPrompt'): void;
+  (_e: 'saveSystemPrompt'): void;
+  (_e: 'cancelEditingSystemPrompt'): void;
+  (_e: 'update:editingSystemPrompt', _value: string): void;
+  (_e: 'selectModel', _modelId: string): void;
 }>();
 
 const { t } = useI18n();
@@ -52,13 +52,22 @@ function handleKeydown(event: KeyboardEvent) {
       v-if="showSystemPrompt && activeSession"
       class="system-prompt-bar"
     >
-      <div v-if="!isEditingSystemPrompt" class="system-prompt-view">
+      <div
+        v-if="!isEditingSystemPrompt"
+        class="system-prompt-view"
+      >
         <span class="system-prompt-text">{{ activeSession.systemPrompt || t('aiChat.systemPromptPlaceholder') }}</span>
-        <BaseIconButton :title="t('aiChat.editModel')" @click="emit('startEditingSystemPrompt')">
+        <BaseIconButton
+          :title="t('aiChat.editModel')"
+          @click="emit('startEditingSystemPrompt')"
+        >
           <Settings :size="14" />
         </BaseIconButton>
       </div>
-      <div v-else class="system-prompt-edit">
+      <div
+        v-else
+        class="system-prompt-edit"
+      >
         <textarea
           :value="editingSystemPrompt"
           class="system-prompt-input"
@@ -67,10 +76,18 @@ function handleKeydown(event: KeyboardEvent) {
           @input="emit('update:editingSystemPrompt', ($event.target as HTMLTextAreaElement).value)"
         />
         <div class="edit-actions">
-          <BaseButton variant="primary" size="small" @click="emit('saveSystemPrompt')">
+          <BaseButton
+            variant="primary"
+            size="small"
+            @click="emit('saveSystemPrompt')"
+          >
             {{ t('aiChat.save') }}
           </BaseButton>
-          <BaseButton variant="default" size="small" @click="emit('cancelEditingSystemPrompt')">
+          <BaseButton
+            variant="default"
+            size="small"
+            @click="emit('cancelEditingSystemPrompt')"
+          >
             {{ t('aiChat.cancel') }}
           </BaseButton>
         </div>
@@ -84,12 +101,21 @@ function handleKeydown(event: KeyboardEvent) {
       :streamed-content="streamedContent"
     />
 
-    <div v-if="!activeSession" class="empty-chat">
-      <MessageSquare :size="48" class="empty-icon" />
+    <div
+      v-if="!activeSession"
+      class="empty-chat"
+    >
+      <MessageSquare
+        :size="48"
+        class="empty-icon"
+      />
       <p>{{ t('aiChat.selectModel') }}</p>
     </div>
 
-    <div v-if="activeSession" class="input-container">
+    <div
+      v-if="activeSession"
+      class="input-container"
+    >
       <textarea
         :value="inputText"
         class="message-input"
@@ -109,7 +135,10 @@ function handleKeydown(event: KeyboardEvent) {
       </BaseIconButton>
     </div>
 
-    <div v-if="activeSession && models.length > 0" class="chat-toolbar">
+    <div
+      v-if="activeSession && models.length > 0"
+      class="chat-toolbar"
+    >
       <BaseSelect
         :model-value="activeSession.modelId"
         :options="modelOptions"
