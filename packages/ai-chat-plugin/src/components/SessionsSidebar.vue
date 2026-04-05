@@ -20,17 +20,17 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'createSession'): void;
-  (e: 'selectSession', session: Session): void;
-  (e: 'openContextMenu', event: MouseEvent, session: Session): void;
-  (e: 'closeContextMenu'): void;
-  (e: 'contextMenuAction', action: string): void;
-  (e: 'openModels'): void;
-  (e: 'openEditModal', session: Session): void;
-  (e: 'closeEditModal'): void;
-  (e: 'saveSessionEdit'): void;
-  (e: 'update:editSessionTitle', value: string): void;
-  (e: 'update:editSessionSystemPrompt', value: string): void;
+  (_e: 'createSession'): void;
+  (_e: 'selectSession', _session: Session): void;
+  (_e: 'openContextMenu', _event: MouseEvent, _session: Session): void;
+  (_e: 'closeContextMenu'): void;
+  (_e: 'contextMenuAction', _action: string): void;
+  (_e: 'openModels'): void;
+  (_e: 'openEditModal', _session: Session): void;
+  (_e: 'closeEditModal'): void;
+  (_e: 'saveSessionEdit'): void;
+  (_e: 'update:editSessionTitle', _value: string): void;
+  (_e: 'update:editSessionSystemPrompt', _value: string): void;
 }>();
 
 const { t } = useI18n();
@@ -60,12 +60,20 @@ function formatDate(timestamp: number): string {
 <template>
   <div class="sidebar">
     <div class="sidebar-header">
-      <h2 class="sidebar-title">{{ t('aiChat.sessions') }}</h2>
+      <h2 class="sidebar-title">
+        {{ t('aiChat.sessions') }}
+      </h2>
       <div class="sidebar-actions">
-        <BaseIconButton :title="t('aiChat.models')" @click="emit('openModels')">
+        <BaseIconButton
+          :title="t('aiChat.models')"
+          @click="emit('openModels')"
+        >
           <Settings :size="16" />
         </BaseIconButton>
-        <BaseIconButton :title="t('aiChat.newSession')" @click="emit('createSession')">
+        <BaseIconButton
+          :title="t('aiChat.newSession')"
+          @click="emit('createSession')"
+        >
           <Plus :size="16" />
         </BaseIconButton>
       </div>
@@ -81,21 +89,35 @@ function formatDate(timestamp: number): string {
         @contextmenu.prevent="emit('openContextMenu', $event, session)"
       >
         <div class="session-info">
-          <MessageSquare :size="14" class="session-icon" />
+          <MessageSquare
+            :size="14"
+            class="session-icon"
+          />
           <div class="session-details">
             <span class="session-title">{{ session.title || t('aiChat.newSession') }}</span>
             <span class="session-date">{{ formatDate(session.updatedAt) }}</span>
           </div>
         </div>
-        <Pin v-if="session.isPinned" :size="14" class="pin-icon" />
+        <Pin
+          v-if="session.isPinned"
+          :size="14"
+          class="pin-icon"
+        />
       </div>
-      <div v-if="sortedSessions.length === 0" class="empty-sessions">
+      <div
+        v-if="sortedSessions.length === 0"
+        class="empty-sessions"
+      >
         <p>{{ t('aiChat.noSessions') }}</p>
       </div>
     </div>
 
     <!-- Edit Session Modal -->
-    <BaseModal :show="showEditModal" :title="t('aiChat.editSession')" @close="emit('closeEditModal')">
+    <BaseModal
+      :show="showEditModal"
+      :title="t('aiChat.editSession')"
+      @close="emit('closeEditModal')"
+    >
       <div class="edit-form">
         <div class="form-group">
           <label class="form-label">{{ t('aiChat.sessionName') }}</label>
@@ -117,8 +139,18 @@ function formatDate(timestamp: number): string {
         </div>
       </div>
       <template #footer>
-        <BaseButton variant="default" @click="emit('closeEditModal')">{{ t('aiChat.cancel') }}</BaseButton>
-        <BaseButton variant="primary" @click="emit('saveSessionEdit')">{{ t('aiChat.save') }}</BaseButton>
+        <BaseButton
+          variant="default"
+          @click="emit('closeEditModal')"
+        >
+          {{ t('aiChat.cancel') }}
+        </BaseButton>
+        <BaseButton
+          variant="primary"
+          @click="emit('saveSessionEdit')"
+        >
+          {{ t('aiChat.save') }}
+        </BaseButton>
       </template>
     </BaseModal>
 

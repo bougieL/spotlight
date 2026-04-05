@@ -42,8 +42,8 @@ export interface TauriApi {
   getGlobalShortcut: () => Promise<string>;
   getChromeBookmarks: () => Promise<ChromeBookmark[]>;
   executeShellCommand: (command: string) => Promise<void>;
-  searchWithRg: (query: string, path?: string, options?: SearchOptions) => Promise<RipgrepResult[]>;
-  searchFilesWithRg: (query: string, path?: string, caseSensitive?: boolean) => Promise<FileResult[]>;
+  searchWithRg: (params: { query: string; path?: string; options?: SearchOptions }) => Promise<RipgrepResult[]>;
+  searchFilesWithRg: (params: { query: string; path?: string; caseSensitive?: boolean }) => Promise<FileResult[]>;
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
@@ -102,18 +102,14 @@ export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
 export const searchWithRg = (
-  query: string,
-  path?: string,
-  options?: SearchOptions
+  params: { query: string; path?: string; options?: SearchOptions }
 ): Promise<RipgrepResult[]> =>
-  invoke<RipgrepResult[]>('search_with_rg', { query, path, options });
+  invoke<RipgrepResult[]>('search_with_rg', params);
 
 export const searchFilesWithRg = (
-  query: string,
-  path?: string,
-  caseSensitive?: boolean
+  params: { query: string; path?: string; caseSensitive?: boolean }
 ): Promise<FileResult[]> =>
-  invoke<FileResult[]>('search_files_with_rg', { query, path, caseSensitive });
+  invoke<FileResult[]>('search_files_with_rg', params);
 
 export const executeShellCommand = (command: string): Promise<void> =>
   invoke<void>('execute_shell_command', { command });
@@ -155,10 +151,9 @@ export const focusWindow = (hwnd: number): Promise<void> =>
 
 export const createChildWebview = (
   url: string,
-  label: string,
-  options: ChildWebviewOptions
+  params: { label: string } & ChildWebviewOptions
 ): Promise<string> =>
-  invoke<string>('create_child_webview', { url, label, ...options });
+  invoke<string>('create_child_webview', { url, ...params });
 
 export const closeChildWebview = (label: string): Promise<void> =>
   invoke<void>('close_child_webview', { label });
@@ -231,11 +226,11 @@ export const tauriApi: TauriApi = {
 
   executeShellCommand: (command: string) => invoke<void>('execute_shell_command', { command }),
 
-  searchWithRg: (query: string, path?: string, options?: SearchOptions) =>
-    invoke<RipgrepResult[]>('search_with_rg', { query, path, options }),
+  searchWithRg: (params) =>
+    invoke<RipgrepResult[]>('search_with_rg', params),
 
-  searchFilesWithRg: (query: string, path?: string, caseSensitive?: boolean) =>
-    invoke<FileResult[]>('search_files_with_rg', { query, path, caseSensitive }),
+  searchFilesWithRg: (params) =>
+    invoke<FileResult[]>('search_files_with_rg', params),
 
   getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
 

@@ -53,7 +53,7 @@ export class AIChatPlugin extends BasePlugin {
         ctx.navigateToPlugin(this.pluginId);
       },
       [ACTION_OPEN_MODELS]: async () => {
-        ctx.navigateToPlugin(this.pluginId, 'models');
+        ctx.navigateToPlugin(this.pluginId, { route: 'models' });
       },
     };
   }

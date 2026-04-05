@@ -92,9 +92,7 @@ export interface SearchOptions {
 }
 
 export async function searchWithRg(
-  _query: string,
-  _path?: string,
-  _options?: SearchOptions
+  _params: { query: string; path?: string; options?: SearchOptions }
 ): Promise<RipgrepResult[]> {
   // Mock implementation returns empty results for testing
   return [
@@ -138,7 +136,11 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
     case 'get_chrome_bookmarks':
       return getChromeBookmarks();
     case 'search_with_rg':
-      return searchWithRg(args?.query as string, args?.path as string | undefined, args?.options as SearchOptions | undefined);
+      return searchWithRg({
+        query: args?.query as string,
+        path: args?.path as string | undefined,
+        options: args?.options as SearchOptions | undefined,
+      });
     case 'execute_shell_command':
       return executeShellCommand(args?.command as string);
     case 'read_plugin_settings':
