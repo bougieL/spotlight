@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Search, X, FileText, ArrowLeft, Settings, MoreVertical, ExternalLink } from 'lucide-vue-next';
+import { Search, X, FileText, ArrowLeft, Settings, MoreVertical } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import { useI18n } from '@spotlight/i18n';
-import { BaseContextMenu, type ContextMenuItem } from '@spotlight/components';
 import type { FileItem } from '@spotlight/core';
 
 const { t } = useI18n();
@@ -34,7 +33,7 @@ const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
   (e: 'openSettings'): void;
   // eslint-disable-next-line no-unused-vars
-  (e: 'detach'): void;
+  (e: 'detach', query: string): void;
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -69,37 +68,26 @@ const handleOpenSettings = () => {
   emit('openSettings');
 };
 
-const showMenu = ref(false);
-const menuX = ref(0);
-const menuY = ref(0);
-const menuButtonRef = ref<HTMLElement | null>(null);
+const handleMenuClick = async () => {
+  const { Menu, MenuItem, PredefinedMenuItem } = await import('@tauri-apps/api/menu');
 
-const menuItems = computed<ContextMenuItem[]>(() => [
-  { label: t('input.detach'), icon: ExternalLink, click: () => emit('detach') },
-  { label: t('input.settings'), icon: Settings, click: () => emit('openSettings') },
-]);
+  const menu = await Menu.new();
 
-const handleMenuClick = () => {
-  if (showMenu.value) {
-    showMenu.value = false;
-    return;
-  }
-  const btn = menuButtonRef.value;
-  if (btn) {
-    const rect = btn.getBoundingClientRect();
-    menuX.value = rect.right;
-    menuY.value = rect.bottom + 4;
-  }
-  showMenu.value = true;
-};
+  const detachItem = await MenuItem.new({
+    text: t('input.detach'),
+    action: () => emit('detach', window.location.search),
+  });
 
-const handleMenuClose = () => {
-  showMenu.value = false;
-};
+  const separator = await PredefinedMenuItem.new({ item: 'Separator' });
 
-// eslint-disable-next-line no-unused-vars
-const handleMenuSelect = (_item: ContextMenuItem) => {
-  showMenu.value = false;
+  const settingsItem = await MenuItem.new({
+    text: t('input.settings'),
+    action: () => emit('openSettings'),
+  });
+
+  await menu.append([detachItem, separator, settingsItem]);
+
+  await menu.popup();
 };
 
 const removeFile = (id: string) => {
@@ -249,14 +237,6 @@ const handlePaste = async (event: ClipboardEvent) => {
         />
       </button>
     </div>
-    <BaseContextMenu
-      :items="menuItems"
-      :x="menuX"
-      :y="menuY"
-      :visible="showMenu"
-      @close="handleMenuClose"
-      @select="handleMenuSelect"
-    />
     <div
       v-if="props.files.length > 0"
       class="files-container"

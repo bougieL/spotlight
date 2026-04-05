@@ -88,6 +88,7 @@ export interface ChildWebviewOptions {
   y: number;
   width: number;
   height: number;
+  parentLabel: string;
 }
 
 export const captureFullScreen = (): Promise<ScreenCapture> =>

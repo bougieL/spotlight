@@ -62,7 +62,7 @@ export class WebOpenPlugin extends BasePlugin {
 
   async openUrl(
     url: string,
-    options: { x: number; y: number; width: number; height: number }
+    options: { x: number; y: number; width: number; height: number; parentLabel: string }
   ): Promise<string> {
     const label = `webview-${Date.now()}`;
     await createChildWebview(url, label, options);

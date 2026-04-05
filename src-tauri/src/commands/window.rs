@@ -1,5 +1,10 @@
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use raw_window_handle::HasWindowHandle;
+use std::sync::Mutex;
+use std::collections::HashSet;
+use std::sync::LazyLock;
+
+static CHILD_WEBVIEWS: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(|| Mutex::new(HashSet::new()));
 
 #[cfg(windows)]
 use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_NCRENDERING_POLICY, DWMWA_TRANSITIONS_FORCEDISABLED, DWMNCRP_DISABLED};
@@ -474,9 +479,9 @@ pub async fn create_child_webview(
     y: f64,
     width: f64,
     height: f64,
+    parent_label: String,
 ) -> Result<String, String> {
-    // Get the main window - use get_window to access Window type which has add_child
-    let main_window = app.get_window("main").ok_or("Main window not found")?;
+    let parent_window = app.get_window(&parent_label).ok_or(format!("Parent window '{}' not found", parent_label))?;
 
     // Script to intercept window.open and links with target="_blank"
     let initialization_script = r#"
@@ -511,9 +516,12 @@ pub async fn create_child_webview(
     )
     .initialization_script(initialization_script);
 
-    main_window
+    parent_window
         .add_child(webview_builder, tauri::Position::Logical(tauri::LogicalPosition { x, y }), tauri::Size::Logical(tauri::LogicalSize { width, height }))
         .map_err(|e| e.to_string())?;
+
+    // Register the webview label
+    CHILD_WEBVIEWS.lock().unwrap().insert(label.clone());
 
     Ok(label)
 }
@@ -523,6 +531,8 @@ pub async fn close_child_webview(app: tauri::AppHandle, label: String) -> Result
     // Try app.get_webview to get the Webview and close it
     if let Some(webview) = app.get_webview(&label) {
         webview.close().map_err(|e| e.to_string())?;
+        // Unregister the webview label
+        CHILD_WEBVIEWS.lock().unwrap().remove(&label);
         return Ok(());
     }
 
@@ -531,20 +541,17 @@ pub async fn close_child_webview(app: tauri::AppHandle, label: String) -> Result
 
 #[tauri::command]
 pub async fn close_all_child_webviews(app: tauri::AppHandle) -> Result<(), String> {
-    let webview_prefix = "panel-";
-
-    // Get all webview labels from webview_windows
-    let labels: Vec<_> = app.webview_windows()
-        .keys()
-        .filter(|label| label.starts_with(webview_prefix))
-        .cloned()
-        .collect();
+    // Get all registered webview labels
+    let labels: Vec<String> = CHILD_WEBVIEWS.lock().unwrap().iter().cloned().collect();
 
     for label in labels {
         if let Some(webview) = app.get_webview(&label) {
             webview.close().map_err(|e| e.to_string())?;
         }
     }
+
+    // Clear the registry
+    CHILD_WEBVIEWS.lock().unwrap().clear();
 
     Ok(())
 }
@@ -558,11 +565,11 @@ pub async fn resize_child_webview(
     width: f64,
     height: f64,
 ) -> Result<(), String> {
-    let window = app.get_webview_window(&label).ok_or("Child webview not found")?;
-    window
+    let webview = app.get_webview(&label).ok_or("Child webview not found")?;
+    webview
         .set_position(tauri::Position::Logical(tauri::LogicalPosition { x, y }))
         .map_err(|e| e.to_string())?;
-    window
+    webview
         .set_size(tauri::Size::Logical(tauri::LogicalSize { width, height }))
         .map_err(|e| e.to_string())?;
     Ok(())

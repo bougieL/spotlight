@@ -64,10 +64,12 @@ const handleClosePanel = () => {
 
 const handleOpenSettings = () => router.push({ name: 'settings-plugin:main' });
 
-const handleDetach = async () => {
+const handleDetach = async (searchParams: string) => {
   const panelPath = route.path;
   if (!panelPath.startsWith('/panel')) return;
-  const url = `${window.location.origin}${panelPath}?detached=true`;
+  const params = new URLSearchParams(searchParams);
+  params.set('detached', 'true');
+  const url = `${window.location.origin}${panelPath}?${params.toString()}`;
   await tauriApi.detachWindow({ url, label: `panel-${Date.now()}`, title: activePluginName.value || 'Spotlight' });
 };
 

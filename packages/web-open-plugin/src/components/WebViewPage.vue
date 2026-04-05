@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
-import { createChildWebview, closeChildWebview } from '@spotlight/api';
+import { createChildWebview, closeChildWebview, resizeChildWebview } from '@spotlight/api';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const route = useRoute();
 
 const webviewLabel = ref<string | null>(null);
 const containerRef = ref<HTMLElement | null>(null);
+let resizeObserver: ResizeObserver | null = null;
 
 function getPanelBounds(): { x: number; y: number; width: number; height: number } {
   if (containerRef.value) {
@@ -33,10 +35,21 @@ onMounted(async () => {
   }
 
   const bounds = getPanelBounds();
-  webviewLabel.value = await createChildWebview(url, `panel-${Date.now()}`, bounds);
+  const currentWindow = getCurrentWindow();
+  webviewLabel.value = await createChildWebview(url, `webview-${Date.now()}`, { ...bounds, parentLabel: currentWindow.label });
+
+  if (containerRef.value && webviewLabel.value) {
+    resizeObserver = new ResizeObserver(() => {
+      if (webviewLabel.value) {
+        resizeChildWebview(webviewLabel.value, getPanelBounds());
+      }
+    });
+    resizeObserver.observe(containerRef.value);
+  }
 });
 
 onBeforeUnmount(async () => {
+  resizeObserver?.disconnect();
   if (webviewLabel.value) {
     await closeChildWebview(webviewLabel.value);
   }
