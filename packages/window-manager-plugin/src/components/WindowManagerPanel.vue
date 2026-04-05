@@ -158,19 +158,31 @@ function handleKeydown(event: KeyboardEvent) {
     tabindex="0"
     @keydown="handleKeydown"
   >
-    <div v-if="loading" class="message">
+    <div
+      v-if="loading"
+      class="message"
+    >
       Loading...
     </div>
 
-    <div v-else-if="error" class="message error">
+    <div
+      v-else-if="error"
+      class="message error"
+    >
       {{ error }}
     </div>
 
-    <div v-else-if="filteredWindows.length === 0" class="message">
+    <div
+      v-else-if="filteredWindows.length === 0"
+      class="message"
+    >
       {{ t('windowManager.window.noWindows') }}
     </div>
 
-    <div v-else class="window-list">
+    <div
+      v-else
+      class="window-list"
+    >
       <div
         v-for="window in filteredWindows"
         :key="window.hwnd"
@@ -178,13 +190,21 @@ function handleKeydown(event: KeyboardEvent) {
         @click="focusWindow(window.hwnd)"
       >
         <div class="window-info">
-          <div class="window-title">{{ window.title }}</div>
+          <div class="window-title">
+            {{ window.title }}
+          </div>
           <div class="window-meta">
             <span class="process-name">{{ window.processName }}</span>
-            <span v-if="window.isMinimized" class="state-badge minimized">
+            <span
+              v-if="window.isMinimized"
+              class="state-badge minimized"
+            >
               Min
             </span>
-            <span v-if="window.isMaximized" class="state-badge maximized">
+            <span
+              v-if="window.isMaximized"
+              class="state-badge maximized"
+            >
               Max
             </span>
           </div>
@@ -230,8 +250,14 @@ function handleKeydown(event: KeyboardEvent) {
             "
             @click.stop="toggleAlwaysOnTop(window.hwnd)"
           >
-            <PinOff v-if="window.isAlwaysOnTop" :size="16" />
-            <Pin v-else :size="16" />
+            <PinOff
+              v-if="window.isAlwaysOnTop"
+              :size="16"
+            />
+            <Pin
+              v-else
+              :size="16"
+            />
           </button>
           <button
             class="action-btn close"

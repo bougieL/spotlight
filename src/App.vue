@@ -45,6 +45,26 @@ provide(panelContext, {
 
 const handleSelect = async (item: SearchResultItem) => {
   if (!item.pluginId || item.actionId === undefined) return;
+
+  if (item.pluginId === '__quick_command__') {
+    const allCommands = pluginRegistry.getQuickCommands();
+    const cmd = allCommands.find((c) => c.trigger === item.actionId);
+    if (cmd) {
+      const title = item.title as string;
+      const spaceIndex = title.indexOf(' ');
+      const keyword = spaceIndex === -1 ? '' : title.slice(spaceIndex + 1);
+      await recentPlugin.recordQuickCommand({
+        trigger: cmd.trigger,
+        description: cmd.description,
+        iconUrl: cmd.iconUrl,
+        keyword: keyword || undefined,
+      });
+      query.value = '';
+      await cmd.execute(keyword);
+    }
+    return;
+  }
+
   await recentPlugin.recordSelection({
     item: { title: item.title, desc: item.desc, iconUrl: item.iconUrl },
     pluginId: item.pluginId,
@@ -56,6 +76,33 @@ const handleSelect = async (item: SearchResultItem) => {
     actionId: item.actionId,
     data: item.actionData,
   });
+};
+
+const handleFillQuery = (newQuery: string) => {
+  query.value = newQuery;
+  searchInputRef.value?.focus();
+};
+
+const handleInputEnter = async (q: string) => {
+  if (!q.startsWith('/')) {
+    return;
+  }
+  const afterSlash = q.slice(1).trim();
+  const spaceIndex = afterSlash.indexOf(' ');
+  const trigger = spaceIndex === -1 ? afterSlash : afterSlash.slice(0, spaceIndex);
+  const commandArg = spaceIndex === -1 ? '' : afterSlash.slice(spaceIndex + 1);
+  const allCommands = pluginRegistry.getQuickCommands();
+  const cmd = allCommands.find((c) => c.trigger === trigger);
+  if (cmd) {
+    await recentPlugin.recordQuickCommand({
+      trigger: cmd.trigger,
+      description: cmd.description,
+      iconUrl: cmd.iconUrl,
+      keyword: commandArg || undefined,
+    });
+    query.value = '';
+    await cmd.execute(commandArg);
+  }
 };
 
 const handleClosePanel = () => {
@@ -96,6 +143,7 @@ onMounted(async () => {
       @back="handleClosePanel"
       @open-settings="handleOpenSettings"
       @detach="handleDetach"
+      @enter="handleInputEnter"
     />
     <RouterView
       v-slot="{ Component }"
@@ -105,6 +153,7 @@ onMounted(async () => {
       <component
         :is="Component"
         @select="handleSelect"
+        @fill-query="handleFillQuery"
       />
     </RouterView>
   </main>

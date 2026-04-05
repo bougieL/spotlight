@@ -34,6 +34,8 @@ const emit = defineEmits<{
   (e: 'openSettings'): void;
   // eslint-disable-next-line no-unused-vars
   (e: 'detach', query: string): void;
+  // eslint-disable-next-line no-unused-vars
+  (e: 'enter', query: string): void;
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -45,6 +47,10 @@ const handleInput = (event: InputEvent) => {
 };
 
 const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    emit('enter', props.modelValue);
+    return;
+  }
   if (event.key === 'Escape') {
     if (props.isPanelMode) {
       emit('back');

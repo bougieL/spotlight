@@ -117,6 +117,12 @@ onMounted(async () => {
   await loadSettings();
 
   const routeQuery = route.query.q as string | undefined;
+  const routeMode = route.query.mode as string | undefined;
+  if (routeMode === 'contents') {
+    searchInContents.value = true;
+  } else if (routeMode === 'name') {
+    searchInContents.value = false;
+  }
   if (routeQuery) {
     query.value = routeQuery;
   }

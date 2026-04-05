@@ -166,7 +166,7 @@ export class FileSearchPlugin extends BasePlugin {
         description: this.i18n.t('fileSearch.quickCommands.grep'),
         iconUrl: searchIconUrl,
         execute: (q: string) => {
-          ctx.navigateToPlugin(this.pluginId, q ? { query: { q } } : undefined);
+          ctx.navigateToPlugin(this.pluginId, q ? { query: { q, mode: 'contents' } } : { query: { mode: 'contents' } });
         },
       },
       {
@@ -174,7 +174,7 @@ export class FileSearchPlugin extends BasePlugin {
         description: this.i18n.t('fileSearch.quickCommands.find'),
         iconUrl: searchIconUrl,
         execute: (q: string) => {
-          ctx.navigateToPlugin(this.pluginId, q ? { query: { q } } : undefined);
+          ctx.navigateToPlugin(this.pluginId, q ? { query: { q, mode: 'name' } } : { query: { mode: 'name' } });
         },
       },
     ];

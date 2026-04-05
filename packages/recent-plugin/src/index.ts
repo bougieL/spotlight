@@ -90,6 +90,29 @@ export class RecentPlugin extends BasePlugin {
     await this.saveData({ items: newItems });
   }
 
+  async recordQuickCommand(params: { trigger: string; description: string; iconUrl?: string; keyword?: string }): Promise<void> {
+    const { trigger, description, iconUrl, keyword } = params;
+    const data = await this.getData();
+
+    const title = keyword ? `/${trigger} ${keyword}` : `/${trigger}`;
+    const filteredItems = data.items.filter(i => i.title !== title);
+
+    const newItem: RecentItem = {
+      id: generateId(),
+      title,
+      desc: description,
+      iconUrl,
+      pluginId: '__quick_command__',
+      actionId: trigger,
+      actionData: null,
+      timestamp: Date.now(),
+    };
+
+    const newItems = [newItem, ...filteredItems].slice(0, MAX_RECENT_ITEMS);
+
+    await this.saveData({ items: newItems });
+  }
+
   async clearItems(): Promise<void> {
     await this.saveData({ items: [] });
   }
