@@ -55,7 +55,7 @@ export class WebOpenPlugin extends BasePlugin {
       [ACTION_OPEN_BOOKMARK]: async (data) => {
         const bookmarkData = data as { url: string };
         if (bookmarkData?.url) {
-          ctx.navigateToPlugin(this.pluginId, 'view', { url: bookmarkData.url });
+          ctx.navigateToPlugin(this.pluginId, { route: 'view', query: { url: bookmarkData.url } });
         }
       },
       [ACTION_ADD_BOOKMARK]: async (data) => {
@@ -115,7 +115,7 @@ export class WebOpenPlugin extends BasePlugin {
     options: { x: number; y: number; width: number; height: number; parentLabel: string }
   ): Promise<string> {
     const label = `webview-${Date.now()}`;
-    await createChildWebview(url, label, options);
+    await createChildWebview(url, { label, ...options });
     return label;
   }
 
