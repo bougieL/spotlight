@@ -50,10 +50,6 @@ const displayResults = computed<SearchResultItem[]>(
   () => (isQuickCommandMode.value ? quickCommandResults.value : searchResults.value)
 );
 
-const translateTitle = (title: string): string => {
-  return t(title);
-};
-
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 const SEARCH_DEBOUNCE_MS = 150;
 
@@ -166,7 +162,7 @@ onUnmounted(() => {
       />
       <div class="result-content">
         <div class="result-title">
-          {{ translateTitle(item.title) }}
+          {{ item.title }}
         </div>
         <div class="result-desc">
           {{ item.desc }}
