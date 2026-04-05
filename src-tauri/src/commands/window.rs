@@ -12,6 +12,7 @@ use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORD
 pub fn show_window(app: tauri::AppHandle) -> Result<(), String> {
     let window = app.get_webview_window("main").ok_or("Window not found")?;
     window.show().map_err(|e| e.to_string())?;
+    std::thread::sleep(std::time::Duration::from_millis(100));
 
     #[cfg(windows)]
     {
@@ -106,7 +107,7 @@ pub async fn create_overlay_window(
         let _ = existing.close();
     }
 
-    let is_dev = url.contains("localhost");
+    let _is_dev = url.contains("localhost");
 
     #[cfg(windows)]
     let (screen_width, screen_height) = unsafe {
