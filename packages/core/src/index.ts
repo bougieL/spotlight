@@ -14,7 +14,7 @@ export function getPanelRouteName(pluginId: string): string {
 }
 
 export interface ActionContext {
-  navigateToPlugin: (pluginId: string, route?: string) => void;
+  navigateToPlugin: (pluginId: string, route?: string, query?: Record<string, string>) => void;
 }
 
 export interface PanelRoute {

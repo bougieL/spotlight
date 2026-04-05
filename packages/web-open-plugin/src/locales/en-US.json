@@ -7,6 +7,10 @@
     "recentUrls": "Recent URLs",
     "clearHistory": "Clear History",
     "noHistory": "No recent URLs",
-    "invalidUrl": "Please enter a valid URL"
+    "invalidUrl": "Please enter a valid URL",
+    "bookmarks": "Bookmarks",
+    "noBookmarks": "No bookmarks",
+    "addBookmark": "Bookmark",
+    "removeBookmark": "Remove Bookmark"
   }
 }

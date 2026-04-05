@@ -91,6 +91,13 @@ export interface ChildWebviewOptions {
   parentLabel: string;
 }
 
+export interface ChildWebviewBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const captureFullScreen = (): Promise<ScreenCapture> =>
   invoke<ScreenCapture>('capture_full_screen');
 
@@ -158,9 +165,9 @@ export const closeChildWebview = (label: string): Promise<void> =>
 
 export const resizeChildWebview = (
   label: string,
-  options: ChildWebviewOptions
+  bounds: ChildWebviewBounds
 ): Promise<void> =>
-  invoke<void>('resize_child_webview', { label, ...options });
+  invoke<void>('resize_child_webview', { label, ...bounds });
 
 export const closeAllChildWebviews = (): Promise<void> =>
   invoke<void>('close_all_child_webviews');

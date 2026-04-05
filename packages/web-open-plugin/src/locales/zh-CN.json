@@ -7,6 +7,10 @@
     "recentUrls": "最近访问",
     "clearHistory": "清除历史",
     "noHistory": "暂无访问记录",
-    "invalidUrl": "请输入有效的网址"
+    "invalidUrl": "请输入有效的网址",
+    "bookmarks": "收藏",
+    "noBookmarks": "暂无收藏",
+    "addBookmark": "收藏",
+    "removeBookmark": "取消收藏"
   }
 }

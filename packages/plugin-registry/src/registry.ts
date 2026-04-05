@@ -20,9 +20,9 @@ interface RegisteredPlugin {
 export class PluginRegistry {
   private plugins: RegisteredPlugin[] = [];
   private disabledPlugins: Set<string> = new Set();
-  private navigateToPlugin: ((pluginId: string, route?: string) => void) | null = null;
+  private navigateToPlugin: ((pluginId: string, route?: string, query?: Record<string, string>) => void) | null = null;
 
-  setNavigateToPlugin(fn: (pluginId: string, route?: string) => void): void {
+  setNavigateToPlugin(fn: (pluginId: string, route?: string, query?: Record<string, string>) => void): void {
     this.navigateToPlugin = fn;
   }
 
