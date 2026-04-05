@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted, nextTick, type Ref } from 'vue';
-import { on, type UnlistenFn } from '@spotlight/api';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+import type { UnlistenFn } from '@tauri-apps/api/event';
 import { tauriApi } from '@spotlight/api';
 import settingsPlugin from '@spotlight/settings-plugin';
 import logger from '@spotlight/logger';
@@ -8,8 +9,7 @@ export function useWindowFocus(
   searchInputRef: Ref<{ focus: () => void } | null>,
   isDetached: Ref<boolean>
 ) {
-  let unlistenWindowFocus: UnlistenFn | null = null;
-  let unlistenWindowBlur: UnlistenFn | null = null;
+  let unlistenFocusChanged: UnlistenFn | null = null;
 
   const focusInput = () => {
     logger.info('[useWindowFocus] focusInput called');
@@ -26,27 +26,28 @@ export function useWindowFocus(
 
     logger.info('[useWindowFocus] mounted, setting up listeners');
 
-    unlistenWindowFocus = await on.windowFocus(() => {
-      logger.info('[useWindowFocus] windowFocus event received');
-      focusInput();
-    });
+    const window = getCurrentWindow();
 
-    const hideOnBlur = await settingsPlugin.getHideOnBlur();
-    if (hideOnBlur) {
-      unlistenWindowBlur = await on.windowBlur(() => {
-        logger.info('[useWindowFocus] windowBlur event received');
-        setTimeout(() => {
-          tauriApi.hideWindow();
-        }, 100);
-      });
-    }
+    unlistenFocusChanged = await window.onFocusChanged(async (event) => {
+      const focused = event.payload;
+      logger.info(`[useWindowFocus] focusChanged event received, focused: ${focused}`);
+      if (focused) {
+        focusInput();
+      } else {
+        const hideOnBlur = await settingsPlugin.getHideOnBlur();
+        if (hideOnBlur) {
+          setTimeout(() => {
+            tauriApi.hideWindow();
+          }, 100);
+        }
+      }
+    });
   });
 
   onUnmounted(() => {
     if (isDetached.value) return;
 
     logger.info('[useWindowFocus] unmounted, cleaning up listeners');
-    unlistenWindowFocus?.();
-    unlistenWindowBlur?.();
+    unlistenFocusChanged?.();
   });
 }

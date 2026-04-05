@@ -4,8 +4,7 @@ export type UnlistenFn = () => void;
 
 export const EventName = {
   CLIPBOARD_CHANGED: 'clipboard-changed',
-  TAURI_FOCUS: 'tauri://focus',
-  TAURI_BLUR: 'tauri://blur',
+  TAURI_FOCUS_CHANGED: 'tauri://focus-changed',
 } as const;
 
 export type EventNameType = typeof EventName[keyof typeof EventName];
@@ -23,6 +22,6 @@ export async function emit(event: EventNameType | (string & {}), payload?: unkno
 
 export const on = {
   clipboardChanged: <T = void>(handler: (event: T) => void) => listen<T>(EventName.CLIPBOARD_CHANGED, handler),
-  windowFocus: <T = void>(handler: (event: T) => void) => listen<T>(EventName.TAURI_FOCUS, handler),
-  windowBlur: <T = void>(handler: (event: T) => void) => listen<T>(EventName.TAURI_BLUR, handler),
+  onFocusChanged: (handler: (focused: boolean) => void) =>
+    listen<boolean>(EventName.TAURI_FOCUS_CHANGED, handler),
 };

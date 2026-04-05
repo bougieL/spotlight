@@ -17,6 +17,13 @@ use commands::{
 };
 use tauri::Manager;
 
+#[cfg(windows)]
+use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_TRANSITIONS_FORCEDISABLED};
+#[cfg(windows)]
+use windows::Win32::Foundation::HWND;
+#[cfg(windows)]
+use raw_window_handle::HasWindowHandle;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -90,6 +97,27 @@ pub fn run() {
 
             // Hide window on startup, show only when tray icon is clicked
             let _ = window.hide();
+            let _ = window.set_skip_taskbar(true);
+
+            // Disable window animations on Windows
+            #[cfg(windows)]
+            {
+                use raw_window_handle::RawWindowHandle;
+                if let Ok(handle) = window.window_handle() {
+                    if let RawWindowHandle::Win32(h) = handle.as_raw() {
+                        let hwnd = h.hwnd.get() as isize;
+                        unsafe {
+                            let enabled: u32 = 1;
+                            let _ = DwmSetWindowAttribute(
+                                HWND(hwnd as *mut std::ffi::c_void),
+                                DWMWA_TRANSITIONS_FORCEDISABLED,
+                                &enabled as *const u32 as *const std::ffi::c_void,
+                                std::mem::size_of::<u32>() as u32,
+                            );
+                        }
+                    }
+                }
+            }
 
             if let Ok(Some(monitor)) = window.current_monitor() {
                 let scale_factor = window.scale_factor().unwrap_or(1.0);
