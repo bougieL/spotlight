@@ -27,6 +27,7 @@
     "@spotlight/color-picker-plugin": "*",
     "@spotlight/components": "*",
     "@spotlight/core": "*",
+    "@spotlight/file-search-plugin": "*",
     "@spotlight/i18n": "*",
     "@spotlight/image-compressor-plugin": "*",
     "@spotlight/json-plugin": "*",
@@ -35,14 +36,13 @@
     "@spotlight/qrcode-plugin": "*",
     "@spotlight/recent-plugin": "*",
     "@spotlight/screenshot-plugin": "*",
-    "@spotlight/file-search-plugin": "*",
     "@spotlight/settings-plugin": "*",
     "@spotlight/shortcuts-plugin": "*",
     "@spotlight/translation-plugin": "*",
     "@spotlight/utils": "*",
     "@spotlight/window-manager-plugin": "*",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-http": "^2.5.7",
+    "@tauri-apps/plugin-dialog": "^2.7.0",
+    "@tauri-apps/plugin-http": "^2.5.8",
     "lucide-vue-next": "^0.577.0",
     "pinyin-pro": "^3.24.0",
     "vue": "^3.5.13",
@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tauri-apps/cli": "^2",
+    "@tauri-apps/cli": "^2.10.1",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
     "@vitejs/plugin-vue": "^5.2.1",
@@ -63,7 +63,7 @@
     "vue-tsc": "^3.2.6"
   },
   "optionalDependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-opener": "^2.5.3"
   }
 }
