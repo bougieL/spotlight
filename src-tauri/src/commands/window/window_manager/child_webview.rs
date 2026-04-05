@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 use std::sync::Mutex;
+use tauri::Manager;
 
 static CHILD_WEBVIEWS: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(|| Mutex::new(HashSet::new()));
 

@@ -1,4 +1,15 @@
-use super::WindowInfo;
+#[derive(serde::Serialize)]
+pub struct WindowInfo {
+    pub hwnd: isize,
+    pub title: String,
+    pub process_name: String,
+    pub is_visible: bool,
+    pub is_minimized: bool,
+    pub is_maximized: bool,
+    pub is_always_on_top: bool,
+}
+
+pub mod child_webview;
 
 #[cfg(windows)]
 mod platform {

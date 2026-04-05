@@ -1,10 +1,5 @@
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use raw_window_handle::HasWindowHandle;
-use std::collections::HashSet;
-use std::sync::LazyLock;
-use std::sync::Mutex;
-
-static CHILD_WEBVIEWS: LazyLock<Mutex<HashSet<String>>> = LazyLock::new(|| Mutex::new(HashSet::new()));
 
 #[cfg(windows)]
 use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_NCRENDERING_POLICY, DWMWA_TRANSITIONS_FORCEDISABLED, DWMNCRP_DISABLED};
@@ -211,11 +206,10 @@ pub fn exit_app(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-pub use child_webview::{close_all_child_webviews, close_child_webview, create_child_webview, resize_child_webview};
 pub use window_manager::{
+    child_webview::{close_all_child_webviews, close_child_webview, create_child_webview, resize_child_webview},
     close_window, focus_window, list_windows, maximize_window, minimize_window, restore_window,
     set_window_always_on_top, WindowInfo,
 };
 
 mod window_manager;
-mod child_webview;
