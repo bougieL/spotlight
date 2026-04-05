@@ -19,6 +19,7 @@ export interface ChromeBookmark {
 }
 
 export interface TauriApi {
+  showWindow: () => Promise<void>;
   hideWindow: () => Promise<void>;
   resizeWindow: (height: number) => Promise<void>;
   createOverlayWindow: (url: string, label: string) => Promise<void>;
@@ -178,6 +179,8 @@ export async function openDirectoryDialog(defaultPath?: string): Promise<string 
 }
 
 export const tauriApi: TauriApi = {
+  showWindow: () => invoke('show_window'),
+
   hideWindow: () => invoke('hide_window'),
 
   resizeWindow: (height: number) => invoke('resize_window', { height }),

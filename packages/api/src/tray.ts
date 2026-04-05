@@ -83,18 +83,9 @@ export async function setupTray(options: TrayOptions): Promise<void> {
       if (event.type === 'Click' && event.button === 'Left') {
         logger.info('Tray left click');
         try {
-          const { getAllWindows } = await import('@tauri-apps/api/window');
-          const windows = await getAllWindows();
-          logger.info('Windows count:', windows.length);
-          const mainWindow = windows.find((w) => w.label === 'main');
-          if (mainWindow) {
-            logger.info('Found main window, showing...');
-            await mainWindow.show();
-            await mainWindow.setFocus();
-            logger.info('Main window shown and focused');
-          } else {
-            logger.error('Main window not found');
-          }
+          const { tauriApi } = await import('@spotlight/api');
+          await tauriApi.showWindow();
+          logger.info('Main window shown and focused');
         } catch (error) {
           logger.error('Error showing window:', error);
         }

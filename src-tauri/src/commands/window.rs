@@ -6,7 +6,28 @@ use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_NCRENDERING_POL
 #[cfg(windows)]
 use windows::Win32::Foundation::HWND;
 #[cfg(windows)]
-use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORDER, WS_THICKFRAME, SetWindowLongW, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED, HWND_TOP};
+use windows::Win32::UI::WindowsAndMessaging::{GetWindowLongW, GWL_STYLE, WS_BORDER, WS_THICKFRAME, SetWindowLongW, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN, SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED, HWND_TOP, SetForegroundWindow};
+
+#[tauri::command]
+pub fn show_window(app: tauri::AppHandle) -> Result<(), String> {
+    let window = app.get_webview_window("main").ok_or("Window not found")?;
+    window.show().map_err(|e| e.to_string())?;
+
+    #[cfg(windows)]
+    {
+        use raw_window_handle::RawWindowHandle;
+        if let Ok(handle) = window.window_handle() {
+            if let RawWindowHandle::Win32(h) = handle.as_raw() {
+                unsafe {
+                    let _ = SetForegroundWindow(HWND(h.hwnd.get() as *mut std::ffi::c_void));
+                }
+            }
+        }
+    }
+
+    window.set_focus().map_err(|e| e.to_string())?;
+    Ok(())
+}
 
 #[tauri::command]
 pub fn hide_window(app: tauri::AppHandle) -> Result<(), String> {

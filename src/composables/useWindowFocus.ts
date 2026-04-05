@@ -1,45 +1,52 @@
 import { onMounted, onUnmounted, nextTick, type Ref } from 'vue';
+import { on, type UnlistenFn } from '@spotlight/api';
 import { tauriApi } from '@spotlight/api';
 import settingsPlugin from '@spotlight/settings-plugin';
+import logger from '@spotlight/logger';
 
 export function useWindowFocus(
   searchInputRef: Ref<{ focus: () => void } | null>,
   isDetached: Ref<boolean>
 ) {
-  const handleFocus = () => {
+  let unlistenWindowFocus: UnlistenFn | null = null;
+  let unlistenWindowBlur: UnlistenFn | null = null;
+
+  const focusInput = () => {
+    logger.info('[useWindowFocus] focusInput called');
     nextTick(() => {
       setTimeout(() => {
         searchInputRef.value?.focus();
-      }, 50);
-    });
-  };
-
-  const handleBlur = async () => {
-    const hideOnBlur = await settingsPlugin.getHideOnBlur();
-    if (hideOnBlur) {
-      setTimeout(() => {
-        tauriApi.hideWindow();
+        logger.info('[useWindowFocus] input.focus() called');
       }, 100);
-    }
+    });
   };
 
   onMounted(async () => {
     if (isDetached.value) return;
 
-    window.addEventListener('focus', handleFocus);
+    logger.info('[useWindowFocus] mounted, setting up listeners');
 
-    if (!import.meta.env.DEV) {
-      const hideOnBlur = await settingsPlugin.getHideOnBlur();
-      if (hideOnBlur) {
-        window.addEventListener('blur', handleBlur);
-      }
+    unlistenWindowFocus = await on.windowFocus(() => {
+      logger.info('[useWindowFocus] windowFocus event received');
+      focusInput();
+    });
+
+    const hideOnBlur = await settingsPlugin.getHideOnBlur();
+    if (hideOnBlur) {
+      unlistenWindowBlur = await on.windowBlur(() => {
+        logger.info('[useWindowFocus] windowBlur event received');
+        setTimeout(() => {
+          tauriApi.hideWindow();
+        }, 100);
+      });
     }
   });
 
   onUnmounted(() => {
     if (isDetached.value) return;
 
-    window.removeEventListener('focus', handleFocus);
-    window.removeEventListener('blur', handleBlur);
+    logger.info('[useWindowFocus] unmounted, cleaning up listeners');
+    unlistenWindowFocus?.();
+    unlistenWindowBlur?.();
   });
 }

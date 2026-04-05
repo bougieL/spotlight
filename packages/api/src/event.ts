@@ -4,8 +4,8 @@ export type UnlistenFn = () => void;
 
 export const EventName = {
   CLIPBOARD_CHANGED: 'clipboard-changed',
-  TAURI_FOCUS: 'focus',
-  TAURI_BLUR: 'blur',
+  TAURI_FOCUS: 'tauri://focus',
+  TAURI_BLUR: 'tauri://blur',
 } as const;
 
 export type EventNameType = typeof EventName[keyof typeof EventName];

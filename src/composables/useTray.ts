@@ -5,6 +5,7 @@ import type { Ref } from 'vue';
 import {
   setupTray,
   registerTrayItem,
+  tauriApi,
 } from '@spotlight/api';
 import logger from '@spotlight/logger';
 
@@ -22,17 +23,8 @@ export function useTray(isDetached: Ref<boolean>, locale: Ref<Locale>) {
       action: async () => {
         logger.info('Show menu item clicked');
         try {
-          const { getAllWindows } = await import('@tauri-apps/api/window');
-          const windows = await getAllWindows();
-          logger.info('Windows count:', windows.length);
-          const mainWindow = windows.find((w) => w.label === 'main');
-          if (mainWindow) {
-            await mainWindow.show();
-            await mainWindow.setFocus();
-            logger.info('Main window shown and focused');
-          } else {
-            logger.error('Main window not found');
-          }
+          await tauriApi.showWindow();
+          logger.info('Main window shown and focused');
         } catch (error) {
           logger.error('Error showing window:', error);
         }
