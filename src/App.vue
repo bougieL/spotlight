@@ -2,9 +2,11 @@
 import { ref, provide, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { SearchInput } from "@spotlight/input";
-import { registerAllPlugins, recentPlugin, pluginRegistry } from "./plugins";
+import { registerAllPlugins, pluginRegistry } from "./plugins";
+import recentPlugin from "@spotlight/recent-plugin";
 import { provideI18n, setLocale } from "@spotlight/i18n";
-import { settingsPlugin, applyTheme } from "@spotlight/settings-plugin";
+import { applyTheme } from "@spotlight/settings-plugin";
+import settingsPlugin from "@spotlight/settings-plugin";
 import { tauriApi } from "@spotlight/api";
 import type { FileItem } from "@spotlight/input";
 import type { SearchResultItem, PanelContext } from "@spotlight/core";

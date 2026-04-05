@@ -3,6 +3,7 @@ import { BasePlugin } from '@spotlight/core';
 import { createPluginStorage, executeShellCommand, type PluginStorage } from '@spotlight/api';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import { generateId } from '@spotlight/utils';
 import logger from '@spotlight/logger';
 import type { ShortcutItem, ShortcutsData } from './types';
 import enUS from './locales/en-US.json';
@@ -18,10 +19,6 @@ const shortcutsIconUrl = new URL('./assets/terminal.svg', import.meta.url).href;
 const STORAGE_KEY = 'shortcuts';
 const ACTION_OPEN = 'open';
 const ACTION_EXECUTE = 'execute';
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-}
 
 class ShortcutsPlugin extends BasePlugin {
   private readonly i18n = useI18n();
@@ -175,4 +172,5 @@ class ShortcutsPlugin extends BasePlugin {
   }
 }
 
-export const shortcutsPlugin = new ShortcutsPlugin();
+const shortcutsPlugin = new ShortcutsPlugin();
+export default shortcutsPlugin;

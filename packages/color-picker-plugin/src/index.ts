@@ -74,4 +74,5 @@ export class ColorPickerPlugin extends BasePlugin {
   }
 }
 
-export const colorPickerPlugin = new ColorPickerPlugin();
+const colorPickerPlugin = new ColorPickerPlugin();
+export default colorPickerPlugin;

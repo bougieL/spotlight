@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { windowManagerPlugin } from '../index';
+import windowManagerPlugin from '../index';
 import type { WindowInfo } from '@spotlight/api';
 import { minimizeWindow, maximizeWindow, restoreWindow, closeWindow, toggleAlwaysOnTop, focusWindowByHwnd } from '../windowActions';
 import { usePanelContext } from '@spotlight/core';

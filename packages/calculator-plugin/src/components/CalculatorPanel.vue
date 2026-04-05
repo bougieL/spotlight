@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { calculatorPlugin } from '../index';
+import calculatorPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
 

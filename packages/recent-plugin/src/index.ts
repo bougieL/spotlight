@@ -2,7 +2,7 @@ import type { SearchResultItem, SearchParams } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage } from '@spotlight/api';
-import { formatTime } from '@spotlight/utils';
+import { formatTime, generateId } from '@spotlight/utils';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -30,10 +30,6 @@ interface RecentItem {
 
 interface RecentData {
   items: RecentItem[];
-}
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 }
 
 class RecentPlugin extends BasePlugin {
@@ -164,4 +160,5 @@ class RecentPlugin extends BasePlugin {
   }
 }
 
-export const recentPlugin = new RecentPlugin();
+const recentPlugin = new RecentPlugin();
+export default recentPlugin;

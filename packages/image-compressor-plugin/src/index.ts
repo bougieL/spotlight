@@ -73,4 +73,5 @@ class ImageCompressorPlugin extends BasePlugin {
   }
 }
 
-export const imageCompressorPlugin = new ImageCompressorPlugin();
+const imageCompressorPlugin = new ImageCompressorPlugin();
+export default imageCompressorPlugin;

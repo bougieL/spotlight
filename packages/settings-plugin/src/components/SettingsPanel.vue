@@ -4,7 +4,7 @@ import { Sun, Moon, Monitor } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseSwitch } from '@spotlight/components';
 import { pluginRegistry } from '@spotlight/plugin-registry';
-import { settingsPlugin } from '../index';
+import settingsPlugin from '../index';
 import type { ThemeMode } from '../types';
 import HotkeyPicker from './HotkeyPicker.vue';
 import type { Locale } from '@spotlight/i18n';

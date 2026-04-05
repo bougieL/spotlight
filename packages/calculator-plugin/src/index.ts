@@ -191,7 +191,8 @@ export class CalculatorPlugin extends BasePlugin {
   }
 }
 
-export const calculatorPlugin = new CalculatorPlugin();
+const calculatorPlugin = new CalculatorPlugin();
+export default calculatorPlugin;
 
 // ============================================================================
 // Safe Expression Parser (replaces eval)

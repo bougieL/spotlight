@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 import { on, type UnlistenFn } from '@spotlight/api';
 import { tauriApi } from '@spotlight/api';
-import { settingsPlugin } from '@spotlight/settings-plugin';
+import settingsPlugin from '@spotlight/settings-plugin';
 
 export function useWindowFocus(
   searchInputRef: Ref<{ focus: () => void } | null>,

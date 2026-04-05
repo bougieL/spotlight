@@ -69,4 +69,5 @@ export class QrCodePlugin extends BasePlugin {
   }
 }
 
-export const qrcodePlugin = new QrCodePlugin();
+const qrcodePlugin = new QrCodePlugin();
+export default qrcodePlugin;

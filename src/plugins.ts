@@ -1,51 +1,40 @@
 import type { RouteRecordRaw } from 'vue-router';
+import type { BasePlugin } from '@spotlight/core';
 import { pluginRegistry } from "@spotlight/plugin-registry";
+import logger from '@spotlight/logger';
 
 // Re-export for direct access
 export { pluginRegistry };
-import { appSearchPlugin } from "@spotlight/app-search-plugin";
-import { chromeBookmarksPlugin } from "@spotlight/chrome-bookmarks-plugin";
-import { calculatorPlugin } from "@spotlight/calculator-plugin";
-import { notesPlugin } from "@spotlight/notes-plugin";
-import { calendarPlugin } from "@spotlight/calendar-plugin";
-import { settingsPlugin } from "@spotlight/settings-plugin";
-import { shortcutsPlugin } from "@spotlight/shortcuts-plugin";
-import { clipboardPlugin } from "@spotlight/clipboard-plugin";
-import { recentPlugin } from "@spotlight/recent-plugin";
-import { qrcodePlugin } from "@spotlight/qrcode-plugin";
-import { jsonPlugin } from "@spotlight/json-plugin";
-import { aiChatPlugin } from "@spotlight/ai-chat-plugin";
-import { colorPickerPlugin } from "@spotlight/color-picker-plugin";
-import { colorPalettePlugin } from "@spotlight/color-palette-plugin";
-import { screenshotPlugin } from "@spotlight/screenshot-plugin";
-import { translationPlugin } from "@spotlight/translation-plugin";
-import { fileSearchPlugin } from "@spotlight/file-search-plugin";
-import { windowManagerPlugin } from "@spotlight/window-manager-plugin";
-import { imageCompressorPlugin } from "@spotlight/image-compressor-plugin";
-import { webOpenPlugin } from "@spotlight/web-open-plugin";
 
-const allPlugins = [
-  appSearchPlugin,
-  chromeBookmarksPlugin,
-  calculatorPlugin,
-  notesPlugin,
-  calendarPlugin,
-  settingsPlugin,
-  shortcutsPlugin,
-  clipboardPlugin,
-  recentPlugin,
-  qrcodePlugin,
-  jsonPlugin,
-  aiChatPlugin,
-  colorPickerPlugin,
-  colorPalettePlugin,
-  screenshotPlugin,
-  translationPlugin,
-  fileSearchPlugin,
-  windowManagerPlugin,
-  imageCompressorPlugin,
-  webOpenPlugin,
-];
+/**
+ * Dynamic plugin discovery using Vite's import.meta.glob.
+ * Automatically finds all plugin packages and imports their default exports.
+ *
+ * Each plugin package must export its plugin instance as `export default`
+ * in addition to the named export (for backward compatibility).
+ *
+ * The glob pattern matches all index.ts files inside packages/*-plugin/src/
+ */
+const pluginModules = import.meta.glob<{ default: BasePlugin }>(
+  '../../packages/*-plugin/src/index.ts',
+  { eager: true }
+);
+
+/**
+ * Collect all plugin instances from discovered modules.
+ * Filters out any modules that don't export a valid BasePlugin.
+ */
+const allPlugins: BasePlugin[] = [];
+
+for (const [path, mod] of Object.entries(pluginModules)) {
+  const plugin = mod.default;
+  if (plugin && typeof plugin === 'object' && 'pluginId' in plugin && 'search' in plugin) {
+    allPlugins.push(plugin as BasePlugin);
+    logger.info(`[Plugins] Auto-discovered: ${plugin.pluginId}`);
+  } else {
+    logger.warn(`[Plugins] Module ${path} does not export a valid plugin`);
+  }
+}
 
 /**
  * Get all panel routes from plugins with getPanelRoutes.
@@ -83,5 +72,17 @@ export function registerAllPlugins(): void {
   }
 }
 
-// Re-export plugin instances for direct access
-export { recentPlugin } from "@spotlight/recent-plugin";
+/**
+ * Get a specific plugin by its ID.
+ * Returns undefined if not found.
+ */
+export function getPluginById(pluginId: string): BasePlugin | undefined {
+  return allPlugins.find(p => p.pluginId === pluginId);
+}
+
+/**
+ * Get all discovered plugin IDs (useful for debugging).
+ */
+export function getDiscoveredPluginIds(): string[] {
+  return allPlugins.map(p => p.pluginId);
+}

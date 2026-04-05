@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { translationPlugin } from '../index';
+import translationPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
 import { BaseIconButton, BaseSelect } from '@spotlight/components';

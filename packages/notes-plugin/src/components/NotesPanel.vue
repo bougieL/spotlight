@@ -4,7 +4,7 @@ import { marked } from '../utils/marked';
 import { FileText, Eye, EyeOff } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { BaseButton, BaseIconButton, BaseInput, BaseSelect } from '@spotlight/components';
-import { notesPlugin } from '../index';
+import notesPlugin from '../index';
 import type { Note, Category } from '../types';
 import NotesSidebar from './NotesSidebar.vue';
 

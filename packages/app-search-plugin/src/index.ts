@@ -255,4 +255,5 @@ export class AppSearchPlugin extends BasePlugin {
   }
 }
 
-export const appSearchPlugin = new AppSearchPlugin();
+const appSearchPlugin = new AppSearchPlugin();
+export default appSearchPlugin;

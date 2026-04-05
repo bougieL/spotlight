@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Clipboard, FileText, Image, Copy, Check, LayoutGrid, Star } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { formatTime } from '@spotlight/utils';
-import { clipboardPlugin } from '../index';
+import clipboardPlugin from '../index';
 import type { ClipboardItem, ClipboardItemType } from '../types';
 import { on, type UnlistenFn } from '@spotlight/api';
 import logger from '@spotlight/logger';

@@ -92,4 +92,5 @@ export class ScreenshotPlugin extends BasePlugin {
   }
 }
 
-export const screenshotPlugin = new ScreenshotPlugin();
+const screenshotPlugin = new ScreenshotPlugin();
+export default screenshotPlugin;

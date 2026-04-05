@@ -3,6 +3,7 @@ import { BasePlugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { createPluginStorage, type PluginStorage, tauriApi, on, type UnlistenFn } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
+import { generateId } from '@spotlight/utils';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -18,10 +19,6 @@ const clipboardIconUrl = new URL('./assets/clipboard.svg', import.meta.url).href
 const STORAGE_KEY = 'clipboard_data';
 const ACTION_OPEN = 'open';
 const MAX_ITEMS = 50;
-
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-}
 
 class ClipboardPlugin extends BasePlugin {
   private readonly i18n = useI18n();
@@ -243,4 +240,5 @@ class ClipboardPlugin extends BasePlugin {
   }
 }
 
-export const clipboardPlugin = new ClipboardPlugin();
+const clipboardPlugin = new ClipboardPlugin();
+export default clipboardPlugin;

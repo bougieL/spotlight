@@ -4,7 +4,7 @@ import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import type { SearchResultItem, QuickCommand } from '@spotlight/core';
 import { usePanelContext } from '@spotlight/core';
-import { recentPlugin } from '@spotlight/recent-plugin';
+import recentPlugin from '@spotlight/recent-plugin';
 import { pluginRegistry } from '@spotlight/plugin-registry';
 
 const emit = defineEmits<{

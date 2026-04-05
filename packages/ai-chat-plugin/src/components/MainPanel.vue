@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
-import { aiChatPlugin } from '../index';
+import aiChatPlugin from '../index';
 import type { Session, ChatMessage, ModelConfig } from '@spotlight/ai-core';
 import SessionsSidebar from './SessionsSidebar.vue';
 import ChatArea from './ChatArea.vue';

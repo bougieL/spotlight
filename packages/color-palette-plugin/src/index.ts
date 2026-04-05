@@ -86,4 +86,5 @@ export class ColorPalettePlugin extends BasePlugin {
   }
 }
 
-export const colorPalettePlugin = new ColorPalettePlugin();
+const colorPalettePlugin = new ColorPalettePlugin();
+export default colorPalettePlugin;

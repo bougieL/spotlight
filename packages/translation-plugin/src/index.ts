@@ -282,4 +282,5 @@ export class TranslationPlugin extends BasePlugin {
   }
 }
 
-export const translationPlugin = new TranslationPlugin();
+const translationPlugin = new TranslationPlugin();
+export default translationPlugin;

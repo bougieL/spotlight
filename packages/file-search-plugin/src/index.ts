@@ -181,4 +181,5 @@ export class FileSearchPlugin extends BasePlugin {
   }
 }
 
-export const fileSearchPlugin = new FileSearchPlugin();
+const fileSearchPlugin = new FileSearchPlugin();
+export default fileSearchPlugin;

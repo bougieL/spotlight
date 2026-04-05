@@ -180,4 +180,5 @@ class WebOpenPlugin extends BasePlugin {
   }
 }
 
-export const webOpenPlugin = new WebOpenPlugin();
+const webOpenPlugin = new WebOpenPlugin();
+export default webOpenPlugin;

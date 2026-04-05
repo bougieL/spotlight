@@ -164,4 +164,5 @@ class SettingsPlugin extends BasePlugin {
   }
 }
 
-export const settingsPlugin = new SettingsPlugin();
+const settingsPlugin = new SettingsPlugin();
+export default settingsPlugin;

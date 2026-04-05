@@ -316,4 +316,5 @@ class ChromeBookmarksPlugin extends BasePlugin {
   }
 }
 
-export const chromeBookmarksPlugin = new ChromeBookmarksPlugin();
+const chromeBookmarksPlugin = new ChromeBookmarksPlugin();
+export default chromeBookmarksPlugin;

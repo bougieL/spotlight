@@ -84,4 +84,5 @@ export class JsonPlugin extends BasePlugin {
   }
 }
 
-export const jsonPlugin = new JsonPlugin();
+const jsonPlugin = new JsonPlugin();
+export default jsonPlugin;

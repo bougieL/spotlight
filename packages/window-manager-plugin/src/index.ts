@@ -122,4 +122,5 @@ class WindowManagerPlugin extends BasePlugin {
   }
 }
 
-export const windowManagerPlugin = new WindowManagerPlugin();
+const windowManagerPlugin = new WindowManagerPlugin();
+export default windowManagerPlugin;

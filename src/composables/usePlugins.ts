@@ -1,6 +1,6 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 import { pluginRegistry } from '../plugins';
-import { settingsPlugin } from '@spotlight/settings-plugin';
+import settingsPlugin from '@spotlight/settings-plugin';
 import logger from '@spotlight/logger';
 
 export function usePlugins(isDetached: Ref<boolean>) {

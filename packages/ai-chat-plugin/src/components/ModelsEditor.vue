@@ -5,7 +5,7 @@ import { useI18n } from '@spotlight/i18n';
 import { BaseButton, BaseIconButton, BaseInput, BaseSelect } from '@spotlight/components';
 import type { ModelConfig, EndpointType } from '@spotlight/ai-core';
 import { openaiAdapter, anthropicAdapter } from '@spotlight/ai-core';
-import { aiChatPlugin } from '../index';
+import aiChatPlugin from '../index';
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -21,7 +21,7 @@ const isLoading = ref(true);
 
 onMounted(async () => {
   try {
-    const { aiChatPlugin } = await import('../index');
+    const aiChatPlugin = (await import('../index')).default;
     localModels.value = await aiChatPlugin.getModels();
   } finally {
     isLoading.value = false;

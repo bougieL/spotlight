@@ -95,4 +95,5 @@ export class CalendarPlugin extends BasePlugin {
   }
 }
 
-export const calendarPlugin = new CalendarPlugin();
+const calendarPlugin = new CalendarPlugin();
+export default calendarPlugin;

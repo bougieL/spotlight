@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { shortcutsPlugin } from '../index';
+import shortcutsPlugin from '../index';
 import type { ShortcutItem } from '../types';
 import { useI18n } from '@spotlight/i18n';
 
