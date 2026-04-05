@@ -1,5 +1,4 @@
-import { onMounted, onUnmounted, type Ref } from 'vue';
-import { on, type UnlistenFn } from '@spotlight/api';
+import { onMounted, onUnmounted, nextTick, type Ref } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import settingsPlugin from '@spotlight/settings-plugin';
 
@@ -7,27 +6,32 @@ export function useWindowFocus(
   searchInputRef: Ref<{ focus: () => void } | null>,
   isDetached: Ref<boolean>
 ) {
-  let unlistenWindowFocus: UnlistenFn | null = null;
-  let unlistenWindowBlur: UnlistenFn | null = null;
+  const handleFocus = () => {
+    nextTick(() => {
+      setTimeout(() => {
+        searchInputRef.value?.focus();
+      }, 50);
+    });
+  };
+
+  const handleBlur = async () => {
+    const hideOnBlur = await settingsPlugin.getHideOnBlur();
+    if (hideOnBlur) {
+      setTimeout(() => {
+        tauriApi.hideWindow();
+      }, 100);
+    }
+  };
 
   onMounted(async () => {
     if (isDetached.value) return;
 
-    // Focus input when window is shown
-    unlistenWindowFocus = await on.windowFocus(() => {
-      searchInputRef.value?.focus();
-    });
+    window.addEventListener('focus', handleFocus);
 
-    // Hide window when it loses focus (check setting, skip in dev mode)
     if (!import.meta.env.DEV) {
       const hideOnBlur = await settingsPlugin.getHideOnBlur();
       if (hideOnBlur) {
-        unlistenWindowBlur = await on.windowBlur(() => {
-          // Delay to avoid hiding when clicking search results
-          setTimeout(() => {
-            tauriApi.hideWindow();
-          }, 100);
-        });
+        window.addEventListener('blur', handleBlur);
       }
     }
   });
@@ -35,7 +39,7 @@ export function useWindowFocus(
   onUnmounted(() => {
     if (isDetached.value) return;
 
-    unlistenWindowFocus?.();
-    unlistenWindowBlur?.();
+    window.removeEventListener('focus', handleFocus);
+    window.removeEventListener('blur', handleBlur);
   });
 }

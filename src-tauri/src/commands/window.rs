@@ -108,7 +108,7 @@ pub async fn create_overlay_window(
     #[cfg(not(any(windows, target_os = "macos")))]
     let (screen_width, screen_height) = (1920.0, 1080.0);
 
-    let mut builder = WebviewWindowBuilder::new(
+    let builder = WebviewWindowBuilder::new(
         &app,
         &label,
         WebviewUrl::External(url.parse().map_err(|e: url::ParseError| e.to_string())?),
@@ -117,12 +117,7 @@ pub async fn create_overlay_window(
     .decorations(false)
     .transparent(true)
     .shadow(false)
-    .skip_taskbar(true)
-    .always_on_top(true);
-
-    if is_dev {
-        builder = builder.always_on_top(false);
-    }
+    .skip_taskbar(true);
 
     let window = builder.build().map_err(|e| e.to_string())?;
 
