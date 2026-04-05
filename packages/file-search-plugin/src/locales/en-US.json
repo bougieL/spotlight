@@ -24,6 +24,10 @@
     "selectFolder": "Select Folder",
     "recentPaths": "Recent Paths",
     "noRecentPaths": "No recent paths",
-    "everythingNotRunning": "Everything is not running. Please start Everything first."
+    "everythingNotRunning": "Everything is not running. Please start Everything first.",
+    "quickCommands": {
+      "grep": "Search file contents",
+      "find": "Search file names"
+    }
   }
 }

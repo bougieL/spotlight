@@ -1,4 +1,4 @@
-import type { SearchResultItem, SearchParams, PluginActions, ActionContext } from '@spotlight/core';
+import type { SearchResultItem, SearchParams, PluginActions, ActionContext, QuickCommand } from '@spotlight/core';
 import { BasePlugin } from '@spotlight/core';
 import { tauriApi, type FileResult } from '@spotlight/api';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
@@ -66,7 +66,7 @@ export class FileSearchPlugin extends BasePlugin {
     return {
       [ACTION_OPEN_PANEL]: async (data) => {
         if (typeof data === 'string') {
-          ctx.navigateToPlugin(this.pluginId, data);
+          ctx.navigateToPlugin(this.pluginId, { route: data });
         } else {
           ctx.navigateToPlugin(this.pluginId);
         }
@@ -126,7 +126,7 @@ export class FileSearchPlugin extends BasePlugin {
 
     try {
       // Default: search file names using ripgrep
-      const results = await tauriApi.searchFilesWithRg(searchState.searchQuery);
+      const results = await tauriApi.searchFilesWithRg({ query: searchState.searchQuery });
 
       return results.map((file: FileResult, index: number) => ({
         iconUrl: searchIconUrl,
@@ -156,6 +156,27 @@ export class FileSearchPlugin extends BasePlugin {
   getPanelRoutes() {
     return [
       { name: 'main', componentLoader: () => import('./components/SearchPanel.vue') },
+    ];
+  }
+
+  registerQuickCommands(ctx: ActionContext): QuickCommand[] {
+    return [
+      {
+        trigger: 'grep',
+        description: this.i18n.t('fileSearch.quickCommands.grep'),
+        iconUrl: searchIconUrl,
+        execute: (q: string) => {
+          ctx.navigateToPlugin(this.pluginId, q ? { query: { q } } : undefined);
+        },
+      },
+      {
+        trigger: 'find',
+        description: this.i18n.t('fileSearch.quickCommands.find'),
+        iconUrl: searchIconUrl,
+        execute: (q: string) => {
+          ctx.navigateToPlugin(this.pluginId, q ? { query: { q } } : undefined);
+        },
+      },
     ];
   }
 }

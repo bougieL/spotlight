@@ -317,7 +317,10 @@ async function loadImagesFromPaths(filePaths: string[]) {
     @dragleave="handleDragLeave"
     @drop="handleDrop"
   >
-    <div v-if="isDragging" class="drop-overlay">
+    <div
+      v-if="isDragging"
+      class="drop-overlay"
+    >
       <ImageIcon :size="48" />
       <p>{{ t('dragDropHint') }}</p>
     </div>
@@ -337,14 +340,26 @@ async function loadImagesFromPaths(filePaths: string[]) {
         </div>
         <div class="control-group">
           <label>{{ t('format') }}</label>
-          <select v-model="outputFormat" class="select">
-            <option value="png">PNG ({{ t('lossless') }})</option>
-            <option value="webp">WebP</option>
-            <option value="jpeg">JPEG</option>
+          <select
+            v-model="outputFormat"
+            class="select"
+          >
+            <option value="png">
+              PNG ({{ t('lossless') }})
+            </option>
+            <option value="webp">
+              WebP
+            </option>
+            <option value="jpeg">
+              JPEG
+            </option>
           </select>
         </div>
         <div class="actions">
-          <button class="btn primary" @click="selectImages">
+          <button
+            class="btn primary"
+            @click="selectImages"
+          >
             <Upload :size="16" />
             {{ t('selectImages') }}
           </button>
@@ -368,22 +383,33 @@ async function loadImagesFromPaths(filePaths: string[]) {
       </div>
     </div>
 
-    <div v-if="!hasImages" class="empty-state">
+    <div
+      v-if="!hasImages"
+      class="empty-state"
+    >
       <ImageIcon :size="48" />
       <p>{{ t('noImages') }}</p>
     </div>
 
-    <div v-else class="image-list">
+    <div
+      v-else
+      class="image-list"
+    >
       <div
         v-for="img in images"
         :key="img.id"
         class="image-item"
       >
         <div class="preview">
-          <img :src="getPreviewUrl(img)" alt="">
+          <img
+            :src="getPreviewUrl(img)"
+            alt=""
+          >
         </div>
         <div class="info">
-          <div class="filename">{{ img.originalFile.name }}</div>
+          <div class="filename">
+            {{ img.originalFile.name }}
+          </div>
           <div class="sizes">
             <span class="original">{{ t('original') }}: {{ formatSize(img.originalSize) }}</span>
             <span class="compressed">{{ t('compressed') }}: {{ formatSize(img.compressedSize || img.originalSize) }}</span>
@@ -391,17 +417,26 @@ async function loadImagesFromPaths(filePaths: string[]) {
           </div>
         </div>
         <div class="item-actions">
-          <button class="btn-icon" @click="saveImage(img)">
+          <button
+            class="btn-icon"
+            @click="saveImage(img)"
+          >
             <Download :size="16" />
           </button>
-          <button class="btn-icon danger" @click="removeImage(img.id)">
+          <button
+            class="btn-icon danger"
+            @click="removeImage(img.id)"
+          >
             <X :size="16" />
           </button>
         </div>
       </div>
     </div>
 
-    <div v-if="hasImages" class="footer">
+    <div
+      v-if="hasImages"
+      class="footer"
+    >
       <span>{{ t('original') }}: {{ formatSize(totalOriginalSize) }}</span>
       <span>{{ t('compressed') }}: {{ formatSize(totalCompressedSize) }}</span>
       <span class="total-ratio">{{ t('ratio') }}: {{ totalRatio }}%</span>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Folder, ChevronDown } from 'lucide-vue-next';
 import { tauriApi, getUserHome, openDirectoryDialog, createPluginStorage, type RipgrepResult, type SearchOptions, type FileResult } from '@spotlight/api';
@@ -8,6 +9,7 @@ import { BaseInput, BaseCheckbox, BaseIconButton } from '@spotlight/components';
 import logger from '@spotlight/logger';
 
 const { query } = usePanelContext();
+const route = useRoute();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -113,6 +115,11 @@ onMounted(async () => {
     logger.error('[SearchPanel] Failed to get user home:', error);
   }
   await loadSettings();
+
+  const routeQuery = route.query.q as string | undefined;
+  if (routeQuery) {
+    query.value = routeQuery;
+  }
   if (query.value && query.value.trim()) {
     performSearch();
   }
@@ -159,14 +166,17 @@ async function performSearch() {
   try {
     if (searchInContents.value) {
       // Search file contents with ripgrep
-      results.value = await tauriApi.searchWithRg(
-        q,
-        searchPath.value || undefined,
-        searchOptions.value
-      );
+      results.value = await tauriApi.searchWithRg({
+        query: q,
+        path: searchPath.value || undefined,
+        options: searchOptions.value,
+      });
     } else {
       // Search file names with ripgrep
-      results.value = await tauriApi.searchFilesWithRg(q, searchPath.value || undefined);
+      results.value = await tauriApi.searchFilesWithRg({
+        query: q,
+        path: searchPath.value || undefined,
+      });
     }
     // Add path to recent paths if search was successful
     if (searchPath.value.trim()) {

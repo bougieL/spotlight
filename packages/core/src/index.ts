@@ -13,8 +13,13 @@ export function getPanelRouteName(pluginId: string): string {
   return pluginId;
 }
 
+export interface NavigateToPluginOptions {
+  route?: string;
+  query?: Record<string, string>;
+}
+
 export interface ActionContext {
-  navigateToPlugin: (pluginId: string, route?: string, query?: Record<string, string>) => void;
+  navigateToPlugin: (pluginId: string, options?: NavigateToPluginOptions) => void;
 }
 
 export interface PanelRoute {
@@ -80,6 +85,17 @@ export interface FileItem {
   type: 'image' | 'file';
 }
 
+export interface QuickCommand {
+  /** Command trigger string without the leading /, e.g., "calc", "translate" */
+  trigger: string;
+  /** Description shown in the suggestion dropdown */
+  description: string;
+  /** Optional icon URL */
+  iconUrl?: string;
+  /** Execute handler, receives the query text after the /command */
+  execute: (query: string) => void | Promise<void>;
+}
+
 export interface PluginMetadata {
   name: string;
   version: string;
@@ -128,6 +144,25 @@ export abstract class BasePlugin implements PluginMetadata {
    * Override this to stop background tasks and clean up resources.
    */
   onUnmount?(): void | Promise<void>;
+
+  /**
+   * Returns quick commands that appear when user types / in the search input.
+   * Each command has a trigger string, description, and execute handler.
+   *
+   * Example:
+   * ```ts
+   * registerQuickCommands(ctx) {
+   *   return [
+   *     {
+   *       trigger: 'calc',
+   *       description: 'Open calculator',
+   *       execute: () => { ctx.navigateToPlugin('calculator-plugin'); },
+   *     },
+   *   ];
+   * }
+   * ```
+   */
+  registerQuickCommands?(_ctx: ActionContext): QuickCommand[];
 
   getPublicUrl(filePath: string): string {
     const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;

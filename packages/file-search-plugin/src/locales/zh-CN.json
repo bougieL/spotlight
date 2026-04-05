@@ -24,6 +24,10 @@
     "selectFolder": "选择文件夹",
     "recentPaths": "最近路径",
     "noRecentPaths": "无最近路径",
-    "everythingNotRunning": "Everything 未运行，请先启动 Everything"
+    "everythingNotRunning": "Everything 未运行，请先启动 Everything",
+    "quickCommands": {
+      "grep": "搜索文件内容",
+      "find": "搜索文件名"
+    }
   }
 }
