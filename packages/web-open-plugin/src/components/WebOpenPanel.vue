@@ -6,6 +6,7 @@ import { Globe, Trash2, Clock, Star, StarOff } from 'lucide-vue-next';
 import { webOpenPlugin } from '../index';
 import type { Bookmark } from '../types';
 import { closeAllChildWebviews } from '@spotlight/api';
+import { BaseButton, BaseIconButton, BaseInput } from '@spotlight/components';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -112,34 +113,32 @@ function handleKeydown(event: KeyboardEvent) {
     @keydown="handleKeydown"
   >
     <div class="url-input-container">
-      <input
+      <BaseInput
         v-model="url"
-        type="text"
-        class="url-input"
         :placeholder="t('webOpen.placeholder')"
         @keydown.enter="handleOpen"
-      >
-      <button
+      />
+      <BaseIconButton
         v-if="url.trim() && isValidUrl(url.trim())"
-        class="bookmark-btn"
         :title="t('webOpen.addBookmark')"
+        size="medium"
         @click="toggleBookmark(url.trim())"
       >
-        <Star
-          v-if="!bookmarks.some(b => b.url === normalizeUrl(url.trim()))"
-          :size="18"
-        />
         <StarOff
-          v-else
-          :size="18"
+          v-if="bookmarks.some(b => b.url === normalizeUrl(url.trim()))"
+          :size="16"
         />
-      </button>
-      <button
-        class="open-btn"
+        <Star
+          v-else
+          :size="16"
+        />
+      </BaseIconButton>
+      <BaseButton
+        variant="primary"
         @click="handleOpen"
       >
         {{ t('webOpen.open') }}
-      </button>
+      </BaseButton>
     </div>
 
     <p
@@ -180,13 +179,14 @@ function handleKeydown(event: KeyboardEvent) {
             <span class="item-title">{{ bookmark.title }}</span>
             <span class="item-url">{{ formatUrl(bookmark.url) }}</span>
           </div>
-          <button
-            class="remove-bookmark-btn"
+          <BaseIconButton
+            variant="danger"
+            size="small"
             :title="t('webOpen.removeBookmark')"
             @click.stop="toggleBookmark(bookmark.url)"
           >
-            <StarOff :size="14" />
-          </button>
+            <StarOff :size="12" />
+          </BaseIconButton>
         </li>
       </ul>
     </div>
@@ -195,14 +195,14 @@ function handleKeydown(event: KeyboardEvent) {
       <div class="section-header">
         <Clock :size="14" />
         <span>{{ t('webOpen.recentUrls') }}</span>
-        <button
+        <BaseButton
           v-if="recentUrls.length > 0"
-          class="clear-btn"
+          size="small"
           @click="handleClearHistory"
         >
-          <Trash2 :size="14" />
+          <Trash2 :size="12" />
           {{ t('webOpen.clearHistory') }}
-        </button>
+        </BaseButton>
       </div>
 
       <div
@@ -249,61 +249,6 @@ function handleKeydown(event: KeyboardEvent) {
   margin-bottom: 8px;
 }
 
-.url-input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--spotlight-border);
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: var(--spotlight-item-hover);
-  color: var(--spotlight-text);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.url-input:focus {
-  border-color: var(--spotlight-primary);
-}
-
-.url-input::placeholder {
-  color: var(--spotlight-placeholder);
-}
-
-.bookmark-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  color: var(--spotlight-icon);
-  transition: color 0.15s;
-  flex-shrink: 0;
-}
-
-.bookmark-btn:hover {
-  color: var(--spotlight-primary);
-}
-
-.open-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background-color: var(--spotlight-primary);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.open-btn:hover {
-  opacity: 0.9;
-}
-
 .error-message {
   margin: 0 0 12px 0;
   padding: 8px 12px;
@@ -336,8 +281,9 @@ function handleKeydown(event: KeyboardEvent) {
   color: var(--spotlight-text-secondary);
 }
 
-.clear-btn:hover {
-  background-color: var(--spotlight-item-hover);
+.section-header .base-button {
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .empty-state {
@@ -396,30 +342,6 @@ function handleKeydown(event: KeyboardEvent) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.remove-bookmark-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-  color: var(--icon-color, #666);
-  opacity: 0;
-  transition: opacity 0.15s, background-color 0.15s;
-  flex-shrink: 0;
-}
-
-.list-item:hover .remove-bookmark-btn {
-  opacity: 1;
-}
-
-.remove-bookmark-btn:hover {
-  background-color: var(--hover-bg, rgba(0, 0, 0, 0.05));
 }
 
 @media (prefers-color-scheme: dark) {

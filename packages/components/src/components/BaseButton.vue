@@ -29,6 +29,7 @@ withDefaults(defineProps<Props>(), {
   justify-content: center;
   gap: 6px;
   font-weight: 500;
+  white-space: nowrap;
   border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.1));
   border-radius: 6px;
   background-color: transparent;
