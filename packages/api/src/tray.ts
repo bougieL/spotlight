@@ -55,6 +55,8 @@ export async function unRegisterTrayItem(id: string): Promise<void> {
   }
 }
 
+let lastClickTime = 0;
+
 export async function setupTray(options: TrayOptions): Promise<void> {
   // Always try to remove existing tray first (page refresh may have reset JS state)
   logger.info('Removing any existing tray...');
@@ -81,6 +83,12 @@ export async function setupTray(options: TrayOptions): Promise<void> {
     tooltip: options.tooltip || 'spotlight',
     action: async (event) => {
       if (event.type === 'Click' && event.button === 'Left') {
+        const now = Date.now();
+        if (now - lastClickTime < 500) {
+          logger.info('Tray left click ignored (debounced)');
+          return;
+        }
+        lastClickTime = now;
         logger.info('Tray left click');
         try {
           const { tauriApi } = await import('@spotlight/api');
