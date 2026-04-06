@@ -224,6 +224,8 @@ function setColorFromHex(hex: string) {
 function setColorFromQuery() {
   if (query.value && isColorString(query.value)) {
     setColorFromHex(normalizeColor(query.value));
+  } else {
+    query.value = '';
   }
 }
 
@@ -280,6 +282,7 @@ function handlePointerMove(event: MouseEvent | TouchEvent) {
   const pos = getPositionFromEvent(canvasRef.value, event);
   mouseX.value = pos.x;
   mouseY.value = pos.y;
+  refreshInputValues();
 }
 
 function handlePointerUp() {
