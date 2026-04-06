@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import windowManagerPlugin from '../index';
 import type { WindowInfo } from '@spotlight/api';
 import { minimizeWindow, maximizeWindow, restoreWindow, closeWindow, toggleAlwaysOnTop, focusWindowByHwnd } from '../windowActions';
@@ -10,7 +10,7 @@ import logger from '@spotlight/logger';
 import { Minus, Square, Maximize2, X, Pin, PinOff } from 'lucide-vue-next';
 
 const { t } = useI18n();
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -43,7 +43,12 @@ const filteredWindows = computed(() => {
 
 onMounted(async () => {
   query.value = '';
+  placeholder.value = t('windowManager.placeholder');
   await loadWindows();
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 async function loadWindows() {

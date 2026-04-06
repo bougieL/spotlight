@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import translationPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
@@ -8,7 +8,7 @@ import { ArrowLeftRight, Copy, Check, AlertCircle, Loader2 } from 'lucide-vue-ne
 import logger from '@spotlight/logger';
 
 const { t } = useI18n();
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const TRANS_PREFIX_REGEX = /^(trans:|翻译:)\s*/i;
 
@@ -44,6 +44,7 @@ const modelOptions = computed(() =>
 );
 
 onMounted(async () => {
+  placeholder.value = t('translation.placeholder');
   const [lastLangs, availableModels, savedModelId] = await Promise.all([
     translationPlugin.getLastLanguages(),
     translationPlugin.getAvailableModels(),
@@ -62,6 +63,10 @@ onMounted(async () => {
       await translate();
     }
   }
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 async function translate() {

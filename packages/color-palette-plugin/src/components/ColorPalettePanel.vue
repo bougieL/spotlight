@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import { usePanelContext } from '@spotlight/core';
@@ -9,7 +9,7 @@ const STORAGE_KEY = 'color-palette-favorites';
 
 
 
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -293,6 +293,7 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
+  placeholder.value = t('colorPalette.placeholder');
   favorites.value = loadFavorites();
   if (canvasRef.value) {
     drawColorWheel(canvasRef.value);
@@ -307,11 +308,10 @@ onMounted(() => {
   document.addEventListener('touchend', handlePointerUp);
 });
 
-defineExpose({
-  destroy() {
-    document.removeEventListener('mouseup', handlePointerUp);
-    document.removeEventListener('touchend', handlePointerUp);
-  },
+onBeforeUnmount(() => {
+  document.removeEventListener('mouseup', handlePointerUp);
+  document.removeEventListener('touchend', handlePointerUp);
+  placeholder.value = '';
 });
 </script>
 

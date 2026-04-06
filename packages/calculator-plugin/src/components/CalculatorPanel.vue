@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import calculatorPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
 
 const { t } = useI18n();
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 const expressions = ref<string[]>(['', '', '']);
 
 onMounted(async () => {
+  placeholder.value = t('calculator.placeholder');
   let loadedExpressions = await calculatorPlugin.getExpressions();
 
   // If query is a math expression, prepend it as a new expression at the top
@@ -27,6 +28,10 @@ onMounted(async () => {
   }
 
   expressions.value = loadedExpressions;
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 function isMathExpression(query: string): boolean {

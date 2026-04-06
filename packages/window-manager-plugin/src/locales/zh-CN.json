@@ -3,6 +3,7 @@
     "name": "窗口管理器",
     "description": "管理和控制系统窗口",
     "keywords": "window|windows|manager|窗口|管理",
+    "placeholder": "搜索窗口...",
     "search.placeholder": "搜索窗口...",
     "window.minimize": "最小化",
     "window.maximize": "最大化",

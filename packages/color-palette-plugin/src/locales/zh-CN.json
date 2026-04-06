@@ -2,6 +2,7 @@
   "colorPalette": {
     "name": "色盘",
     "description": "快速访问色板",
+    "placeholder": "输入颜色值，如 #ff0000",
     "favorites": "收藏",
     "noFavorites": "暂无收藏颜色",
     "addToFavorites": "添加到收藏",

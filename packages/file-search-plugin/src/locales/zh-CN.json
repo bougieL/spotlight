@@ -2,6 +2,7 @@
   "fileSearch": {
     "name": "文件搜索",
     "description": "按名称或内容搜索文件",
+    "placeholder": "搜索文件...",
     "queryPlaceholder": "搜索文件...",
     "searchInContents": "搜索文件内容",
     "caseSensitive": "区分大小写",

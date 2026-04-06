@@ -2,6 +2,7 @@
   "fileSearch": {
     "name": "File Search",
     "description": "Search files by name or content",
+    "placeholder": "Search files...",
     "queryPlaceholder": "Search files...",
     "searchInContents": "Search in file contents",
     "caseSensitive": "Match Case",

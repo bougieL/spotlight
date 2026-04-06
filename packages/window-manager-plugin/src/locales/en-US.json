@@ -3,6 +3,7 @@
     "name": "Window Manager",
     "description": "Manage and control windows on your system",
     "keywords": "window|windows|manager|窗口|管理",
+    "placeholder": "Search windows...",
     "search.placeholder": "Search windows...",
     "window.minimize": "Minimize",
     "window.maximize": "Maximize",

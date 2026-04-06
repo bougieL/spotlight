@@ -2,6 +2,7 @@
   "colorPalette": {
     "name": "Color Palette",
     "description": "Quick access to color palettes",
+    "placeholder": "Enter a color value, e.g. #ff0000",
     "favorites": "Favorites",
     "noFavorites": "No favorite colors yet",
     "addToFavorites": "Add to favorites",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import QRCode from 'qrcode';
@@ -8,7 +8,7 @@ import { usePanelContext } from '@spotlight/core';
 const STORAGE_KEY = 'qrcode-history';
 const MAX_HISTORY = 50;
 
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -67,11 +67,16 @@ function selectHistory(text: string) {
 }
 
 onMounted(() => {
+  placeholder.value = t('qrcode.placeholder');
   history.value = loadHistory();
   if (query.value && query.value.trim()) {
     inputText.value = query.value.trim();
     generateQRCode();
   }
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 watch(inputText, (newValue) => {

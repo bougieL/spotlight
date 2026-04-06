@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue';
 import { Clipboard, FileText, Image, Copy, Check, LayoutGrid, Star } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { formatTime } from '@spotlight/utils';
@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 
 const items = ref<ClipboardItem[]>([]);
 const favorites = ref<ClipboardItem[]>([]);
@@ -132,11 +132,16 @@ function handleKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   query.value = '';
+  placeholder.value = t('clipboard.placeholder');
   await loadItems();
   unlistenClipboard = await on.clipboardChanged(async () => {
     await loadItems();
   });
   refreshTimer = setInterval(loadItems, 5000);
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 onUnmounted(() => {

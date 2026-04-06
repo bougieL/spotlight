@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Folder, ChevronDown } from 'lucide-vue-next';
@@ -8,7 +8,7 @@ import { usePanelContext } from '@spotlight/core';
 import { BaseInput, BaseCheckbox, BaseIconButton } from '@spotlight/components';
 import logger from '@spotlight/logger';
 
-const { query } = usePanelContext();
+const { query, placeholder } = usePanelContext();
 const route = useRoute();
 
 const emit = defineEmits<{
@@ -109,6 +109,7 @@ function addRecentPath(path: string) {
 }
 
 onMounted(async () => {
+  placeholder.value = t('fileSearch.placeholder');
   try {
     userHome.value = await getUserHome();
   } catch (error) {
@@ -137,6 +138,10 @@ onMounted(async () => {
       showRecentDropdown.value = false;
     }
   });
+});
+
+onBeforeUnmount(() => {
+  placeholder.value = '';
 });
 
 watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex], () => {
