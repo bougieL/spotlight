@@ -47,6 +47,8 @@ export interface TauriApi {
   searchFilesWithRg: (params: { query: string; path?: string; caseSensitive?: boolean }) => Promise<FileResult[]>;
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
+  getAppDataDir: () => Promise<string>;
+  openPath: (path: string) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
   simulateMouseClick: (x: number, y: number) => Promise<void>;
 }
@@ -242,6 +244,10 @@ export const tauriApi: TauriApi = {
   getAutostartEnabled: () => invoke<boolean>('get_autostart_enabled'),
 
   setAutostartEnabled: (enabled: boolean) => invoke<void>('set_autostart_enabled', { enabled }),
+
+  getAppDataDir: () => invoke<string>('get_app_data_dir'),
+
+  openPath: (path: string) => invoke<void>('open_path', { path }),
 
   convertFileSrc,
 

@@ -36,6 +36,15 @@
       "name": "Plugins",
       "description": "Enable or disable plugins"
     },
+    "data": {
+      "name": "Data",
+      "openFolder": "Open Data Folder",
+      "export": "Export Data",
+      "import": "Import Data",
+      "exportSuccess": "Data exported successfully",
+      "importSuccess": "Data imported successfully",
+      "importError": "Failed to import data"
+    },
     "description": ""
   },
   "tray": {

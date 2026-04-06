@@ -3,6 +3,54 @@ use std::path::PathBuf;
 use tauri::Manager;
 
 #[tauri::command]
+pub fn get_app_data_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
+    let app_data_dir = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|e: tauri::Error| e.to_string())?;
+
+    Ok(app_data_dir.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn open_path(path: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        Command::new("explorer")
+            .args(["/select,", &path])
+            .spawn()
+            .map_err(|e| format!("Failed to open path: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open path: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::process::Command;
+        Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| format!("Failed to open path: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        Err("Unsupported platform".to_string())
+    }
+}
+
+#[tauri::command]
 pub fn get_plugin_storage_dir(
     plugin_name: String,
     app_handle: tauri::AppHandle,

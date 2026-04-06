@@ -101,6 +101,18 @@ function handleKeydown(event: KeyboardEvent): void {
   }
 }
 
+async function openDataFolder(): Promise<void> {
+  await settingsPlugin.openDataFolder();
+}
+
+async function exportData(): Promise<void> {
+  await settingsPlugin.openDataFolder();
+}
+
+async function importData(): Promise<void> {
+  // TODO: Implement file picker and import logic
+}
+
 onMounted(async () => {
   // Load saved settings
   currentTheme.value = await settingsPlugin.getThemeMode();
@@ -275,6 +287,32 @@ onMounted(async () => {
         </div>
       </div>
     </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">
+        {{ t('settings.data.name') }}
+      </h3>
+      <div class="data-buttons">
+        <button
+          class="data-button"
+          @click="openDataFolder"
+        >
+          {{ t('settings.data.openFolder') }}
+        </button>
+        <button
+          class="data-button"
+          @click="exportData"
+        >
+          {{ t('settings.data.export') }}
+        </button>
+        <button
+          class="data-button"
+          @click="importData"
+        >
+          {{ t('settings.data.import') }}
+        </button>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -420,5 +458,28 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   color: var(--spotlight-text);
+}
+
+.data-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.data-button {
+  padding: 10px 16px;
+  border: 1px solid var(--spotlight-border);
+  border-radius: 8px;
+  background-color: var(--spotlight-item-hover);
+  color: var(--spotlight-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.data-button:hover {
+  background-color: var(--spotlight-item-hover);
+  border-color: var(--spotlight-icon);
 }
 </style>

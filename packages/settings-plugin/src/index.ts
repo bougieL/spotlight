@@ -179,6 +179,24 @@ class SettingsPlugin implements Plugin {
     }
     await this.storage.set<string[]>(DISABLED_PLUGINS_KEY, disabledPlugins);
   }
+
+  async getAppDataDir(): Promise<string> {
+    return tauriApi.getAppDataDir();
+  }
+
+  async openDataFolder(): Promise<void> {
+    const dir = await this.getAppDataDir();
+    await tauriApi.openPath(dir);
+  }
+
+  async exportData(): Promise<string> {
+    const dir = await this.getAppDataDir();
+    return dir;
+  }
+
+  async importData(_filePath: string): Promise<void> {
+    // Import implementation will be handled via dialog
+  }
 }
 
 const settingsPlugin = new SettingsPlugin();
