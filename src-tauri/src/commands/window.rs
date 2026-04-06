@@ -18,7 +18,7 @@ pub fn show_window(app: tauri::AppHandle) -> Result<(), String> {
     window.show().map_err(|e| e.to_string())?;
     window.unminimize().map_err(|e| e.to_string())?;
     window.set_focus().map_err(|e| e.to_string())?;
-    app.emit("tauri://focus", ()).map_err(|e: tauri::Error| e.to_string())?;
+    app.emit("tauri://show", ()).map_err(|e: tauri::Error| e.to_string())?;
     Ok(())
 }
 

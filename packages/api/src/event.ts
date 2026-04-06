@@ -7,6 +7,7 @@ export const EventName = {
   TAURI_FOCUS_CHANGED: 'tauri://focus-changed',
   TAURI_FOCUS: 'tauri://focus',
   TAURI_BLUR: 'tauri://blur',
+  TAURI_SHOW: 'tauri://show',
 } as const;
 
 export type EventNameType = typeof EventName[keyof typeof EventName];
@@ -28,4 +29,5 @@ export const on = {
     listen<boolean>(EventName.TAURI_FOCUS_CHANGED, handler),
   onTauriFocus: (handler: () => void) => listen<void>(EventName.TAURI_FOCUS, handler),
   onTauriBlur: (handler: () => void) => listen<void>(EventName.TAURI_BLUR, handler),
+  onTauriShow: (handler: () => void) => listen<void>(EventName.TAURI_SHOW, handler),
 };

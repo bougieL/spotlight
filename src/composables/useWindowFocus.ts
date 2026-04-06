@@ -25,7 +25,7 @@ export function useWindowFocus(
   // Workaround for Tauri unstable bug: setFocus does not reliably focus the input element.
   // Simulating a native mouse click on the input field ensures the input gains focus properly.
   const handleFocus = async () => {
-    logger.info('[useWindowFocus] tauri://focus triggered');
+    logger.info('[useWindowFocus] tauri://show triggered');
 
     focusInput();
 
@@ -62,7 +62,7 @@ export function useWindowFocus(
 
     logger.info('[useWindowFocus] mounted, setting up listeners');
 
-    unlistenFocus = await on.onTauriFocus(handleFocus);
+    unlistenFocus = await on.onTauriShow(handleFocus);
     unlistenBlur = await on.onTauriBlur(handleBlur);
   });
 
