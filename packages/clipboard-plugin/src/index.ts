@@ -205,18 +205,19 @@ class ClipboardPlugin implements Plugin {
     }
   }
 
+  private getKeywords() {
+    const keywordsStr = this.i18n.t('clipboard.keywords');
+    return keywordsStr.split('|').map((k: string) => ({
+      keyword: k,
+      normalized: normalizeForSearch(k),
+      pinyinInitials: toPinyinInitials(k),
+    }));
+  }
+
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'clipboard', normalized: normalizeForSearch('clipboard') },
-      { keyword: 'copy', normalized: normalizeForSearch('copy') },
-      { keyword: 'paste', normalized: normalizeForSearch('paste') },
-      { keyword: '剪贴板', normalized: normalizeForSearch('剪贴板'), pinyinInitials: toPinyinInitials('剪贴板') },
-      { keyword: '粘贴', normalized: normalizeForSearch('粘贴'), pinyinInitials: toPinyinInitials('粘贴') },
-    ];
-
-    if (!matchKeyword(query, keywords) && query.length > 0) {
+    if (!matchKeyword(query, this.getKeywords()) && query.length > 0) {
       return [];
     }
 

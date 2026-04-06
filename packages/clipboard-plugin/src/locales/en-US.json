@@ -4,6 +4,7 @@
     "description": "Access and manage clipboard history",
     "placeholder": "No clipboard history",
     "search": "Search clipboard...",
+    "keywords": "clipboard|copy|paste|jqb|ztb|剪贴板|剪切板|粘贴|粘贴板",
     "empty": "No items",
     "copied": "Copied!",
     "clear": "Clear",

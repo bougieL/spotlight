@@ -132,7 +132,7 @@ function handleKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   query.value = '';
-  placeholder.value = t('clipboard.placeholder');
+  placeholder.value = t('clipboard.search');
   await loadItems();
   unlistenClipboard = await on.clipboardChanged(async () => {
     await loadItems();
