@@ -53,7 +53,13 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
   if (event.key === 'Escape') {
     if (props.isPanelMode) {
-      emit('back');
+      if (inputRef.value?.value) {
+        inputRef.value.value = '';
+        emit('update:modelValue', '');
+        emit('search', '', props.files);
+      } else {
+        emit('back');
+      }
     } else if (inputRef.value) {
       const isEmpty = !inputRef.value.value;
       inputRef.value.value = '';
@@ -63,6 +69,9 @@ const handleKeydown = (event: KeyboardEvent) => {
         tauriApi.hideWindow();
       }
     }
+  }
+  if (event.key === 'Backspace' && props.isPanelMode && !inputRef.value?.value) {
+    emit('back');
   }
 };
 
