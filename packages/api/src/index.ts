@@ -49,6 +49,7 @@ export interface TauriApi {
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   getAppDataDir: () => Promise<string>;
   openPath: (path: string) => Promise<void>;
+  revealInExplorer: (path: string) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
   simulateMouseClick: (x: number, y: number) => Promise<void>;
   readTextFile: (path: string) => Promise<string>;
@@ -280,6 +281,8 @@ export const tauriApi: TauriApi = {
   getAppDataDir: () => invoke<string>('get_app_data_dir'),
 
   openPath: (path: string) => invoke<void>('open_path', { path }),
+
+  revealInExplorer: (path: string) => invoke<void>('reveal_in_explorer', { path }),
 
   convertFileSrc,
 

@@ -200,7 +200,7 @@ async function performSearch() {
 
 async function openFile(path: string) {
   try {
-    await tauriApi.executeShellCommand(path);
+    await tauriApi.openPath(path);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open file:', error);
   }
@@ -216,8 +216,7 @@ async function openAtLine(file: string, line: number) {
 
 async function openInExplorer(path: string) {
   try {
-    const normalized = path.replace(/\//g, '\\');
-    await tauriApi.executeShellCommand(normalized);
+    await tauriApi.revealInExplorer(path);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open in explorer:', error);
   }

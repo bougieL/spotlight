@@ -17,8 +17,10 @@ pub fn open_path(path: String) -> Result<(), String> {
     #[cfg(windows)]
     {
         use std::process::Command;
-        Command::new("explorer")
-            .args(["/select,", &path])
+        // Convert forward slashes to backslashes for Windows
+        let normalized_path = path.replace('/', "\\");
+        Command::new("cmd")
+            .args(["/C", "start", "", &normalized_path])
             .spawn()
             .map_err(|e| format!("Failed to open path: {}", e))?;
         Ok(())
@@ -41,6 +43,46 @@ pub fn open_path(path: String) -> Result<(), String> {
             .arg(&path)
             .spawn()
             .map_err(|e| format!("Failed to open path: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        Err("Unsupported platform".to_string())
+    }
+}
+
+#[tauri::command]
+pub fn reveal_in_explorer(path: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        // Convert forward slashes to backslashes for Windows
+        let normalized_path = path.replace('/', "\\");
+        Command::new("explorer")
+            .args(["/select,", &normalized_path])
+            .spawn()
+            .map_err(|e| format!("Failed to reveal in explorer: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        Command::new("open")
+            .args(["-R", &path])
+            .spawn()
+            .map_err(|e| format!("Failed to reveal in finder: {}", e))?;
+        Ok(())
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        use std::process::Command;
+        Command::new("xdg-open")
+            .arg(std::path::Path::new(&path).parent().unwrap_or(std::path::Path::new(&path)))
+            .spawn()
+            .map_err(|e| format!("Failed to reveal in file manager: {}", e))?;
         Ok(())
     }
 

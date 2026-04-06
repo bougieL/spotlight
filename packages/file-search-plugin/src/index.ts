@@ -73,7 +73,7 @@ export class FileSearchPlugin implements Plugin {
       [ACTION_OPEN_FILE]: async (data) => {
         if (typeof data === 'string') {
           try {
-            await tauriApi.executeShellCommand(data);
+            await tauriApi.openPath(data);
           } catch (error) {
             logger.error('[FileSearchPlugin] Failed to open file:', error);
           }

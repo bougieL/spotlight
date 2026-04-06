@@ -3,9 +3,8 @@ pub fn execute_shell_command(command: String) -> Result<(), String> {
     #[cfg(windows)]
     {
         use std::process::Command;
-        // Use explorer directly without cmd /c for better compatibility
-        Command::new("explorer")
-            .args(["/select,", &command])
+        Command::new("cmd")
+            .args(["/C", &command])
             .spawn()
             .map_err(|e| format!("Failed to execute command: {}", e))?;
         Ok(())
