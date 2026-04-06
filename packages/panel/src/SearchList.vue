@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Package, Command } from 'lucide-vue-next';
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
-import { useI18n } from '@spotlight/i18n';
 import type { SearchResultItem, QuickCommand } from '@spotlight/core';
 import { usePanelContext } from '@spotlight/core';
 import recentPlugin from '@spotlight/recent-plugin';
@@ -14,7 +13,6 @@ const emit = defineEmits<{
   (e: 'fillQuery', query: string): void;
 }>();
 
-const { t } = useI18n();
 const { query, files } = usePanelContext();
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);

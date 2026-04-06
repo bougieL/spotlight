@@ -125,6 +125,9 @@ const handleDetach = async (searchParams: string) => {
 onMounted(async () => {
   applyTheme(await settingsPlugin.getThemeMode());
   setLocale(await settingsPlugin.getLanguage());
+
+  // Apply always on top setting
+  await settingsPlugin.applyAlwaysOnTop();
 });
 </script>
 

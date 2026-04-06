@@ -147,6 +147,24 @@ class SettingsPlugin implements Plugin {
     await this.storage.set<boolean>('hideOnBlur', enabled);
   }
 
+  async getAlwaysOnTop(): Promise<boolean> {
+    return await this.storage.get<boolean>('alwaysOnTop', false);
+  }
+
+  async setAlwaysOnTop(enabled: boolean): Promise<void> {
+    await this.storage.set<boolean>('alwaysOnTop', enabled);
+    await this.applyAlwaysOnTop(enabled);
+  }
+
+  async applyAlwaysOnTop(enabled?: boolean): Promise<void> {
+    const onTop = enabled ?? (await this.getAlwaysOnTop());
+    const { WebviewWindow } = await import('@tauri-apps/api/webviewWindow');
+    const mainWindow = await WebviewWindow.getByLabel('main');
+    if (mainWindow) {
+      await mainWindow.setAlwaysOnTop(onTop);
+    }
+  }
+
   async setPluginDisabled(pluginId: string, disabled: boolean): Promise<void> {
     const disabledPlugins = await this.getDisabledPlugins();
     if (disabled) {

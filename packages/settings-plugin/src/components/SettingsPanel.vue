@@ -29,6 +29,7 @@ const hotkeyError = ref<string | null>(null);
 const disabledPlugins = ref<Set<string>>(new Set());
 const autostartEnabled = ref(false);
 const hideOnBlurEnabled = ref(true);
+const alwaysOnTopEnabled = ref(false);
 
 const allPlugins = computed(() => pluginRegistry.getPlugins());
 
@@ -56,6 +57,11 @@ async function toggleAutostart(enabled: boolean): Promise<void> {
 async function toggleHideOnBlur(enabled: boolean): Promise<void> {
   await settingsPlugin.setHideOnBlur(enabled);
   hideOnBlurEnabled.value = enabled;
+}
+
+async function toggleAlwaysOnTop(enabled: boolean): Promise<void> {
+  await settingsPlugin.setAlwaysOnTop(enabled);
+  alwaysOnTopEnabled.value = enabled;
 }
 
 const themeOptions: { value: ThemeMode; icon: typeof Sun; labelKey: string }[] = [
@@ -119,6 +125,9 @@ onMounted(async () => {
 
   // Load hide on blur setting
   hideOnBlurEnabled.value = await settingsPlugin.getHideOnBlur();
+
+  // Load always on top setting
+  alwaysOnTopEnabled.value = await settingsPlugin.getAlwaysOnTop();
 });
 </script>
 
@@ -218,6 +227,21 @@ onMounted(async () => {
         <BaseSwitch
           :model-value="hideOnBlurEnabled"
           @update:model-value="toggleHideOnBlur($event as boolean)"
+        />
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h3 class="section-title">
+        {{ t('settings.alwaysOnTop.name') }}
+      </h3>
+      <div class="autostart-item">
+        <div class="autostart-info">
+          <span class="autostart-name">{{ t('settings.alwaysOnTop.enable') }}</span>
+        </div>
+        <BaseSwitch
+          :model-value="alwaysOnTopEnabled"
+          @update:model-value="toggleAlwaysOnTop($event as boolean)"
         />
       </div>
     </section>

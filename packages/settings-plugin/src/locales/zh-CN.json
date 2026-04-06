@@ -28,6 +28,10 @@
       "name": "失焦隐藏",
       "enable": "窗口失焦时自动隐藏"
     },
+    "alwaysOnTop": {
+      "name": "窗口置顶",
+      "enable": "保持窗口在最上层"
+    },
     "plugins": {
       "name": "插件管理",
       "description": "启用或禁用插件"
