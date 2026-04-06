@@ -106,11 +106,11 @@ async function openDataFolder(): Promise<void> {
 }
 
 async function exportData(): Promise<void> {
-  await settingsPlugin.openDataFolder();
+  await settingsPlugin.exportData();
 }
 
 async function importData(): Promise<void> {
-  // TODO: Implement file picker and import logic
+  await settingsPlugin.importData();
 }
 
 onMounted(async () => {

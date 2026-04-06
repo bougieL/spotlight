@@ -51,6 +51,9 @@ export interface TauriApi {
   openPath: (path: string) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
   simulateMouseClick: (x: number, y: number) => Promise<void>;
+  readTextFile: (path: string) => Promise<string>;
+  writeTextFile: (path: string, content: string) => Promise<void>;
+  copyDirectory: (src: string, dst: string) => Promise<void>;
 }
 
 export interface ScreenCapture {
@@ -181,8 +184,37 @@ export async function openDirectoryDialog(defaultPath?: string): Promise<string 
   return selected as string | null;
 }
 
+export async function openFileDialog(defaultPath?: string, filters?: { name: string; extensions: string[] }[]): Promise<string | null> {
+  const { open } = await import('@tauri-apps/plugin-dialog');
+  const selected = await open({
+    directory: false,
+    multiple: false,
+    defaultPath,
+    filters,
+  });
+  return selected as string | null;
+}
+
+export async function saveFileDialog(defaultPath?: string, filters?: { name: string; extensions: string[] }[]): Promise<string | null> {
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const selected = await save({
+    defaultPath,
+    filters,
+  });
+  return selected as string | null;
+}
+
 export const simulateMouseClick = (x: number, y: number): Promise<void> =>
   invoke<void>('simulate_mouse_click', { x, y });
+
+export const readTextFile = (path: string): Promise<string> =>
+  invoke<string>('read_text_file', { path });
+
+export const writeTextFile = (path: string, content: string): Promise<void> =>
+  invoke<void>('write_text_file', { path, content });
+
+export const copyDirectory = (src: string, dst: string): Promise<void> =>
+  invoke<void>('copy_directory', { src, dst });
 
 export const tauriApi: TauriApi = {
   showWindow: () => invoke('show_window'),
@@ -252,4 +284,10 @@ export const tauriApi: TauriApi = {
   convertFileSrc,
 
   simulateMouseClick: (x: number, y: number) => invoke<void>('simulate_mouse_click', { x, y }),
+
+  readTextFile: (path: string) => invoke<string>('read_text_file', { path }),
+
+  writeTextFile: (path: string, content: string) => invoke<void>('write_text_file', { path, content }),
+
+  copyDirectory: (src: string, dst: string) => invoke<void>('copy_directory', { src, dst }),
 };

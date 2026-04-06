@@ -107,3 +107,61 @@ pub fn write_plugin_settings(
     let settings_file: PathBuf = storage_dir.join("settings.json");
     fs::write(&settings_file, settings).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub fn read_text_file(path: String) -> Result<String, String> {
+    fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {}", e))
+}
+
+#[tauri::command]
+pub fn write_text_file(path: String, content: String) -> Result<(), String> {
+    fs::write(&path, content).map_err(|e| format!("Failed to write file: {}", e))
+}
+
+#[tauri::command]
+pub fn copy_directory(src: String, dst: String) -> Result<(), String> {
+    if !PathBuf::from(&src).exists() {
+        return Err(format!("Source directory does not exist: {}", src));
+    }
+
+    if PathBuf::from(&dst).exists() {
+        fs::remove_dir_all(&dst).map_err(|e| format!("Failed to remove existing destination: {}", e))?;
+    }
+
+    copy_dir_all(&src, &dst).map_err(|e| format!("Failed to copy directory: {}", e))
+}
+
+fn copy_dir_all(src: &str, dst: &str) -> Result<(), String> {
+    use std::process::Command;
+
+    #[cfg(windows)]
+    {
+        Command::new("xcopy")
+            .args([src, dst, "/E", "/I", "/Y", "/Q"])
+            .output()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("cp")
+            .args(["-R", src, dst])
+            .output()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("cp")
+            .args(["-R", src, dst])
+            .output()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        return Err("Unsupported platform".to_string());
+    }
+
+    Ok(())
+}

@@ -1,6 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n, type Locale } from '@spotlight/i18n';
-import { createPluginStorage, tauriApi, type PluginStorage } from '@spotlight/api';
+import { createPluginStorage, tauriApi, openDirectoryDialog, copyDirectory, type PluginStorage } from '@spotlight/api';
 import { normalizeForSearch, toPinyinInitials, matchKeyword } from '@spotlight/utils/pinyin';
 import type { ThemeMode } from './types';
 import enUS from './locales/en-US.json';
@@ -189,13 +189,20 @@ class SettingsPlugin implements Plugin {
     await tauriApi.openPath(dir);
   }
 
-  async exportData(): Promise<string> {
-    const dir = await this.getAppDataDir();
-    return dir;
+  async exportData(): Promise<void> {
+    const srcDir = await this.getAppDataDir();
+    const dstDir = await openDirectoryDialog();
+    if (dstDir) {
+      await copyDirectory(srcDir, dstDir);
+    }
   }
 
-  async importData(_filePath: string): Promise<void> {
-    // Import implementation will be handled via dialog
+  async importData(): Promise<void> {
+    const srcDir = await openDirectoryDialog();
+    if (srcDir) {
+      const dstDir = await this.getAppDataDir();
+      await copyDirectory(srcDir, dstDir);
+    }
   }
 }
 
