@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import calculatorPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
@@ -28,10 +28,6 @@ onMounted(async () => {
   }
 
   expressions.value = loadedExpressions;
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 function isMathExpression(query: string): boolean {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Folder, ChevronDown } from 'lucide-vue-next';
@@ -138,10 +138,6 @@ onMounted(async () => {
       showRecentDropdown.value = false;
     }
   });
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 watch([query, searchPath, searchInContents, caseSensitive, wholeWord, useRegex], () => {

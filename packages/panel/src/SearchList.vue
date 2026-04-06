@@ -13,7 +13,7 @@ const emit = defineEmits<{
   (e: 'fillQuery', query: string): void;
 }>();
 
-const { query, files } = usePanelContext();
+const { query, files, placeholder } = usePanelContext();
 const searchResults = ref<SearchResultItem[]>([]);
 const selectedIndex = ref(0);
 const listRef = ref<HTMLElement | null>(null);
@@ -120,6 +120,7 @@ const handleKeydown = async (event: KeyboardEvent) => {
 };
 
 onMounted(() => {
+  placeholder.value = '';
   window.addEventListener('keydown', handleKeydown);
 });
 

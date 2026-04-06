@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Clipboard, FileText, Image, Copy, Check, LayoutGrid, Star } from 'lucide-vue-next';
 import { useI18n } from '@spotlight/i18n';
 import { formatTime } from '@spotlight/utils';
@@ -138,10 +138,6 @@ onMounted(async () => {
     await loadItems();
   });
   refreshTimer = setInterval(loadItems, 5000);
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 onUnmounted(() => {

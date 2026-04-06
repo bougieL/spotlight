@@ -311,7 +311,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('mouseup', handlePointerUp);
   document.removeEventListener('touchend', handlePointerUp);
-  placeholder.value = '';
 });
 </script>
 

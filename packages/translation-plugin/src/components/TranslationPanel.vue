@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import translationPlugin from '../index';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
@@ -63,10 +63,6 @@ onMounted(async () => {
       await translate();
     }
   }
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 async function translate() {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import windowManagerPlugin from '../index';
 import type { WindowInfo } from '@spotlight/api';
 import { minimizeWindow, maximizeWindow, restoreWindow, closeWindow, toggleAlwaysOnTop, focusWindowByHwnd } from '../windowActions';
@@ -45,10 +45,6 @@ onMounted(async () => {
   query.value = '';
   placeholder.value = t('windowManager.placeholder');
   await loadWindows();
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 async function loadWindows() {

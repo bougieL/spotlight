@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useI18n } from '@spotlight/i18n';
 import logger from '@spotlight/logger';
 import QRCode from 'qrcode';
@@ -73,10 +73,6 @@ onMounted(() => {
     inputText.value = query.value.trim();
     generateQRCode();
   }
-});
-
-onBeforeUnmount(() => {
-  placeholder.value = '';
 });
 
 watch(inputText, (newValue) => {
