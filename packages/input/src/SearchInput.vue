@@ -3,8 +3,7 @@ import { Search, X, FileText, ArrowLeft, Settings, MoreVertical } from 'lucide-v
 import { ref, computed } from 'vue';
 import { tauriApi } from '@spotlight/api';
 import { useI18n } from '@spotlight/i18n';
-import type { FileItem } from '@spotlight/core';
-
+import { usePanelContext, type FileItem } from '@spotlight/core';
 const { t } = useI18n();
 
 export type { FileItem };
@@ -19,7 +18,16 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const panelCtx = usePanelContext();
+
 const displayPluginName = computed(() => props.pluginName ?? '');
+
+const inputPlaceholder = computed(() => {
+  if (panelCtx?.placeholder.value) {
+    return panelCtx.placeholder.value;
+  }
+  return t('input.search');
+});
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -226,7 +234,7 @@ const handlePaste = async (event: ClipboardEvent) => {
         ref="inputRef"
         type="text"
         class="spotlight-input"
-        :placeholder="t('input.search')"
+        :placeholder="inputPlaceholder"
         :value="modelValue"
         @input="handleInput"
         @paste="handlePaste"

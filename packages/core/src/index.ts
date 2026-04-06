@@ -32,8 +32,8 @@ export interface PanelRoute {
 export interface PanelContext {
   query: Ref<string>;
   files: Ref<FileItem[]>;
-  clearQuery: () => void;
   isDetached: Ref<boolean>;
+  placeholder: Ref<string>;
 }
 
 export const panelContext = Symbol('panelContext') as InjectionKey<PanelContext>;

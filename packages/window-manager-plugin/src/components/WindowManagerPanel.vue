@@ -10,7 +10,7 @@ import logger from '@spotlight/logger';
 import { Minus, Square, Maximize2, X, Pin, PinOff } from 'lucide-vue-next';
 
 const { t } = useI18n();
-const { query, clearQuery } = usePanelContext();
+const { query } = usePanelContext();
 
 const emit = defineEmits<{
   // eslint-disable-next-line no-unused-vars
@@ -42,7 +42,7 @@ const filteredWindows = computed(() => {
 });
 
 onMounted(async () => {
-  clearQuery();
+  query.value = '';
   await loadWindows();
 });
 

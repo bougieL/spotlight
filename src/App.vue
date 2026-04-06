@@ -29,6 +29,7 @@ const activePluginIcon = computed(() => pluginId.value ? pluginRegistry.getPlugi
 
 const query = ref('');
 const files = ref<FileItem[]>([]);
+const placeholder = ref('');
 const searchInputRef = ref<InstanceType<typeof SearchInput> | null>(null);
 const mainRef = ref<HTMLElement | null>(null);
 
@@ -41,8 +42,8 @@ usePlugins(isDetached);
 provide(panelContext, {
   query,
   files,
-  clearQuery: () => { query.value = ''; },
   isDetached,
+  placeholder,
 } as PanelContext);
 
 const handleSelect = async (item: SearchResultItem) => {

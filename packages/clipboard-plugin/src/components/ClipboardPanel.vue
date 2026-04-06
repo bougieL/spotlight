@@ -15,7 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { query, clearQuery } = usePanelContext();
+const { query } = usePanelContext();
 
 const items = ref<ClipboardItem[]>([]);
 const favorites = ref<ClipboardItem[]>([]);
@@ -124,14 +124,14 @@ async function handleCopy(item: ClipboardItem) {
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    clearQuery();
+    query.value = '';
     emit('close');
     return;
   }
 }
 
 onMounted(async () => {
-  clearQuery();
+  query.value = '';
   await loadItems();
   unlistenClipboard = await on.clipboardChanged(async () => {
     await loadItems();
