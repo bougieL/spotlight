@@ -116,6 +116,12 @@ const handleKeydown = async (event: KeyboardEvent) => {
     if (selectedItem) {
       selectItem(selectedItem);
     }
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    const selectedItem = results[selectedIndex.value];
+    if (selectedItem) {
+      selectItem(selectedItem);
+    }
   }
 };
 
