@@ -287,49 +287,6 @@ function handleKeydown(event: KeyboardEvent) {
             </div>
           </template>
 
-          <!-- Add New Entry -->
-          <template v-else-if="isAddingNew">
-            <div class="col-status">
-              <BaseCheckbox v-model="newEntry.enabled" />
-            </div>
-            <div class="col-ip">
-              <BaseInput
-                v-model="newEntry.ip"
-                size="small"
-                placeholder="127.0.0.1"
-              />
-            </div>
-            <div class="col-domain">
-              <BaseInput
-                v-model="newEntry.domain"
-                size="small"
-                placeholder="example.com"
-              />
-            </div>
-            <div class="col-comment">
-              <BaseInput
-                :model-value="newEntry.comment ?? ''"
-                size="small"
-                placeholder="# comment"
-                @update:model-value="newEntry.comment = $event || undefined"
-              />
-            </div>
-            <div class="col-actions">
-              <BaseIconButton
-                :title="t('hosts.panel.save')"
-                @click="confirmEdit"
-              >
-                <Check :size="14" />
-              </BaseIconButton>
-              <BaseIconButton
-                :title="t('hosts.panel.cancel')"
-                @click="cancelEdit"
-              >
-                <X :size="14" />
-              </BaseIconButton>
-            </div>
-          </template>
-
           <!-- Display Mode -->
           <template v-else>
             <div class="col-status">
@@ -360,6 +317,49 @@ function handleKeydown(event: KeyboardEvent) {
               </BaseIconButton>
             </div>
           </template>
+        </div>
+
+        <!-- Add New Entry -->
+        <div v-if="isAddingNew" class="entry-row add-new-row">
+          <div class="col-status">
+            <BaseCheckbox v-model="newEntry.enabled" />
+          </div>
+          <div class="col-ip">
+            <BaseInput
+              v-model="newEntry.ip"
+              size="small"
+              placeholder="127.0.0.1"
+            />
+          </div>
+          <div class="col-domain">
+            <BaseInput
+              v-model="newEntry.domain"
+              size="small"
+              placeholder="example.com"
+            />
+          </div>
+          <div class="col-comment">
+            <BaseInput
+              :model-value="newEntry.comment ?? ''"
+              size="small"
+              placeholder="# comment"
+              @update:model-value="newEntry.comment = $event || undefined"
+            />
+          </div>
+          <div class="col-actions">
+            <BaseIconButton
+              :title="t('hosts.panel.save')"
+              @click="confirmEdit"
+            >
+              <Check :size="14" />
+            </BaseIconButton>
+            <BaseIconButton
+              :title="t('hosts.panel.cancel')"
+              @click="cancelEdit"
+            >
+              <X :size="14" />
+            </BaseIconButton>
+          </div>
         </div>
 
         <!-- Empty State -->
@@ -433,7 +433,6 @@ function handleKeydown(event: KeyboardEvent) {
 .file-path {
   font-size: 11px;
   color: var(--spotlight-placeholder);
-  font-family: monospace;
 }
 
 .header-actions {
@@ -537,6 +536,10 @@ function handleKeydown(event: KeyboardEvent) {
   opacity: 0.5;
 }
 
+.add-new-row {
+  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
+}
+
 .col-status {
   width: 60px;
   flex-shrink: 0;
@@ -545,13 +548,11 @@ function handleKeydown(event: KeyboardEvent) {
 .col-ip {
   width: 140px;
   flex-shrink: 0;
-  font-family: monospace;
   font-size: 13px;
 }
 
 .col-domain {
   flex: 1;
-  font-family: monospace;
   font-size: 13px;
   min-width: 0;
   overflow: hidden;

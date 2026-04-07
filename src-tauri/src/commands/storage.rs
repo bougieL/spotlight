@@ -22,8 +22,10 @@ pub fn reveal_in_explorer(path: String) -> Result<(), String> {
         use std::process::Command;
         // Convert forward slashes to backslashes for Windows
         let normalized_path = path.replace('/', "\\");
+        // Wrap path in quotes for paths with spaces
+        let quoted_path = format!("\"{}\"", normalized_path);
         Command::new("explorer")
-            .args(["/select,", &normalized_path])
+            .args(["/select,", &quoted_path])
             .spawn()
             .map_err(|e| format!("Failed to reveal in explorer: {}", e))?;
         Ok(())

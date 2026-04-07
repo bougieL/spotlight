@@ -10,6 +10,14 @@ withDefaults(defineProps<Props>(), {
   size: 'medium',
   disabled: false,
 });
+
+const emit = defineEmits<{
+  (_e: 'click', _event: MouseEvent): void;
+}>();
+
+function handleClick(event: MouseEvent) {
+  emit('click', event);
+}
 </script>
 
 <template>
@@ -17,6 +25,7 @@ withDefaults(defineProps<Props>(), {
     class="base-button"
     :class="[`variant-${variant}`, `size-${size}`]"
     :disabled="disabled"
+    @click="handleClick"
   >
     <slot />
   </button>
