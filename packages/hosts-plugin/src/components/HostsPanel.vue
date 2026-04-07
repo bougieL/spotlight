@@ -25,11 +25,6 @@ const successMessage = ref('');
 const editingEntry = ref<HostsEntry | null>(null);
 const isAddingNew = ref(false);
 const newEntry = ref<HostsEntry>({ ip: '', domain: '', comment: '', enabled: true, lineNumber: -1 });
-const originalEntries = ref<HostsEntry[]>([]);
-
-const hasChanges = computed(() => {
-  return JSON.stringify(entries.value) !== JSON.stringify(originalEntries.value);
-});
 
 const disabledEntriesCount = computed(() => {
   return entries.value.filter(e => !e.enabled).length;
@@ -48,7 +43,6 @@ async function loadHostsFile() {
     entries.value = result.entries;
     rawContent.value = result.raw;
     filePath.value = result.filePath;
-    originalEntries.value = JSON.parse(JSON.stringify(result.entries));
   } catch (error) {
     errorMessage.value = String(error);
     if (String(error).includes('Administrator') || String(error).includes('admin') || String(error).includes('denied')) {
@@ -66,7 +60,6 @@ async function saveHostsFile() {
   try {
     await writeHostsFile(entries.value);
     successMessage.value = t('hosts.panel.saveSuccess');
-    originalEntries.value = JSON.parse(JSON.stringify(entries.value));
     setTimeout(() => {
       successMessage.value = '';
     }, 3000);
@@ -94,6 +87,33 @@ function cancelEdit() {
 }
 
 function confirmEdit() {
+  if (isAddingNew.value) {
+    // Adding new entry - use newEntry
+    if (!isValidIp(newEntry.value.ip)) {
+      errorMessage.value = t('hosts.panel.invalidIp');
+      return;
+    }
+    if (!isValidDomain(newEntry.value.domain)) {
+      errorMessage.value = t('hosts.panel.invalidDomain');
+      return;
+    }
+
+    const exists = entries.value.some(
+      e => e.ip === newEntry.value.ip &&
+           e.domain === newEntry.value.domain
+    );
+    if (exists) {
+      errorMessage.value = t('hosts.panel.duplicateEntry');
+      return;
+    }
+
+    entries.value.push({ ...newEntry.value });
+    newEntry.value = { ip: '127.0.0.1', domain: '', comment: '', enabled: true, lineNumber: -1 };
+    isAddingNew.value = false;
+    errorMessage.value = '';
+    return;
+  }
+
   if (!editingEntry.value) return;
 
   if (!isValidIp(editingEntry.value.ip)) {
@@ -115,13 +135,9 @@ function confirmEdit() {
     return;
   }
 
-  if (isAddingNew.value) {
-    entries.value.push(editingEntry.value);
-  } else {
-    const index = entries.value.findIndex(e => e.lineNumber === editingEntry.value!.lineNumber);
-    if (index !== -1) {
-      entries.value[index] = editingEntry.value;
-    }
+  const index = entries.value.findIndex(e => e.lineNumber === editingEntry.value!.lineNumber);
+  if (index !== -1) {
+    entries.value[index] = editingEntry.value;
   }
 
   editingEntry.value = null;
@@ -395,7 +411,7 @@ function handleKeydown(event: KeyboardEvent) {
         <BaseButton
           variant="primary"
           size="small"
-          :disabled="!hasChanges || isSaving"
+          :disabled="isSaving"
           @click="saveHostsFile"
         >
           <Save :size="14" />

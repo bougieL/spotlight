@@ -2,9 +2,6 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
 
-#[cfg(windows)]
-use std::process::Command;
-
 #[tauri::command]
 pub fn get_app_data_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
     let app_data_dir = app_handle
@@ -166,9 +163,6 @@ fn copy_dir_all(src: &str, dst: &str) -> Result<(), String> {
 #[cfg(windows)]
 #[tauri::command]
 pub fn read_file_elevated(path: String) -> Result<String, String> {
-    use std::env;
-    use std::process::Command;
-
     // Try to read directly first
     match std::fs::read_to_string(&path) {
         Ok(content) => Ok(content),
@@ -181,39 +175,56 @@ pub fn read_file_elevated(path: String) -> Result<String, String> {
 
 #[cfg(windows)]
 fn run_elevated_read(path: &str) -> Result<String, String> {
+    use windows::Win32::UI::Shell::ShellExecuteW;
+    use windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
+    use windows::core::PCWSTR;
     use std::env;
-    use std::process::Command;
 
     let temp_dir = env::temp_dir();
-    let script_path = temp_dir.join("read_elevated.ps1");
+    let script_path = temp_dir.join("read_hosts.ps1");
+    let output_path = temp_dir.join("hosts_output.txt");
 
     // PowerShell script to read file with elevation
     let script = format!(
-        r#"Start-Process powershell -Verb RunAs -Wait -ArgumentList '-Command', 'Get-Content -Path \"{}\" -Raw -Encoding UTF8'"#,
-        path.replace("\\", "\\\\")
+        r#"$content = Get-Content -Path '{}' -Raw -Encoding UTF8; $content | Out-File -FilePath '{}' -Encoding UTF8 -Force"#,
+        path.replace("\\", "\\\\"),
+        output_path.to_string_lossy().replace("\\", "\\\\")
     );
 
     std::fs::write(&script_path, &script).map_err(|e| e.to_string())?;
 
-    let output = Command::new("powershell")
-        .args(["-ExecutionPolicy", "Bypass", "-File", script_path.to_str().unwrap()])
-        .output()
-        .map_err(|e| format!("Failed to execute elevated command: {}", e))?;
+    let params = format!(
+        "-ExecutionPolicy Bypass -File \"{}\"",
+        script_path.to_string_lossy()
+    );
+    let params_wide: Vec<u16> = params.encode_utf16().chain(std::iter::once(0)).collect();
+
+    unsafe {
+        let operation: PCWSTR = windows::core::w!("runas");
+        let file: PCWSTR = windows::core::w!("powershell.exe");
+        let params: PCWSTR = PCWSTR(params_wide.as_ptr());
+
+        ShellExecuteW(None, operation, file, params, None, SW_HIDE);
+    }
+
+    // Wait for the elevated process to complete
+    std::thread::sleep(std::time::Duration::from_millis(1000));
+
+    let output = if output_path.exists() {
+        std::fs::read_to_string(&output_path).unwrap_or_default()
+    } else {
+        String::new()
+    };
 
     let _ = std::fs::remove_file(&script_path);
+    let _ = std::fs::remove_file(&output_path);
 
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(format!("Elevated read failed: {}", stderr))
-    }
+    Ok(output)
 }
 
 #[cfg(windows)]
 #[tauri::command]
 pub fn write_file_elevated(path: String, content: String) -> Result<(), String> {
-    use std::env;
     use std::fs::File;
     use std::io::Write;
 
@@ -231,33 +242,48 @@ pub fn write_file_elevated(path: String, content: String) -> Result<(), String> 
 
 #[cfg(windows)]
 fn run_elevated_write(path: &str, content: &str) -> Result<(), String> {
+    use windows::Win32::UI::Shell::ShellExecuteW;
+    use windows::Win32::UI::WindowsAndMessaging::SW_HIDE;
+    use windows::core::PCWSTR;
     use std::env;
-    use std::process::Command;
 
     let temp_dir = env::temp_dir();
-    let script_path = temp_dir.join("write_elevated.ps1");
+    let script_path = temp_dir.join("write_hosts.ps1");
 
+    // Escape content for PowerShell
+    let escaped_content = content
+        .replace("\\", "\\\\")
+        .replace("\"", "`\"");
+
+    // PowerShell script to write file with elevation
     let script = format!(
-        r#"Start-Process powershell -Verb RunAs -Wait -ArgumentList '-Command', 'Set-Content -Path \"{}\" -Value \"{}\" -Encoding UTF8 -Force'"#,
+        r#"Set-Content -Path '{}' -Value "{}" -Encoding UTF8 -Force"#,
         path.replace("\\", "\\\\"),
-        content.replace("\"", "`\"").replace("\r\n", ";`r`n").replace("\n", ";`n")
+        escaped_content
     );
 
     std::fs::write(&script_path, &script).map_err(|e| e.to_string())?;
 
-    let output = Command::new("powershell")
-        .args(["-ExecutionPolicy", "Bypass", "-File", script_path.to_str().unwrap()])
-        .output()
-        .map_err(|e| format!("Failed to execute elevated command: {}", e))?;
+    let params = format!(
+        "-ExecutionPolicy Bypass -File \"{}\"",
+        script_path.to_string_lossy()
+    );
+    let params_wide: Vec<u16> = params.encode_utf16().chain(std::iter::once(0)).collect();
+
+    unsafe {
+        let operation: PCWSTR = windows::core::w!("runas");
+        let file: PCWSTR = windows::core::w!("powershell.exe");
+        let params: PCWSTR = PCWSTR(params_wide.as_ptr());
+
+        ShellExecuteW(None, operation, file, params, None, SW_HIDE);
+    }
+
+    // Wait for the elevated process to complete
+    std::thread::sleep(std::time::Duration::from_millis(500));
 
     let _ = std::fs::remove_file(&script_path);
 
-    if output.status.success() {
-        Ok(())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(format!("Elevated write failed: {}", stderr))
-    }
+    Ok(())
 }
 
 #[cfg(not(windows))]
