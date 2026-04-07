@@ -2,6 +2,7 @@
   "calculator": {
     "name": "Calculator",
     "placeholder": "e.g. 2+3*4",
-    "description": "Perform math calculations"
+    "description": "Perform math calculations",
+    "keywords": "calculator|calc|calcul|math|expression"
   }
 }

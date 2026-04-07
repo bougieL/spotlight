@@ -13,6 +13,7 @@
     "basic": "基础颜色",
     "gradient": "渐变颜色",
     "web": "网页颜色",
-    "picker": "取色器"
+    "picker": "取色器",
+    "keywords": "色盘|颜色"
   }
 }

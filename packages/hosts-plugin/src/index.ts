@@ -9,28 +9,30 @@ registerTranslations({
   'zh-CN': zhCN,
 });
 
-const qrcodeIconUrl = new URL('./assets/qrcode.svg', import.meta.url).href;
+const hostsIconUrl = new URL('./assets/hosts.svg', import.meta.url).href;
 
 const ACTION_OPEN = 'open';
 
-export class QrCodePlugin implements Plugin {
+export class HostsPlugin implements Plugin {
   private readonly i18n = useI18n();
 
   get name(): string {
-    return this.i18n.t('qrcode.name');
+    return this.i18n.t('hosts.name');
   }
+
   get description(): string | undefined {
-    return this.i18n.t('qrcode.description');
+    return this.i18n.t('hosts.description');
   }
-  iconUrl = qrcodeIconUrl;
-  pluginId = 'qrcode-plugin';
+
+  iconUrl = hostsIconUrl;
+  pluginId = 'hosts-plugin';
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  registerAction(ctx: ActionContext): PluginActions {
+  registerAction(_ctx: ActionContext): PluginActions {
     return {
       [ACTION_OPEN]: async () => {
-        ctx.navigateToPlugin(this.pluginId);
+        // Navigation handled by the action context
       },
     };
   }
@@ -38,7 +40,7 @@ export class QrCodePlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywordStr = this.i18n.t('qrcode.keywords');
+    const keywordStr = this.i18n.t('hosts.keywords');
     const keywordList = keywordStr.split('|');
     const keywords = keywordList.map((keyword: string) => ({
       keyword,
@@ -46,28 +48,28 @@ export class QrCodePlugin implements Plugin {
       pinyinInitials: toPinyinInitials(keyword),
     }));
 
-    if (query.length > 0 && !matchKeyword(query, keywords)) {
-      return [];
+    if (matchKeyword(query, keywords)) {
+      return [
+        {
+          iconUrl: hostsIconUrl,
+          title: this.name,
+          score: 900,
+          pluginId: this.pluginId,
+          actionId: ACTION_OPEN,
+          actionData: null,
+        },
+      ];
     }
 
-    return [
-      {
-        iconUrl: qrcodeIconUrl,
-        title: this.name,
-        score: 900,
-        pluginId: this.pluginId,
-        actionId: ACTION_OPEN,
-        actionData: null,
-      },
-    ];
+    return [];
   }
 
   getPanelRoutes() {
     return [
-      { name: 'main', componentLoader: () => import('./components/QrCodePanel.vue') },
+      { name: 'main', componentLoader: () => import('./components/HostsPanel.vue') },
     ];
   }
 }
 
-const qrcodePlugin = new QrCodePlugin();
-export default qrcodePlugin;
+const hostsPlugin = new HostsPlugin();
+export default hostsPlugin;

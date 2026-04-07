@@ -46,14 +46,13 @@ export class ColorPalettePlugin implements Plugin {
 
     const queryLower = query.toLowerCase();
 
-    const keywords = [
-      { keyword: 'color', normalized: normalizeForSearch('color') },
-      { keyword: 'palette', normalized: normalizeForSearch('palette') },
-      { keyword: 'colour', normalized: normalizeForSearch('colour') },
-      { keyword: 'colors', normalized: normalizeForSearch('colors') },
-      { keyword: '色盘', normalized: normalizeForSearch('色盘'), pinyinInitials: toPinyinInitials('色盘') },
-      { keyword: '颜色', normalized: normalizeForSearch('颜色'), pinyinInitials: toPinyinInitials('颜色') },
-    ];
+    const keywordStr = this.i18n.t('colorPalette.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     const isKeywordMatch = matchKeyword(queryLower, keywords);
 

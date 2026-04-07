@@ -9,6 +9,7 @@
     "error": "Failed to generate QR code",
     "history": "History",
     "noHistory": "No history yet",
-    "description": "Generate and decode QR codes"
+    "description": "Generate and decode QR codes",
+    "keywords": "qr|qrcode"
   }
 }

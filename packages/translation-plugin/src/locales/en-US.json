@@ -15,7 +15,8 @@
     "translating": "Translating...",
     "hint": "Enter text to translate",
     "selectModel": "Select Model",
-    "noModels": "No models available"
+    "noModels": "No models available",
+    "keywords": "translation|translate|trans"
   },
   "language": {
     "zh": "Chinese",

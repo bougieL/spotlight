@@ -4,6 +4,7 @@
     "placeholder": "暂无最近使用",
     "clear": "清除记录",
     "empty": "没有最近使用的项目",
-    "description": "快速访问最近使用的项目"
+    "description": "快速访问最近使用的项目",
+    "keywords": "最近|最近使用"
   }
 }

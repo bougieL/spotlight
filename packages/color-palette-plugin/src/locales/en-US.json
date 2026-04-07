@@ -13,6 +13,7 @@
     "basic": "Basic Colors",
     "gradient": "Gradient Colors",
     "web": "Web Colors",
-    "picker": "Color Picker"
+    "picker": "Color Picker",
+    "keywords": "color|palette|colour|colors"
   }
 }

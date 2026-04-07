@@ -18,6 +18,7 @@
     "running": "Running...",
     "success": "Executed successfully",
     "error": "Execution failed",
-    "confirmDelete": "Delete this shortcut?"
+    "confirmDelete": "Delete this shortcut?",
+    "keywords": "shortcuts|shortcut|command|commands|terminal"
   }
 }

@@ -18,6 +18,7 @@
     "running": "运行中...",
     "success": "执行成功",
     "error": "执行失败",
-    "confirmDelete": "确定删除此命令？"
+    "confirmDelete": "确定删除此命令？",
+    "keywords": "快捷命令|命令|终端"
   }
 }

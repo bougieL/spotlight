@@ -40,7 +40,8 @@ export class ScreenshotPlugin implements Plugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
-    const keywords = ['screenshot', 'screen', 'capture', '截图', '截屏', '屏幕截图'];
+    const keywordStr = this.i18n.t('screenshot.keywords');
+    const keywords = keywordStr.split('|');
 
     const isKeywordMatch = keywords.some(
       (kw) => kw.toLowerCase().includes(query) || query.includes(kw.toLowerCase())

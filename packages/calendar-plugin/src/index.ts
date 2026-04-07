@@ -38,22 +38,13 @@ export class CalendarPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'calendar', normalized: normalizeForSearch('calendar') },
-      { keyword: 'cal', normalized: normalizeForSearch('cal') },
-      { keyword: '日历', normalized: normalizeForSearch('日历'), pinyinInitials: toPinyinInitials('日历') },
-      { keyword: '日期', normalized: normalizeForSearch('日期'), pinyinInitials: toPinyinInitials('日期') },
-      { keyword: '时间', normalized: normalizeForSearch('时间'), pinyinInitials: toPinyinInitials('时间') },
-      { keyword: '今天', normalized: normalizeForSearch('今天'), pinyinInitials: toPinyinInitials('今天') },
-      { keyword: '明天', normalized: normalizeForSearch('明天'), pinyinInitials: toPinyinInitials('明天') },
-      { keyword: '昨天', normalized: normalizeForSearch('昨天'), pinyinInitials: toPinyinInitials('昨天') },
-      { keyword: '节日', normalized: normalizeForSearch('节日'), pinyinInitials: toPinyinInitials('节日') },
-      { keyword: '假期', normalized: normalizeForSearch('假期'), pinyinInitials: toPinyinInitials('假期') },
-      { keyword: 'holiday', normalized: normalizeForSearch('holiday') },
-      { keyword: 'date', normalized: normalizeForSearch('date') },
-      { keyword: 'time', normalized: normalizeForSearch('time') },
-      { keyword: 'today', normalized: normalizeForSearch('today') },
-    ];
+    const keywordStr = this.i18n.t('calendar.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (matchKeyword(query, keywords)) {
       return [

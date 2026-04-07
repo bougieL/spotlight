@@ -120,14 +120,13 @@ class WebOpenPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'web', normalized: normalizeForSearch('web') },
-      { keyword: 'open', normalized: normalizeForSearch('open') },
-      { keyword: 'url', normalized: normalizeForSearch('url') },
-      { keyword: 'http', normalized: normalizeForSearch('http') },
-      { keyword: '网页', normalized: normalizeForSearch('网页'), pinyinInitials: toPinyinInitials('网页') },
-      { keyword: '打开', normalized: normalizeForSearch('打开'), pinyinInitials: toPinyinInitials('打开') },
-    ];
+    const keywordStr = this.i18n.t('webOpen.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     const results: SearchResultItem[] = [];
 

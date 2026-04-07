@@ -228,12 +228,13 @@ export class TranslationPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
 
-    const keywords = [
-      { keyword: 'translation', normalized: normalizeForSearch('translation') },
-      { keyword: 'translate', normalized: normalizeForSearch('translate') },
-      { keyword: '翻译', normalized: normalizeForSearch('翻译'), pinyinInitials: toPinyinInitials('翻译') },
-      { keyword: 'trans', normalized: normalizeForSearch('trans') },
-    ];
+    const keywordStr = this.i18n.t('translation.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (matchKeyword(query, keywords)) {
       return [

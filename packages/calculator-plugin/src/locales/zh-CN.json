@@ -2,6 +2,7 @@
   "calculator": {
     "name": "计算器",
     "placeholder": "例如 2+3*4",
-    "description": "进行数学计算"
+    "description": "进行数学计算",
+    "keywords": "计算器|计算|数学|表达式"
   }
 }

@@ -4,6 +4,7 @@
     "placeholder": "No recent items",
     "clear": "Clear recent",
     "empty": "No recent items to display",
-    "description": "Quick access to recently used items"
+    "description": "Quick access to recently used items",
+    "keywords": "recent|recently"
   }
 }

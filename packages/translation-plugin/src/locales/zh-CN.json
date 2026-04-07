@@ -15,7 +15,8 @@
     "translating": "翻译中...",
     "hint": "输入文本开始翻译",
     "selectModel": "选择模型",
-    "noModels": "暂无可用模型"
+    "noModels": "暂无可用模型",
+    "keywords": "翻译"
   },
   "language": {
     "zh": "中文",

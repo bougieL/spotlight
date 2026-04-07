@@ -14,6 +14,7 @@
     "new_year": "New Year's Day",
     "lantern_festival": "Lantern Festival",
     "double_ninth": "Double Ninth Festival",
-    "description": "View calendar and holidays"
+    "description": "View calendar and holidays",
+    "keywords": "calendar|cal|today|date|time|holiday"
   }
 }

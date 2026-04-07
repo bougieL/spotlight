@@ -19,6 +19,7 @@
     "selectNoteOrCreate": "选择一个笔记或创建新笔记",
     "untitled": "无标题",
     "categoryNamePrompt": "输入分类名称：",
-    "description": "创建和管理 Markdown 笔记"
+    "description": "创建和管理 Markdown 笔记",
+    "keywords": "笔记|markdown|文档"
   }
 }

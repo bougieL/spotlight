@@ -4,6 +4,7 @@
     "pickColor": "从屏幕取色",
     "copied": "颜色已复制到剪贴板",
     "pressEscToCancel": "按 ESC 取消",
-    "description": "从屏幕拾取颜色"
+    "description": "从屏幕拾取颜色",
+    "keywords": "取色|颜色"
   }
 }

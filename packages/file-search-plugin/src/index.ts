@@ -1,7 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext, QuickCommand, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
 import { tauriApi, type FileResult } from '@spotlight/api';
-import { normalizeForSearch, toPinyinInitials } from '@spotlight/utils/pinyin';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
 import zhCN from './locales/zh-CN.json';
@@ -18,25 +17,17 @@ const ACTION_OPEN_AT_LINE = 'open-at-line';
 const ACTION_COPY_PATH = 'copy-path';
 const ACTION_OPEN_PANEL = 'open-panel';
 
-const PREFIXES = [
-  { keyword: 'grep', normalized: normalizeForSearch('grep') },
-  { keyword: 'rg', normalized: normalizeForSearch('rg') },
-  { keyword: 'search', normalized: normalizeForSearch('search') },
-  { keyword: '搜索', normalized: normalizeForSearch('搜索'), pinyinInitials: toPinyinInitials('搜索') },
-  { keyword: 'grep搜索', normalized: normalizeForSearch('grep搜索'), pinyinInitials: toPinyinInitials('grep搜索') },
-];
-
-function getSearchQuery(input: string): { searchQuery: string } | null {
+function getSearchQuery(input: string, prefixes: string[]): { searchQuery: string } | null {
   const lower = input.toLowerCase().trim();
 
-  for (const prefix of PREFIXES) {
-    if (lower.startsWith(prefix.keyword + ' ')) {
-      const remainder = input.trim().slice(prefix.keyword.length + 1);
+  for (const prefix of prefixes) {
+    if (lower.startsWith(prefix + ' ')) {
+      const remainder = input.trim().slice(prefix.length + 1);
       return {
         searchQuery: remainder,
       };
     }
-    if (lower === prefix.keyword) {
+    if (lower === prefix) {
       return {
         searchQuery: '',
       };
@@ -103,7 +94,9 @@ export class FileSearchPlugin implements Plugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
-    const searchState = getSearchQuery(query);
+    const prefixStr = this.i18n.t('fileSearch.keywords');
+    const prefixes = prefixStr.split('|');
+    const searchState = getSearchQuery(query, prefixes);
 
     if (searchState === null) {
       return [];

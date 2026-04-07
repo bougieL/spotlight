@@ -99,16 +99,13 @@ class ShortcutsPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
 
-    const keywords = [
-      { keyword: 'shortcuts', normalized: normalizeForSearch('shortcuts') },
-      { keyword: 'shortcut', normalized: normalizeForSearch('shortcut') },
-      { keyword: 'command', normalized: normalizeForSearch('command') },
-      { keyword: 'commands', normalized: normalizeForSearch('commands') },
-      { keyword: '快捷命令', normalized: normalizeForSearch('快捷命令'), pinyinInitials: toPinyinInitials('快捷命令') },
-      { keyword: '命令', normalized: normalizeForSearch('命令'), pinyinInitials: toPinyinInitials('命令') },
-      { keyword: 'terminal', normalized: normalizeForSearch('terminal') },
-      { keyword: '终端', normalized: normalizeForSearch('终端'), pinyinInitials: toPinyinInitials('终端') },
-    ];
+    const keywordStr = this.i18n.t('shortcuts.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (!query || matchKeyword(query.toLowerCase(), keywords)) {
       const data = await this.getShortcuts();

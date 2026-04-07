@@ -11,6 +11,7 @@
     "bookmarks": "Bookmarks",
     "noBookmarks": "No bookmarks",
     "addBookmark": "Bookmark",
-    "removeBookmark": "Remove Bookmark"
+    "removeBookmark": "Remove Bookmark",
+    "keywords": "web|open|url|http"
   }
 }

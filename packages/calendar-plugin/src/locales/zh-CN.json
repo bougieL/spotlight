@@ -14,6 +14,7 @@
     "new_year": "元旦",
     "lantern_festival": "元宵节",
     "double_ninth": "重阳节",
-    "description": "查看日历和节假日"
+    "description": "查看日历和节假日",
+    "keywords": "日历|日期|时间|今天|明天|昨天|节日|假期"
   }
 }

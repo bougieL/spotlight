@@ -37,10 +37,13 @@ export class JsonPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.toLowerCase().trim();
 
-    const keywords = [
-      { keyword: 'json', normalized: normalizeForSearch('json') },
-      { keyword: 'JSON 编辑器', normalized: normalizeForSearch('JSON 编辑器'), pinyinInitials: toPinyinInitials('JSON 编辑器') },
-    ];
+    const keywordStr = this.i18n.t('jsonPlugin.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     const isKeywordMatch = matchKeyword(query, keywords);
 

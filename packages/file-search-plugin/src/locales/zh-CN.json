@@ -29,6 +29,7 @@
     "quickCommands": {
       "grep": "搜索文件内容",
       "find": "搜索文件名"
-    }
+    },
+    "keywords": "搜索|grep搜索"
   }
 }

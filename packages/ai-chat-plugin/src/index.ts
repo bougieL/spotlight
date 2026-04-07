@@ -159,18 +159,13 @@ class AIChatPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'chat', normalized: normalizeForSearch('chat') },
-      { keyword: 'ai', normalized: normalizeForSearch('ai') },
-      { keyword: 'ai chat', normalized: normalizeForSearch('ai chat') },
-      { keyword: 'gpt', normalized: normalizeForSearch('gpt') },
-      { keyword: 'claude', normalized: normalizeForSearch('claude') },
-      { keyword: '聊天', normalized: normalizeForSearch('聊天'), pinyinInitials: toPinyinInitials('聊天') },
-      { keyword: 'ai聊天', normalized: normalizeForSearch('ai聊天'), pinyinInitials: toPinyinInitials('ai聊天') },
-      { keyword: 'models', normalized: normalizeForSearch('models') },
-      { keyword: 'model', normalized: normalizeForSearch('model') },
-      { keyword: '模型', normalized: normalizeForSearch('模型'), pinyinInitials: toPinyinInitials('模型') },
-    ];
+    const keywordStr = this.i18n.t('aiChat.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];

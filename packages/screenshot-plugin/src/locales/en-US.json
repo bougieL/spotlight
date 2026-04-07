@@ -6,7 +6,8 @@
     "saved": "Screenshot saved",
     "pressEscToCancel": "Press ESC to cancel",
     "selectRegion": "Click and drag to select region",
-    "description": "Capture screen screenshots"
+    "description": "Capture screen screenshots",
+    "keywords": "screenshot|screen|capture"
   },
   "tray": {
     "screenshot": "Screenshot"

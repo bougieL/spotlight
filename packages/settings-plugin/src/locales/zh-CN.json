@@ -45,7 +45,8 @@
       "importSuccess": "数据导入成功",
       "importError": "数据导入失败"
     },
-    "description": ""
+    "description": "",
+    "keywords": "设置|主题|语言|外观"
   },
   "tray": {
     "show": "显示",

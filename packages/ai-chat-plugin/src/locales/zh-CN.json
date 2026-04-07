@@ -40,6 +40,7 @@
     "confirmDeleteSession": "确定删除此会话？",
     "confirmDeleteModel": "确定删除此模型？",
     "settings": "设置",
-    "description": "与 AI 模型对话"
+    "description": "与 AI 模型对话",
+    "keywords": "聊天|ai|模型"
   }
 }

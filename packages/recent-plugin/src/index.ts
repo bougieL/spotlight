@@ -116,12 +116,13 @@ class RecentPlugin implements Plugin {
     const query = params.query.trim();
 
     if (query.length > 0) {
-      const keywords = [
-        { keyword: 'recent', normalized: normalizeForSearch('recent') },
-        { keyword: 'recently', normalized: normalizeForSearch('recently') },
-        { keyword: '最近', normalized: normalizeForSearch('最近'), pinyinInitials: toPinyinInitials('最近') },
-        { keyword: '最近使用', normalized: normalizeForSearch('最近使用'), pinyinInitials: toPinyinInitials('最近使用') },
-      ];
+      const keywordStr = this.i18n.t('recent.keywords');
+      const keywordList = keywordStr.split('|');
+      const keywords = keywordList.map((keyword: string) => ({
+        keyword,
+        normalized: normalizeForSearch(keyword),
+        pinyinInitials: toPinyinInitials(keyword),
+      }));
 
       if (!matchKeyword(query.toLowerCase(), keywords)) {
         return [];

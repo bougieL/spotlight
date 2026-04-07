@@ -61,16 +61,13 @@ class SettingsPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'settings', normalized: normalizeForSearch('settings') },
-      { keyword: '设置', normalized: normalizeForSearch('设置'), pinyinInitials: toPinyinInitials('设置') },
-      { keyword: 'theme', normalized: normalizeForSearch('theme') },
-      { keyword: '主题', normalized: normalizeForSearch('主题'), pinyinInitials: toPinyinInitials('主题') },
-      { keyword: 'language', normalized: normalizeForSearch('language') },
-      { keyword: '语言', normalized: normalizeForSearch('语言'), pinyinInitials: toPinyinInitials('语言') },
-      { keyword: 'appearance', normalized: normalizeForSearch('appearance') },
-      { keyword: '外观', normalized: normalizeForSearch('外观'), pinyinInitials: toPinyinInitials('外观') },
-    ];
+    const keywordStr = this.i18n.t('settings.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];

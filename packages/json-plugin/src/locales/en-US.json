@@ -9,6 +9,7 @@
     "clear": "Clear",
     "format": "Format",
     "minify": "Minify",
-    "description": "View and edit JSON with syntax highlighting"
+    "description": "View and edit JSON with syntax highlighting",
+    "keywords": "json"
   }
 }

@@ -9,6 +9,7 @@
     "clear": "清空",
     "format": "格式化",
     "minify": "压缩",
-    "description": "查看和编辑 JSON，支持语法高亮"
+    "description": "查看和编辑 JSON，支持语法高亮",
+    "keywords": "json"
   }
 }

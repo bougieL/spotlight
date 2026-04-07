@@ -128,18 +128,13 @@ export class CalculatorPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim();
 
-    // Keywords with pinyin support
-    const keywords = [
-      { keyword: 'calculator', normalized: normalizeForSearch('calculator') },
-      { keyword: 'calcul', normalized: normalizeForSearch('calcul') },
-      { keyword: 'calc', normalized: normalizeForSearch('calc') },
-      { keyword: '计算器', normalized: normalizeForSearch('计算器'), pinyinInitials: toPinyinInitials('计算器') },
-      { keyword: '计算', normalized: normalizeForSearch('计算'), pinyinInitials: toPinyinInitials('计算') },
-      { keyword: '数学', normalized: normalizeForSearch('数学'), pinyinInitials: toPinyinInitials('数学') },
-      { keyword: 'math', normalized: normalizeForSearch('math') },
-      { keyword: 'expression', normalized: normalizeForSearch('expression') },
-      { keyword: '表达式', normalized: normalizeForSearch('表达式'), pinyinInitials: toPinyinInitials('表达式') },
-    ];
+    const keywordStr = this.i18n.t('calculator.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (matchKeyword(query, keywords)) {
       return [

@@ -29,6 +29,7 @@
     "quickCommands": {
       "grep": "Search file contents",
       "find": "Search file names"
-    }
+    },
+    "keywords": "grep|rg|search"
   }
 }

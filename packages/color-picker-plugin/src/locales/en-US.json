@@ -4,6 +4,7 @@
     "pickColor": "Pick a color from screen",
     "copied": "Color copied to clipboard",
     "pressEscToCancel": "Press ESC to cancel",
-    "description": "Pick colors from screen"
+    "description": "Pick colors from screen",
+    "keywords": "color|picker|colour"
   }
 }

@@ -40,7 +40,8 @@ export class ColorPickerPlugin implements Plugin {
 
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
-    const keywords = ['color', 'picker', 'colour', '取色', '颜色'];
+    const keywordStr = this.i18n.t('colorPicker.keywords');
+    const keywords = keywordStr.split('|');
 
     const isKeywordMatch = keywords.some(
       (kw) => kw.toLowerCase().includes(query) || query.includes(kw.toLowerCase())

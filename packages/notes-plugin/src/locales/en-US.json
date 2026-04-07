@@ -19,6 +19,7 @@
     "selectNoteOrCreate": "Select a note or create a new one",
     "untitled": "Untitled",
     "categoryNamePrompt": "Enter category name:",
-    "description": "Create and manage markdown notes"
+    "description": "Create and manage markdown notes",
+    "keywords": "note|notes|markdown|md|document"
   }
 }

@@ -131,15 +131,13 @@ class NotesPlugin implements Plugin {
   async search(params: SearchParams): Promise<SearchResultItem[]> {
     const query = params.query.trim().toLowerCase();
 
-    const keywords = [
-      { keyword: 'note', normalized: normalizeForSearch('note') },
-      { keyword: 'notes', normalized: normalizeForSearch('notes') },
-      { keyword: '笔记', normalized: normalizeForSearch('笔记'), pinyinInitials: toPinyinInitials('笔记') },
-      { keyword: 'markdown', normalized: normalizeForSearch('markdown') },
-      { keyword: 'md', normalized: normalizeForSearch('md') },
-      { keyword: '文档', normalized: normalizeForSearch('文档'), pinyinInitials: toPinyinInitials('文档') },
-      { keyword: 'document', normalized: normalizeForSearch('document') },
-    ];
+    const keywordStr = this.i18n.t('notes.keywords');
+    const keywordList = keywordStr.split('|');
+    const keywords = keywordList.map((keyword: string) => ({
+      keyword,
+      normalized: normalizeForSearch(keyword),
+      pinyinInitials: toPinyinInitials(keyword),
+    }));
 
     if (query.length > 0 && !matchKeyword(query, keywords)) {
       return [];

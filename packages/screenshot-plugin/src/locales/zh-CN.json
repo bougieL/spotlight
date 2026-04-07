@@ -6,7 +6,8 @@
     "saved": "截图已保存",
     "pressEscToCancel": "按 ESC 取消",
     "selectRegion": "点击并拖动选择区域",
-    "description": "截取屏幕截图"
+    "description": "截取屏幕截图",
+    "keywords": "截图|截屏|屏幕截图"
   },
   "tray": {
     "screenshot": "截图"
