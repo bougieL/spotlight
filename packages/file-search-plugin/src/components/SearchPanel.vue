@@ -3,6 +3,7 @@ import { ref, watch, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from '@spotlight/i18n';
 import { Folder, ChevronDown } from 'lucide-vue-next';
+import { openPath } from '@tauri-apps/plugin-opener';
 import { tauriApi, getUserHome, openDirectoryDialog, createPluginStorage, type RipgrepResult, type SearchOptions, type FileResult } from '@spotlight/api';
 import { usePanelContext } from '@spotlight/core';
 import { BaseInput, BaseCheckbox, BaseIconButton } from '@spotlight/components';
@@ -200,7 +201,7 @@ async function performSearch() {
 
 async function openFile(path: string) {
   try {
-    await tauriApi.openPath(path);
+    await openPath(path);
   } catch (error) {
     logger.error('[SearchPanel] Failed to open file:', error);
   }

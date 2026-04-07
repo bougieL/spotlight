@@ -48,12 +48,9 @@ export interface TauriApi {
   getAutostartEnabled: () => Promise<boolean>;
   setAutostartEnabled: (enabled: boolean) => Promise<void>;
   getAppDataDir: () => Promise<string>;
-  openPath: (path: string) => Promise<void>;
   revealInExplorer: (path: string) => Promise<void>;
   convertFileSrc: typeof convertFileSrc;
   simulateMouseClick: (x: number, y: number) => Promise<void>;
-  readTextFile: (path: string) => Promise<string>;
-  writeTextFile: (path: string, content: string) => Promise<void>;
   copyDirectory: (src: string, dst: string) => Promise<void>;
 }
 
@@ -208,12 +205,6 @@ export async function saveFileDialog(defaultPath?: string, filters?: { name: str
 export const simulateMouseClick = (x: number, y: number): Promise<void> =>
   invoke<void>('simulate_mouse_click', { x, y });
 
-export const readTextFile = (path: string): Promise<string> =>
-  invoke<string>('read_text_file', { path });
-
-export const writeTextFile = (path: string, content: string): Promise<void> =>
-  invoke<void>('write_text_file', { path, content });
-
 export const copyDirectory = (src: string, dst: string): Promise<void> =>
   invoke<void>('copy_directory', { src, dst });
 
@@ -280,17 +271,11 @@ export const tauriApi: TauriApi = {
 
   getAppDataDir: () => invoke<string>('get_app_data_dir'),
 
-  openPath: (path: string) => invoke<void>('open_path', { path }),
-
-  revealInExplorer: (path: string) => invoke<void>('reveal_in_explorer', { path }),
+  revealInExplorer: (path: string) => invoke('reveal_in_explorer', { path }),
 
   convertFileSrc,
 
   simulateMouseClick: (x: number, y: number) => invoke<void>('simulate_mouse_click', { x, y }),
-
-  readTextFile: (path: string) => invoke<string>('read_text_file', { path }),
-
-  writeTextFile: (path: string, content: string) => invoke<void>('write_text_file', { path, content }),
 
   copyDirectory: (src: string, dst: string) => invoke<void>('copy_directory', { src, dst }),
 };

@@ -13,11 +13,9 @@
     "opener:allow-open-url",
     "dialog:default",
     "dialog:allow-open",
-    "fs:allow-read-file",
-    "fs:allow-write-file",
-    "fs:allow-read-text-file",
-    "fs:allow-write-text-file",
-    "fs:allow-exists",
+    "fs:default",
+    "fs:read-all",
+    "fs:write-all",
     "fs:allow-mkdir",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
@@ -31,8 +29,5 @@
         { "url": "data:**" }
       ]
     }
-  ],
-  "allowlist": {
-    "opener:allow-open-path": true
-  }
+  ]
 }

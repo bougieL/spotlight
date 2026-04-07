@@ -7,7 +7,7 @@ use commands::{
     get_autostart_enabled,
     get_chrome_bookmarks, get_clipboard_file_paths, get_clipboard_image, get_clipboard_text,
     get_global_shortcut, get_installed_applications, get_plugin_storage_dir, get_user_home,
-    show_window, hide_window, launch_app, open_path, reveal_in_explorer,
+    show_window, hide_window, launch_app, reveal_in_explorer,
     read_plugin_settings, register_global_shortcut, resize_window, save_pasted_file,
     save_temp_image, save_image_file, compress_png_lossless, glob_image_files, search_with_rg, search_files_with_rg, set_autostart_enabled, set_clipboard_files, set_clipboard_image,
     set_clipboard_text, start_clipboard_monitor, stop_clipboard_monitor, write_log,
@@ -15,7 +15,7 @@ use commands::{
     detach_window, list_windows, minimize_window, maximize_window, restore_window,
     close_window, set_window_always_on_top, focus_window,
     create_child_webview, close_child_webview, resize_child_webview, close_all_child_webviews,
-    simulate_mouse_click, read_text_file, write_text_file, copy_directory,
+    simulate_mouse_click, copy_directory,
 };
 use tauri::Manager;
 
@@ -41,6 +41,7 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec!["--hidden"]),
         ))
+        .plugin(tauri_plugin_os::init())
         .invoke_handler(tauri::generate_handler![
             save_temp_image,
             save_pasted_file,
@@ -64,12 +65,9 @@ pub fn run() {
             launch_app,
             get_plugin_storage_dir,
             get_app_data_dir,
-            open_path,
             reveal_in_explorer,
             read_plugin_settings,
             write_plugin_settings,
-            read_text_file,
-            write_text_file,
             copy_directory,
             register_global_shortcut,
             get_global_shortcut,

@@ -13,46 +13,6 @@ pub fn get_app_data_dir(app_handle: tauri::AppHandle) -> Result<String, String> 
 }
 
 #[tauri::command]
-pub fn open_path(path: String) -> Result<(), String> {
-    #[cfg(windows)]
-    {
-        use std::process::Command;
-        // Convert forward slashes to backslashes for Windows
-        let normalized_path = path.replace('/', "\\");
-        Command::new("cmd")
-            .args(["/C", "start", "", &normalized_path])
-            .spawn()
-            .map_err(|e| format!("Failed to open path: {}", e))?;
-        Ok(())
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        use std::process::Command;
-        Command::new("open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| format!("Failed to open path: {}", e))?;
-        Ok(())
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        use std::process::Command;
-        Command::new("xdg-open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| format!("Failed to open path: {}", e))?;
-        Ok(())
-    }
-
-    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
-    {
-        Err("Unsupported platform".to_string())
-    }
-}
-
-#[tauri::command]
 pub fn reveal_in_explorer(path: String) -> Result<(), String> {
     #[cfg(windows)]
     {
@@ -148,16 +108,6 @@ pub fn write_plugin_settings(
 
     let settings_file: PathBuf = storage_dir.join("settings.json");
     fs::write(&settings_file, settings).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub fn read_text_file(path: String) -> Result<String, String> {
-    fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {}", e))
-}
-
-#[tauri::command]
-pub fn write_text_file(path: String, content: String) -> Result<(), String> {
-    fs::write(&path, content).map_err(|e| format!("Failed to write file: {}", e))
 }
 
 #[tauri::command]

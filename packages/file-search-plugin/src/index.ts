@@ -1,5 +1,6 @@
 import type { SearchResultItem, SearchParams, PluginActions, ActionContext, QuickCommand, Plugin } from '@spotlight/core';
 import { registerTranslations, useI18n } from '@spotlight/i18n';
+import { openPath } from '@tauri-apps/plugin-opener';
 import { tauriApi, type FileResult } from '@spotlight/api';
 import logger from '@spotlight/logger';
 import enUS from './locales/en-US.json';
@@ -64,7 +65,7 @@ export class FileSearchPlugin implements Plugin {
       [ACTION_OPEN_FILE]: async (data) => {
         if (typeof data === 'string') {
           try {
-            await tauriApi.openPath(data);
+            await openPath(data);
           } catch (error) {
             logger.error('[FileSearchPlugin] Failed to open file:', error);
           }

@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { usePanelContext } from '@spotlight/core';
 import { useI18n } from '@spotlight/i18n';
+import { BaseInput, BaseCheckbox, BaseButton, BaseIconButton } from '@spotlight/components';
 import type { HostsEntry } from '../types';
 import { readHostsFile, writeHostsFile, openHostsFileLocation } from '../api';
 import { Trash2, Plus, Save, RotateCcw, FolderOpen, Edit2, X, Check, AlertTriangle } from 'lucide-vue-next';
@@ -191,20 +192,18 @@ function handleKeydown(event: KeyboardEvent) {
         <span class="file-path">{{ filePath }}</span>
       </div>
       <div class="header-actions">
-        <button
-          class="header-btn"
+        <BaseIconButton
           :title="t('hosts.panel.refresh')"
           @click="loadHostsFile"
         >
           <RotateCcw :size="16" />
-        </button>
-        <button
-          class="header-btn"
+        </BaseIconButton>
+        <BaseIconButton
           :title="t('hosts.panel.openFile')"
           @click="openFileLocation"
         >
           <FolderOpen :size="16" />
-        </button>
+        </BaseIconButton>
       </div>
     </div>
 
@@ -257,99 +256,77 @@ function handleKeydown(event: KeyboardEvent) {
           <!-- View Mode -->
           <template v-if="editingEntry?.lineNumber === entry.lineNumber">
             <div class="col-status">
-              <input
-                v-model="editingEntry.enabled"
-                type="checkbox"
-                class="checkbox"
-              >
+              <BaseCheckbox v-model="editingEntry.enabled" />
             </div>
             <div class="col-ip">
-              <input
-                v-model="editingEntry.ip"
-                type="text"
-                class="edit-input"
-              >
+              <BaseInput v-model="editingEntry.ip" size="small" />
             </div>
             <div class="col-domain">
-              <input
-                v-model="editingEntry.domain"
-                type="text"
-                class="edit-input"
-              >
+              <BaseInput v-model="editingEntry.domain" size="small" />
             </div>
             <div class="col-comment">
-              <input
-                v-model="editingEntry.comment"
-                type="text"
-                class="edit-input"
-              >
+              <BaseInput
+                :model-value="editingEntry.comment ?? ''"
+                size="small"
+                @update:model-value="editingEntry.comment = $event || undefined"
+              />
             </div>
             <div class="col-actions">
-              <button
-                class="action-btn save"
+              <BaseIconButton
                 :title="t('hosts.panel.save')"
                 @click="confirmEdit"
               >
                 <Check :size="14" />
-              </button>
-              <button
-                class="action-btn cancel"
+              </BaseIconButton>
+              <BaseIconButton
                 :title="t('hosts.panel.cancel')"
                 @click="cancelEdit"
               >
                 <X :size="14" />
-              </button>
+              </BaseIconButton>
             </div>
           </template>
 
           <!-- Add New Entry -->
           <template v-else-if="isAddingNew">
             <div class="col-status">
-              <input
-                v-model="newEntry.enabled"
-                type="checkbox"
-                class="checkbox"
-              >
+              <BaseCheckbox v-model="newEntry.enabled" />
             </div>
             <div class="col-ip">
-              <input
+              <BaseInput
                 v-model="newEntry.ip"
-                type="text"
-                class="edit-input"
+                size="small"
                 placeholder="127.0.0.1"
-              >
+              />
             </div>
             <div class="col-domain">
-              <input
+              <BaseInput
                 v-model="newEntry.domain"
-                type="text"
-                class="edit-input"
+                size="small"
                 placeholder="example.com"
-              >
+              />
             </div>
             <div class="col-comment">
-              <input
-                v-model="newEntry.comment"
-                type="text"
-                class="edit-input"
+              <BaseInput
+                :model-value="newEntry.comment ?? ''"
+                size="small"
                 placeholder="# comment"
-              >
+                @update:model-value="newEntry.comment = $event || undefined"
+              />
             </div>
             <div class="col-actions">
-              <button
-                class="action-btn save"
+              <BaseIconButton
                 :title="t('hosts.panel.save')"
                 @click="confirmEdit"
               >
                 <Check :size="14" />
-              </button>
-              <button
-                class="action-btn cancel"
+              </BaseIconButton>
+              <BaseIconButton
                 :title="t('hosts.panel.cancel')"
                 @click="cancelEdit"
               >
                 <X :size="14" />
-              </button>
+              </BaseIconButton>
             </div>
           </template>
 
@@ -369,20 +346,18 @@ function handleKeydown(event: KeyboardEvent) {
             <div class="col-domain">{{ entry.domain }}</div>
             <div class="col-comment">{{ entry.comment || '-' }}</div>
             <div class="col-actions">
-              <button
-                class="action-btn edit"
+              <BaseIconButton
                 :title="t('hosts.panel.editEntry')"
                 @click="startEdit(entry)"
               >
                 <Edit2 :size="14" />
-              </button>
-              <button
-                class="action-btn delete"
+              </BaseIconButton>
+              <BaseIconButton
                 :title="t('hosts.panel.deleteEntry')"
                 @click="deleteEntry(entry)"
               >
                 <Trash2 :size="14" />
-              </button>
+              </BaseIconButton>
             </div>
           </template>
         </div>
@@ -398,31 +373,34 @@ function handleKeydown(event: KeyboardEvent) {
     <!-- Footer -->
     <div class="panel-footer">
       <div class="footer-left">
-        <button
+        <BaseButton
           v-if="disabledEntriesCount > 0"
-          class="footer-btn danger"
+          variant="danger"
+          size="small"
           @click="deleteAllDisabled"
         >
           <Trash2 :size="14" />
           {{ t('hosts.panel.deleteAllDisabled') }} ({{ disabledEntriesCount }})
-        </button>
+        </BaseButton>
       </div>
       <div class="footer-right">
-        <button
-          class="footer-btn secondary"
+        <BaseButton
+          variant="default"
+          size="small"
           @click="startAdd"
         >
           <Plus :size="14" />
           {{ t('hosts.panel.addEntry') }}
-        </button>
-        <button
-          class="footer-btn primary"
+        </BaseButton>
+        <BaseButton
+          variant="primary"
+          size="small"
           :disabled="!hasChanges || isSaving"
           @click="saveHostsFile"
         >
           <Save :size="14" />
           {{ isSaving ? '...' : t('hosts.panel.save') }}
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -461,25 +439,6 @@ function handleKeydown(event: KeyboardEvent) {
 .header-actions {
   display: flex;
   gap: 8px;
-}
-
-.header-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 6px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.header-btn:hover {
-  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
-  color: var(--spotlight-text);
 }
 
 .message {
@@ -618,82 +577,6 @@ function handleKeydown(event: KeyboardEvent) {
   justify-content: flex-end;
 }
 
-.checkbox {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.edit-input {
-  width: 100%;
-  padding: 4px 8px;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.15));
-  border-radius: 4px;
-  background-color: var(--spotlight-bg);
-  color: var(--spotlight-text);
-  font-family: monospace;
-  font-size: 13px;
-  outline: none;
-}
-
-.edit-input:focus {
-  border-color: var(--spotlight-primary);
-}
-
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--spotlight-border, rgba(0, 0, 0, 0.15));
-  border-radius: 4px;
-  background-color: transparent;
-  color: transparent;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.toggle-btn.active {
-  background-color: var(--spotlight-primary);
-  border-color: var(--spotlight-primary);
-  color: white;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 4px;
-  background-color: transparent;
-  color: var(--spotlight-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.action-btn:hover {
-  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
-}
-
-.action-btn.edit:hover {
-  color: var(--spotlight-primary);
-}
-
-.action-btn.delete:hover {
-  color: #ef4444;
-}
-
-.action-btn.save {
-  color: #22c55e;
-}
-
-.action-btn.cancel {
-  color: var(--spotlight-placeholder);
-}
-
 .empty-state {
   padding: 48px 16px;
   text-align: center;
@@ -718,50 +601,5 @@ function handleKeydown(event: KeyboardEvent) {
 .footer-right {
   display: flex;
   gap: 8px;
-}
-
-.footer-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.footer-btn.primary {
-  background-color: var(--spotlight-primary);
-  color: white;
-}
-
-.footer-btn.primary:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.footer-btn.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.footer-btn.secondary {
-  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.05));
-  color: var(--spotlight-text);
-}
-
-.footer-btn.secondary:hover {
-  background-color: var(--spotlight-item-hover, rgba(0, 0, 0, 0.1));
-}
-
-.footer-btn.danger {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.footer-btn.danger:hover {
-  background-color: rgba(239, 68, 68, 0.2);
 }
 </style>

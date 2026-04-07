@@ -29,10 +29,10 @@ export class HostsPlugin implements Plugin {
   version = '1.0.0';
   author = 'Spotlight Team';
 
-  registerAction(_ctx: ActionContext): PluginActions {
+  registerAction(ctx: ActionContext): PluginActions {
     return {
       [ACTION_OPEN]: async () => {
-        // Navigation handled by the action context
+        ctx.navigateToPlugin(this.pluginId);
       },
     };
   }
