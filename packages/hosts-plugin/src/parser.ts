@@ -67,9 +67,6 @@ export function parseHostsContent(content: string): HostsEntry[] {
 
 export function generateHostsContent(entries: HostsEntry[]): string {
   const lines: string[] = [];
-  lines.push('# Hosts file managed by Spotlight');
-  lines.push('# DO NOT EDIT MANUALLY');
-  lines.push('');
 
   for (const entry of entries) {
     let line = entry.enabled ? '' : '# ';

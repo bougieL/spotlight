@@ -306,14 +306,10 @@ function handleKeydown(event: KeyboardEvent) {
           <!-- Display Mode -->
           <template v-else>
             <div class="col-status">
-              <button
-                class="toggle-btn"
-                :class="{ active: entry.enabled }"
-                :title="entry.enabled ? t('hosts.panel.enabled') : t('hosts.panel.disabled')"
-                @click="toggleEntry(entry)"
-              >
-                <Check v-if="entry.enabled" :size="14" />
-              </button>
+              <BaseCheckbox
+                :model-value="entry.enabled"
+                @update:model-value="toggleEntry(entry)"
+              />
             </div>
             <div class="col-ip">{{ entry.ip }}</div>
             <div class="col-domain">{{ entry.domain }}</div>
