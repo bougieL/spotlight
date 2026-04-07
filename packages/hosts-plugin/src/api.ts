@@ -1,5 +1,4 @@
 import { platform } from '@tauri-apps/plugin-os';
-import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { tauriApi } from '@spotlight/api';
 import type { HostsEntry, ReadHostsResult } from './types';
@@ -17,7 +16,7 @@ async function getHostsPath(): Promise<string> {
 
 export async function readHostsFile(): Promise<ReadHostsResult> {
   const filePath = await getHostsPath();
-  const raw = await readTextFile(filePath);
+  const raw = await tauriApi.readFileElevated(filePath);
   const entries = parseHostsContent(raw);
   return { entries, raw, filePath };
 }
@@ -25,7 +24,7 @@ export async function readHostsFile(): Promise<ReadHostsResult> {
 export async function writeHostsFile(entries: HostsEntry[]): Promise<void> {
   const filePath = await getHostsPath();
   const content = generateHostsContent(entries);
-  await writeTextFile(filePath, content);
+  await tauriApi.writeFileElevated(filePath, content);
 }
 
 export async function getHostsFilePath(): Promise<string> {

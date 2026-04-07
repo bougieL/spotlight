@@ -28,6 +28,6 @@ pub use log::write_log;
 pub use screen::{capture_full_screen};
 pub use shell::execute_shell_command;
 pub use shortcut::{get_global_shortcut, register_global_shortcut};
-pub use storage::{get_plugin_storage_dir, get_app_data_dir, reveal_in_explorer, read_plugin_settings, write_plugin_settings, copy_directory};
+pub use storage::{get_plugin_storage_dir, get_app_data_dir, reveal_in_explorer, read_plugin_settings, write_plugin_settings, copy_directory, read_file_elevated, write_file_elevated};
 pub use search::{search_with_rg, search_files_with_rg, get_user_home};
 pub use window::{show_window, close_overlay_window, create_overlay_window, detach_window, exit_app, hide_window, resize_window, list_windows, minimize_window, maximize_window, restore_window, close_window, set_window_always_on_top, focus_window, create_child_webview, close_child_webview, resize_child_webview, close_all_child_webviews, simulate_mouse_click};

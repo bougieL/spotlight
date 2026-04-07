@@ -15,7 +15,7 @@ use commands::{
     detach_window, list_windows, minimize_window, maximize_window, restore_window,
     close_window, set_window_always_on_top, focus_window,
     create_child_webview, close_child_webview, resize_child_webview, close_all_child_webviews,
-    simulate_mouse_click, copy_directory,
+    simulate_mouse_click, copy_directory, read_file_elevated, write_file_elevated,
 };
 use tauri::Manager;
 
@@ -69,6 +69,8 @@ pub fn run() {
             read_plugin_settings,
             write_plugin_settings,
             copy_directory,
+            read_file_elevated,
+            write_file_elevated,
             register_global_shortcut,
             get_global_shortcut,
             write_log,

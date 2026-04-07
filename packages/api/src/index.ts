@@ -52,6 +52,8 @@ export interface TauriApi {
   convertFileSrc: typeof convertFileSrc;
   simulateMouseClick: (x: number, y: number) => Promise<void>;
   copyDirectory: (src: string, dst: string) => Promise<void>;
+  readFileElevated: (path: string) => Promise<string>;
+  writeFileElevated: (path: string, content: string) => Promise<void>;
 }
 
 export interface ScreenCapture {
@@ -278,4 +280,8 @@ export const tauriApi: TauriApi = {
   simulateMouseClick: (x: number, y: number) => invoke<void>('simulate_mouse_click', { x, y }),
 
   copyDirectory: (src: string, dst: string) => invoke<void>('copy_directory', { src, dst }),
+
+  readFileElevated: (path: string) => invoke<string>('read_file_elevated', { path }),
+
+  writeFileElevated: (path: string, content: string) => invoke<void>('write_file_elevated', { path, content }),
 };

@@ -2,6 +2,9 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::Manager;
 
+#[cfg(windows)]
+use std::process::Command;
+
 #[tauri::command]
 pub fn get_app_data_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
     let app_data_dir = app_handle
@@ -156,4 +159,113 @@ fn copy_dir_all(src: &str, dst: &str) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn read_file_elevated(path: String) -> Result<String, String> {
+    use std::env;
+    use std::process::Command;
+
+    // Try to read directly first
+    match std::fs::read_to_string(&path) {
+        Ok(content) => Ok(content),
+        Err(_) => {
+            // Direct read failed, try elevated
+            run_elevated_read(&path)
+        }
+    }
+}
+
+#[cfg(windows)]
+fn run_elevated_read(path: &str) -> Result<String, String> {
+    use std::env;
+    use std::process::Command;
+
+    let temp_dir = env::temp_dir();
+    let script_path = temp_dir.join("read_elevated.ps1");
+
+    // PowerShell script to read file with elevation
+    let script = format!(
+        r#"Start-Process powershell -Verb RunAs -Wait -ArgumentList '-Command', 'Get-Content -Path \"{}\" -Raw -Encoding UTF8'"#,
+        path.replace("\\", "\\\\")
+    );
+
+    std::fs::write(&script_path, &script).map_err(|e| e.to_string())?;
+
+    let output = Command::new("powershell")
+        .args(["-ExecutionPolicy", "Bypass", "-File", script_path.to_str().unwrap()])
+        .output()
+        .map_err(|e| format!("Failed to execute elevated command: {}", e))?;
+
+    let _ = std::fs::remove_file(&script_path);
+
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("Elevated read failed: {}", stderr))
+    }
+}
+
+#[cfg(windows)]
+#[tauri::command]
+pub fn write_file_elevated(path: String, content: String) -> Result<(), String> {
+    use std::env;
+    use std::fs::File;
+    use std::io::Write;
+
+    // Try to write directly first
+    match File::create(&path) {
+        Ok(mut file) => {
+            if let Err(_e) = file.write_all(content.as_bytes()) {
+                return run_elevated_write(&path, &content);
+            }
+            Ok(())
+        }
+        Err(_) => run_elevated_write(&path, &content),
+    }
+}
+
+#[cfg(windows)]
+fn run_elevated_write(path: &str, content: &str) -> Result<(), String> {
+    use std::env;
+    use std::process::Command;
+
+    let temp_dir = env::temp_dir();
+    let script_path = temp_dir.join("write_elevated.ps1");
+
+    let script = format!(
+        r#"Start-Process powershell -Verb RunAs -Wait -ArgumentList '-Command', 'Set-Content -Path \"{}\" -Value \"{}\" -Encoding UTF8 -Force'"#,
+        path.replace("\\", "\\\\"),
+        content.replace("\"", "`\"").replace("\r\n", ";`r`n").replace("\n", ";`n")
+    );
+
+    std::fs::write(&script_path, &script).map_err(|e| e.to_string())?;
+
+    let output = Command::new("powershell")
+        .args(["-ExecutionPolicy", "Bypass", "-File", script_path.to_str().unwrap()])
+        .output()
+        .map_err(|e| format!("Failed to execute elevated command: {}", e))?;
+
+    let _ = std::fs::remove_file(&script_path);
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("Elevated write failed: {}", stderr))
+    }
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+pub fn read_file_elevated(path: String) -> Result<String, String> {
+    std::fs::read_to_string(path).map_err(|e| e.to_string())
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+pub fn write_file_elevated(path: String, content: String) -> Result<(), String> {
+    std::fs::write(path, content).map_err(|e| e.to_string())
 }
