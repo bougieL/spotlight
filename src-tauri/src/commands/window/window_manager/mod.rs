@@ -175,6 +175,7 @@ mod platform {
     use super::WindowInfo;
     use cocoa::base::{id, nil, BOOL, NO, YES};
     use cocoa::foundation::{NSArray, NSDictionary, NSString, NSURL};
+    use libc;
     use objc::runtime::Object;
     use objc::{class, msg_send, sel, sel_impl};
     use std::ffi::CStr;
@@ -182,8 +183,13 @@ mod platform {
     // Get AXUIElement for a window given its CGWindowID
     fn get_ax_window_for_cg_window(cg_window_id: u32) -> Option<id> {
         unsafe {
-            let system_wide: id = msg_send![class!(AXUIElement), systemWide];
-            let windows: id = msg_send![system_wide, windows];
+            // AXUIElementCreateSystemWide is a C function from ApplicationServices, not an Obj-C method
+            extern "C" {
+                fn AXUIElementCreateSystemWide() -> id;
+            }
+
+            let system_wide: id = AXUIElementCreateSystemWide();
+            let windows: id = msg_send![system_wide, attributeValue: sel!(kAXWindowsAttribute)];
             if windows == nil {
                 return None;
             }
@@ -191,7 +197,7 @@ mod platform {
             let count: usize = msg_send![windows, count];
             for i in 0..count {
                 let window: id = msg_send![windows, objectAtIndex: i];
-                let window_id: i32 = msg_send![window, windowNumber];
+                let window_id: i32 = msg_send![window, attributeValue: sel!(kAXWindowNumberAttribute)];
                 if window_id as u32 == cg_window_id {
                     return Some(window);
                 }
@@ -223,15 +229,26 @@ mod platform {
 
     pub fn list_windows_impl() -> Vec<WindowInfo> {
         unsafe {
-            use core_graphics::window::{CGWindowListCopyWindowInfo, CGWindowInfo};
-            use core_graphics::display::CGGetActiveWindowList;
+            // CGWindowListCopyWindowInfo returns CFArrayRef (Core Foundation).
+            // On macOS, CFArrayRef is toll-free bridged to NSArray*.
+            // We declare it here with id return type so msg_send! works.
+            extern "C" {
+                fn CGWindowListCopyWindowInfo(
+                    options: u32,
+                    windowID: u32,
+                ) -> *mut objc::runtime::Object;
+            }
 
             let option = core_graphics::window::kCGNullWindowListOption;
-            let window_list = CGWindowListCopyWindowInfo(option, 0);
+            let window_list: id = msg_send![class!(NSArray), array]; // empty array as fallback
+            let cg_result = CGWindowListCopyWindowInfo(option, 0);
 
-            if window_list.is_null() {
+            if cg_result.is_null() {
                 return Vec::new();
             }
+
+            // Toll-free bridge: CFArrayRef -> NSArray*
+            let window_list: id = std::mem::transmute(cg_result);
 
             let count: usize = msg_send![window_list, count];
             let mut windows = Vec::new();
@@ -242,14 +259,16 @@ mod platform {
                     continue;
                 }
 
-                let window_id: u32 = msg_send![dict, windowNumber];
+                let window_id: u32 = msg_send![dict, valueForKey: @"kCGWindowNumber"];
                 if window_id == 0 {
                     continue;
                 }
 
-                let owner_pid: i32 = msg_send![dict, ownerPID];
-                let owner_name: id = msg_send![dict, ownerName];
-                let window_name: id = msg_send![dict, windowName];
+                let owner_pid: i32 = msg_send![dict, valueForKey: @"kCGWindowOwnerPID"];
+                let owner_name: id = msg_send![dict, valueForKey: @"kCGWindowOwnerName"];
+                let window_name: id = msg_send![dict, valueForKey: @"kCGWindowName"];
+                let window_layer: i32 = msg_send![dict, valueForKey: @"kCGWindowLayer"];
+                let is_onscreen: BOOL = msg_send![dict, valueForKey: @"kCGWindowIsOnscreen"];
 
                 let title = if window_name != nil {
                     let c_str: *const libc::c_char = msg_send![window_name, UTF8String];
@@ -277,23 +296,17 @@ mod platform {
                     get_process_name_from_pid(owner_pid as u32)
                 };
 
-                let is_visible: BOOL = msg_send![dict, isOnscreen];
-                let is_visible = is_visible == YES;
+                let is_visible = is_onscreen == YES;
+                let is_always_on_top = window_layer > 0;
 
                 // Try to get minimized state via AXUIElement
                 let mut is_minimized = false;
                 let mut is_maximized = false;
-                let mut is_always_on_top = false;
 
                 if let Some(ax_window) = get_ax_window_for_cg_window(window_id) {
                     let minimized: id = msg_send![ax_window, valueOfAttribute: sel!(kAXMinimizedAttribute)];
                     if !minimized.is_null() {
                         is_minimized = msg_send![minimized, boolValue];
-                    }
-
-                    let maximized: id = msg_send![ax_window, valueOfAttribute: sel!(kAXFullscreenAttribute)];
-                    if !maximized.is_null() {
-                        is_maximized = msg_send![maximized, boolValue];
                     }
                 }
 
@@ -384,16 +397,49 @@ mod platform {
         unsafe {
             let ax_window = get_ax_window(hwnd)
                 .ok_or_else(|| "Window not found".to_string())?;
-            let pid: i32 = msg_send![ax_window, pid];
-            if pid == 0 {
-                return Err("Failed to get process ID".to_string());
+
+            // Get PID using AXUIElementCopyAttributeValue C function
+            extern "C" {
+                fn AXUIElementCopyAttributeValue(
+                    element: id,
+                    attribute: *const libc::c_void,
+                    value: *mut id,
+                ) -> i32;
             }
+
+            let k_ax_pid: id = msg_send![class!(NSString), stringWithUTF8String: "AXPID"];
+            let mut pid_value: id = nil;
+            let result = AXUIElementCopyAttributeValue(ax_window, std::mem::transmute(k_ax_pid), &mut pid_value);
+
+            if result != 0 || pid_value == nil {
+                return Err("Failed to get window PID".to_string());
+            }
+
+            let pid: i32 = msg_send![pid_value, intValue];
+            if pid == 0 {
+                return Err("Invalid process ID".to_string());
+            }
+
+            // Raise the window to front using kAXFrontAttribute via AXUIElementSetAttributeValue
+            extern "C" {
+                fn AXUIElementSetAttributeValue(
+                    element: id,
+                    attribute: *const libc::c_void,
+                    value: id,
+                ) -> i32;
+            }
+
+            let k_ax_front: id = msg_send![class!(NSString), stringWithUTF8String: "AXFront"];
+            let front_value: id = msg_send![class!(NSNumber), numberWithBool: YES];
+            let _ = AXUIElementSetAttributeValue(ax_window, std::mem::transmute(k_ax_front), front_value);
+
+            // Then activate the application
             let app: id = msg_send![class!(NSRunningApplication), applicationWithProcessIdentifier: pid];
             if app == nil {
                 return Err("Application not found".to_string());
             }
-            let result: BOOL = msg_send![app, activateWithOptions: 1]; // NSApplicationActivateIgnoringOtherApps
-            if result == YES {
+            let activate_result: BOOL = msg_send![app, activateWithOptions: 1]; // NSApplicationActivateIgnoringOtherApps
+            if activate_result == YES {
                 Ok(())
             } else {
                 Err("Failed to focus window".to_string())
@@ -402,35 +448,26 @@ mod platform {
     }
 
     pub fn set_window_always_on_top_impl(hwnd: isize, on_top: bool) -> Result<(), String> {
-        // On macOS, we need to use NSWindow to set window level
-        // This requires mapping CGWindowID to NSWindow
-        // For now, return a descriptive error
+        // Use AXUIElement's kAXWindowLevelAttribute to set window level
+        // kCGNormalWindowLevel = 0, kCGFloatingWindowLevel = 3
         unsafe {
             let ax_window = get_ax_window(hwnd)
                 .ok_or_else(|| "Window not found".to_string())?;
-            let pid: i32 = msg_send![ax_window, pid];
-            if pid == 0 {
-                return Err("Failed to get process ID".to_string());
-            }
-            let app: id = msg_send![class!(NSRunningApplication), applicationWithProcessIdentifier: pid];
-            if app == nil {
-                return Err("Application not found".to_string());
-            }
 
-            // For NSWindow level, we need the actual NSWindow object
-            // Since we can't easily get it from CGWindowID, we'll use AppleScript as fallback
-            let script = if on_top {
-                format!("tell application \"System Events\" to tell process \"{}\" to set frontmost to true", pid)
+            let level_value: id = if on_top {
+                // kCGFloatingWindowLevel = 3
+                msg_send![class!(NSNumber), numberWithInteger: 3]
             } else {
-                format!("tell application \"System Events\" to tell process \"{}\" to set frontmost to false", pid)
+                // kCGNormalWindowLevel = 0
+                msg_send![class!(NSNumber), numberWithInteger: 0]
             };
 
-            let ns_script = NSString::from_str(&script);
-            let result: id = msg_send![class!(NSAppleScript), alloc];
-            let script_obj: id = msg_send![result, initWithSource: ns_script];
-            let _: id = msg_send![script_obj, executeAndReturnError: nil];
-
-            Ok(())
+            let result: id = msg_send![ax_window, setValue: level_value forAttribute: sel!(kAXWindowLevelAttribute)];
+            if result == nil {
+                Ok(())
+            } else {
+                Err("Failed to set window always on top".to_string())
+            }
         }
     }
 }

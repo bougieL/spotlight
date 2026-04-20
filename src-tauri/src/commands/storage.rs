@@ -33,8 +33,13 @@ pub fn reveal_in_explorer(path: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         use std::process::Command;
+        // Normalize path separators and get parent directory
+        let normalized_path = path.replace('\\', "/");
+        let parent = std::path::Path::new(&normalized_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(&normalized_path));
         Command::new("open")
-            .args(["-R", &path])
+            .args(["-R", parent.to_string_lossy().as_ref()])
             .spawn()
             .map_err(|e| format!("Failed to reveal in finder: {}", e))?;
         Ok(())

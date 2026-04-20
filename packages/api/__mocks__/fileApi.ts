@@ -154,6 +154,15 @@ export async function invokeCommand(command: string, args?: Record<string, unkno
       return setAutostartEnabled(args?.enabled as boolean);
     case 'simulate_mouse_click':
       return Promise.resolve();
+    case 'reveal_in_explorer':
+      // In mock mode, do nothing
+      return Promise.resolve();
+    case 'read_file_elevated':
+      // Return mock hosts file content for testing
+      return Promise.resolve('# Mock hosts file\n127.0.0.1 localhost');
+    case 'write_file_elevated':
+      // In mock mode, just succeed
+      return Promise.resolve();
     default:
       return invoke(command, args);
   }

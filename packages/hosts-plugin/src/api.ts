@@ -1,5 +1,4 @@
 import { platform } from '@tauri-apps/plugin-os';
-import { openPath } from '@tauri-apps/plugin-opener';
 import { tauriApi } from '@spotlight/api';
 import type { HostsEntry, ReadHostsResult } from './types';
 import { parseHostsContent, generateHostsContent } from './parser';
@@ -33,10 +32,5 @@ export async function getHostsFilePath(): Promise<string> {
 
 export async function openHostsFileLocation(): Promise<void> {
   const filePath = await getHostsPath();
-  const os = await platform();
-  if (os === 'windows') {
-    await revealInExplorer(filePath);
-  } else {
-    await openPath(filePath);
-  }
+  await revealInExplorer(filePath);
 }

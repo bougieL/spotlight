@@ -10,6 +10,10 @@ unsafe impl Send for CallbackPtr {}
 #[cfg(windows)]
 static CALLBACK_PTR: Mutex<Option<CallbackPtr>> = Mutex::new(None);
 
+// Callback storage for macOS clipboard monitor
+#[cfg(target_os = "macos")]
+static MACOS_CALLBACK_PTR: Mutex<Option<*mut Box<dyn Fn()>>> = Mutex::new(None);
+
 // ── macOS NSPasteboard helpers ──────────────────────────────────────────
 
 #[cfg(target_os = "macos")]
@@ -180,11 +184,14 @@ mod macos_clip {
         // Store callback in a thread-safe way
         let callback_ptr: *mut Box<dyn Fn()> = Box::into_raw(Box::new(Box::new(callback)));
 
+        // Store the pointer so stop_clipboard_monitor can access it
+        *MACOS_CALLBACK_PTR.lock().unwrap() = Some(callback_ptr);
+
         std::thread::spawn(move || {
             unsafe {
                 let mut last_change_count: i64 = msg_send![macos_clip::get_pasteboard(), changeCount];
 
-                loop {
+                while MONITOR_RUNNING.load(Ordering::SeqCst) {
                     let current_change_count: i64 = msg_send![macos_clip::get_pasteboard(), changeCount];
                     if current_change_count != last_change_count {
                         last_change_count = current_change_count;
@@ -193,6 +200,11 @@ mod macos_clip {
                         }
                     }
                     std::thread::sleep(std::time::Duration::from_millis(50));
+                }
+
+                // Cleanup: drop the callback
+                if let Some(ptr) = MACOS_CALLBACK_PTR.lock().unwrap().take() {
+                    let _ = Box::from_raw(ptr);
                 }
             }
         });
@@ -343,11 +355,9 @@ pub fn get_clipboard_text() -> Result<String, String> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc::{class, msg_send, sel, sel_impl};
+        use cocoa::base::NSPasteboardTypeString;
         let pb = macos_clip::get_pasteboard();
-        let type_name: objc::runtime::id =
-            unsafe { msg_send![class!(NSPasteboardTypeString), stringValue] };
-        Ok(macos_clip::get_string(pb, type_name).unwrap_or_default())
+        Ok(macos_clip::get_string(pb, NSPasteboardTypeString).unwrap_or_default())
     }
 
     #[cfg(not(any(windows, target_os = "macos")))]
@@ -410,11 +420,9 @@ pub fn set_clipboard_text(text: String) -> Result<(), String> {
 
     #[cfg(target_os = "macos")]
     {
-        use objc::{class, msg_send, sel, sel_impl};
+        use cocoa::base::NSPasteboardTypeString;
         let pb = macos_clip::get_pasteboard();
-        let type_name: objc::runtime::id =
-            unsafe { msg_send![class!(NSPasteboardTypeString), stringValue] };
-        if macos_clip::set_string(pb, &text, type_name) {
+        if macos_clip::set_string(pb, &text, NSPasteboardTypeString) {
             Ok(())
         } else {
             Err("Failed to set clipboard text".to_string())
@@ -808,6 +816,20 @@ pub fn stop_clipboard_monitor() {
         unsafe {
             use windows::Win32::UI::WindowsAndMessaging::PostQuitMessage;
             PostQuitMessage(0);
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // Cleanup the stored callback pointer
+        if let Ok(mut guard) = MACOS_CALLBACK_PTR.lock() {
+            if let Some(ptr) = guard.take() {
+                // The thread will clean up when it sees MONITOR_RUNNING is false
+                // but we drop our reference here
+                unsafe {
+                    let _ = Box::from_raw(ptr);
+                }
+            }
         }
     }
 }
