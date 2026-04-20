@@ -224,7 +224,10 @@ function handleKeydown(event: KeyboardEvent) {
     </div>
 
     <!-- Messages -->
-    <div v-if="errorMessage" class="message error">
+    <div
+      v-if="errorMessage"
+      class="message error"
+    >
       <AlertTriangle :size="16" />
       <span>{{ errorMessage }}</span>
       <button
@@ -234,7 +237,10 @@ function handleKeydown(event: KeyboardEvent) {
         <X :size="14" />
       </button>
     </div>
-    <div v-if="successMessage" class="message success">
+    <div
+      v-if="successMessage"
+      class="message success"
+    >
       <Check :size="16" />
       <span>{{ successMessage }}</span>
       <button
@@ -246,19 +252,35 @@ function handleKeydown(event: KeyboardEvent) {
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="loading">
+    <div
+      v-if="isLoading"
+      class="loading"
+    >
       <div class="spinner" />
     </div>
 
     <!-- Content -->
-    <div v-else class="panel-content">
+    <div
+      v-else
+      class="panel-content"
+    >
       <!-- Table Header -->
       <div class="table-header">
-        <div class="col-status">{{ t('hosts.panel.enabled') }}</div>
-        <div class="col-ip">{{ t('hosts.panel.ipAddress') }}</div>
-        <div class="col-domain">{{ t('hosts.panel.domainName') }}</div>
-        <div class="col-comment">{{ t('hosts.panel.comment') }}</div>
-        <div class="col-actions">{{ t('hosts.panel.actions') }}</div>
+        <div class="col-status">
+          {{ t('hosts.panel.enabled') }}
+        </div>
+        <div class="col-ip">
+          {{ t('hosts.panel.ipAddress') }}
+        </div>
+        <div class="col-domain">
+          {{ t('hosts.panel.domainName') }}
+        </div>
+        <div class="col-comment">
+          {{ t('hosts.panel.comment') }}
+        </div>
+        <div class="col-actions">
+          {{ t('hosts.panel.actions') }}
+        </div>
       </div>
 
       <!-- Entries List -->
@@ -275,10 +297,16 @@ function handleKeydown(event: KeyboardEvent) {
               <BaseCheckbox v-model="editingEntry.enabled" />
             </div>
             <div class="col-ip">
-              <BaseInput v-model="editingEntry.ip" size="small" />
+              <BaseInput
+                v-model="editingEntry.ip"
+                size="small"
+              />
             </div>
             <div class="col-domain">
-              <BaseInput v-model="editingEntry.domain" size="small" />
+              <BaseInput
+                v-model="editingEntry.domain"
+                size="small"
+              />
             </div>
             <div class="col-comment">
               <BaseInput
@@ -311,9 +339,15 @@ function handleKeydown(event: KeyboardEvent) {
                 @update:model-value="toggleEntry(entry)"
               />
             </div>
-            <div class="col-ip">{{ entry.ip }}</div>
-            <div class="col-domain">{{ entry.domain }}</div>
-            <div class="col-comment">{{ entry.comment || '-' }}</div>
+            <div class="col-ip">
+              {{ entry.ip }}
+            </div>
+            <div class="col-domain">
+              {{ entry.domain }}
+            </div>
+            <div class="col-comment">
+              {{ entry.comment || '-' }}
+            </div>
             <div class="col-actions">
               <BaseIconButton
                 :title="t('hosts.panel.editEntry')"
@@ -332,7 +366,10 @@ function handleKeydown(event: KeyboardEvent) {
         </div>
 
         <!-- Add New Entry -->
-        <div v-if="isAddingNew" class="entry-row add-new-row">
+        <div
+          v-if="isAddingNew"
+          class="entry-row add-new-row"
+        >
           <div class="col-status">
             <BaseCheckbox v-model="newEntry.enabled" />
           </div>
@@ -375,9 +412,14 @@ function handleKeydown(event: KeyboardEvent) {
         </div>
 
         <!-- Empty State -->
-        <div v-if="entries.length === 0 && !isAddingNew" class="empty-state">
+        <div
+          v-if="entries.length === 0 && !isAddingNew"
+          class="empty-state"
+        >
           <p>{{ t('hosts.panel.noEntries') }}</p>
-          <p class="empty-hint">{{ t('hosts.panel.addFirst') }}</p>
+          <p class="empty-hint">
+            {{ t('hosts.panel.addFirst') }}
+          </p>
         </div>
       </div>
     </div>

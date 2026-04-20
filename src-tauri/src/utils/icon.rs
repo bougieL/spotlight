@@ -202,9 +202,21 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
 pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
     // icon_spec is the .app bundle path on macOS
     let app_path = std::path::Path::new(icon_spec);
-    if !app_path.exists() || !icon_spec.ends_with(".app") {
-        return None;
+
+    // First try: parse .icns from .app bundle
+    if app_path.exists() && icon_spec.ends_with(".app") {
+        if let Some(icon) = extract_icon_from_app_bundle(icon_spec) {
+            return Some(icon);
+        }
     }
+
+    // Second try: use NSWorkspace.iconForFile() as fallback
+    extract_icon_via_nsworkspace(icon_spec)
+}
+
+#[cfg(target_os = "macos")]
+fn extract_icon_from_app_bundle(icon_spec: &str) -> Option<String> {
+    let app_path = std::path::Path::new(icon_spec);
 
     // Read Info.plist to find the icon filename
     let plist_path = app_path.join("Contents").join("Info.plist");
@@ -308,6 +320,83 @@ pub fn extract_icon_base64(icon_spec: &str) -> Option<String> {
     let base64_data =
         base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
     Some(format!("data:image/png;base64,{}", base64_data))
+}
+
+#[cfg(target_os = "macos")]
+fn extract_icon_via_nsworkspace(icon_spec: &str) -> Option<String> {
+    use cocoa::base::{id, nil};
+    use cocoa::foundation::NSString;
+    use objc::{class, msg_send, sel, sel_impl};
+
+    unsafe {
+        let workspace: id = msg_send![class!(NSWorkspace), sharedWorkspace];
+
+        let path_str = if icon_spec.ends_with(".app") {
+            icon_spec.to_string()
+        } else {
+            // For non-.app paths, try to find the .app in /Applications
+            find_app_bundle_for_path(icon_spec)?
+        };
+
+        let ns_path = NSString::from_str(&path_str);
+        let icon_image: id = msg_send![workspace, iconForFile: ns_path];
+
+        if icon_image == nil {
+            return None;
+        }
+
+        // Get TIFF representation first
+        let tiff_data: id = msg_send![icon_image, TIFFRepresentation];
+        if tiff_data == nil {
+            return None;
+        }
+
+        let dyn_image = image::load_from_memory(
+            std::slice::from_raw_parts(
+                msg_send![tiff_data, bytes] as *const u8,
+                msg_send![tiff_data, length] as usize,
+            ),
+        )
+        .ok()?;
+
+        let rgba_image = dyn_image.to_rgba8();
+        let resized =
+            image::imageops::resize(&rgba_image, 32, 32, image::imageops::FilterType::Lanczos3);
+
+        let mut png_bytes: Vec<u8> = Vec::new();
+        let mut cursor = std::io::Cursor::new(&mut png_bytes);
+        resized
+            .write_to(&mut cursor, image::ImageFormat::Png)
+            .ok()?;
+
+        let base64_data =
+            base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &png_bytes);
+        Some(format!("data:image/png;base64,{}", base64_data))
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn find_app_bundle_for_path(path: &str) -> Option<String> {
+    let filename = std::path::Path::new(path)
+        .file_name()
+        .and_then(|n| n.to_str())
+        .map(|s| s.to_string())?;
+
+    // Check common app locations
+    let app_dirs = [
+        "/Applications",
+        "/System/Applications",
+        format!("{}/Applications", std::env::var("HOME").ok()?),
+    ];
+
+    for dir in app_dirs {
+        let app_path = format!("{}/{}.app", dir, filename);
+        if std::path::Path::new(&app_path).exists() {
+            return Some(app_path);
+        }
+    }
+
+    None
 }
 
 #[cfg(not(any(windows, target_os = "macos")))]

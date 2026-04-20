@@ -72,4 +72,6 @@ plist = "1"
 cocoa = "0.26"
 objc = "0.2.7"
 image = { version = "0.25", default-features = false, features = ["ico", "jpeg", "png", "bmp"] }
+core-graphics = "0.25"
+
 

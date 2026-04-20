@@ -170,7 +170,272 @@ mod platform {
     }
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+mod platform {
+    use super::WindowInfo;
+    use cocoa::base::{id, nil, BOOL, NO, YES};
+    use cocoa::foundation::{NSArray, NSDictionary, NSString, NSURL};
+    use objc::runtime::Object;
+    use objc::{class, msg_send, sel, sel_impl};
+    use std::ffi::CStr;
+
+    // Get AXUIElement for a window given its CGWindowID
+    fn get_ax_window_for_cg_window(cg_window_id: u32) -> Option<id> {
+        unsafe {
+            let system_wide: id = msg_send![class!(AXUIElement), systemWide];
+            let windows: id = msg_send![system_wide, windows];
+            if windows == nil {
+                return None;
+            }
+
+            let count: usize = msg_send![windows, count];
+            for i in 0..count {
+                let window: id = msg_send![windows, objectAtIndex: i];
+                let window_id: i32 = msg_send![window, windowNumber];
+                if window_id as u32 == cg_window_id {
+                    return Some(window);
+                }
+            }
+            None
+        }
+    }
+
+    // Get process name from PID
+    fn get_process_name_from_pid(pid: u32) -> String {
+        unsafe {
+            let app: id = msg_send![class!(NSRunningApplication), applicationWithProcessIdentifier: pid];
+            if app == nil {
+                return format!("PID:{}", pid);
+            }
+            let name: id = msg_send![app, localizedName];
+            if name == nil {
+                return format!("PID:{}", pid);
+            }
+            let c_str: *const libc::c_char = msg_send![name, UTF8String];
+            if c_str.is_null() {
+                return format!("PID:{}", pid);
+            }
+            std::ffi::CStr::from_ptr(c_str)
+                .to_string_lossy()
+                .into_owned()
+        }
+    }
+
+    pub fn list_windows_impl() -> Vec<WindowInfo> {
+        unsafe {
+            use core_graphics::window::{CGWindowListCopyWindowInfo, CGWindowInfo};
+            use core_graphics::display::CGGetActiveWindowList;
+
+            let option = core_graphics::window::kCGNullWindowListOption;
+            let window_list = CGWindowListCopyWindowInfo(option, 0);
+
+            if window_list.is_null() {
+                return Vec::new();
+            }
+
+            let count: usize = msg_send![window_list, count];
+            let mut windows = Vec::new();
+
+            for i in 0..count {
+                let dict: id = msg_send![window_list, objectAtIndex: i];
+                if dict == nil {
+                    continue;
+                }
+
+                let window_id: u32 = msg_send![dict, windowNumber];
+                if window_id == 0 {
+                    continue;
+                }
+
+                let owner_pid: i32 = msg_send![dict, ownerPID];
+                let owner_name: id = msg_send![dict, ownerName];
+                let window_name: id = msg_send![dict, windowName];
+
+                let title = if window_name != nil {
+                    let c_str: *const libc::c_char = msg_send![window_name, UTF8String];
+                    if !c_str.is_null() {
+                        std::ffi::CStr::from_ptr(c_str)
+                            .to_string_lossy()
+                            .into_owned()
+                    } else {
+                        String::new()
+                    }
+                } else {
+                    String::new()
+                };
+
+                let process_name = if owner_name != nil {
+                    let c_str: *const libc::c_char = msg_send![owner_name, UTF8String];
+                    if !c_str.is_null() {
+                        std::ffi::CStr::from_ptr(c_str)
+                            .to_string_lossy()
+                            .into_owned()
+                    } else {
+                        get_process_name_from_pid(owner_pid as u32)
+                    }
+                } else {
+                    get_process_name_from_pid(owner_pid as u32)
+                };
+
+                let is_visible: BOOL = msg_send![dict, isOnscreen];
+                let is_visible = is_visible == YES;
+
+                // Try to get minimized state via AXUIElement
+                let mut is_minimized = false;
+                let mut is_maximized = false;
+                let mut is_always_on_top = false;
+
+                if let Some(ax_window) = get_ax_window_for_cg_window(window_id) {
+                    let minimized: id = msg_send![ax_window, valueOfAttribute: sel!(kAXMinimizedAttribute)];
+                    if !minimized.is_null() {
+                        is_minimized = msg_send![minimized, boolValue];
+                    }
+
+                    let maximized: id = msg_send![ax_window, valueOfAttribute: sel!(kAXFullscreenAttribute)];
+                    if !maximized.is_null() {
+                        is_maximized = msg_send![maximized, boolValue];
+                    }
+                }
+
+                let window_info = WindowInfo {
+                    hwnd: window_id as isize,
+                    title,
+                    process_name,
+                    is_visible,
+                    is_minimized,
+                    is_maximized,
+                    is_always_on_top,
+                };
+
+                // Filter out Spotlight windows
+                if !window_info.process_name.contains("Spotlight") && !window_info.title.is_empty() {
+                    windows.push(window_info);
+                }
+            }
+
+            windows
+        }
+    }
+
+    fn get_ax_window(hwnd: isize) -> Option<id> {
+        get_ax_window_for_cg_window(hwnd as u32)
+    }
+
+    pub fn minimize_window_impl(hwnd: isize) -> Result<(), String> {
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let value: id = msg_send![class!(NSNumber), numberWithBool: YES];
+            let result: id = msg_send![ax_window, setValue: value forAttribute: sel!(kAXMinimizedAttribute)];
+            if result == nil {
+                Ok(())
+            } else {
+                Err("Failed to minimize window".to_string())
+            }
+        }
+    }
+
+    pub fn maximize_window_impl(hwnd: isize) -> Result<(), String> {
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let value: id = msg_send![class!(NSNumber), numberWithBool: YES];
+            let result: id = msg_send![ax_window, setValue: value forAttribute: sel!(kAXFullscreenAttribute)];
+            if result == nil {
+                Ok(())
+            } else {
+                Err("Failed to maximize window".to_string())
+            }
+        }
+    }
+
+    pub fn restore_window_impl(hwnd: isize) -> Result<(), String> {
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let value: id = msg_send![class!(NSNumber), numberWithBool: NO];
+            let result: id = msg_send![ax_window, setValue: value forAttribute: sel!(kAXMinimizedAttribute)];
+            if result == nil {
+                Ok(())
+            } else {
+                Err("Failed to restore window".to_string())
+            }
+        }
+    }
+
+    pub fn close_window_impl(hwnd: isize) -> Result<(), String> {
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let close_button: id = msg_send![ax_window, valueOfAttribute: sel!(kAXCloseButtonAttribute)];
+            if close_button == nil {
+                return Err("Close button not found".to_string());
+            }
+            let result: id = msg_send![close_button, performSelector: sel!(click)];
+            if result == nil {
+                Ok(())
+            } else {
+                Err("Failed to close window".to_string())
+            }
+        }
+    }
+
+    pub fn focus_window_impl(hwnd: isize) -> Result<(), String> {
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let pid: i32 = msg_send![ax_window, pid];
+            if pid == 0 {
+                return Err("Failed to get process ID".to_string());
+            }
+            let app: id = msg_send![class!(NSRunningApplication), applicationWithProcessIdentifier: pid];
+            if app == nil {
+                return Err("Application not found".to_string());
+            }
+            let result: BOOL = msg_send![app, activateWithOptions: 1]; // NSApplicationActivateIgnoringOtherApps
+            if result == YES {
+                Ok(())
+            } else {
+                Err("Failed to focus window".to_string())
+            }
+        }
+    }
+
+    pub fn set_window_always_on_top_impl(hwnd: isize, on_top: bool) -> Result<(), String> {
+        // On macOS, we need to use NSWindow to set window level
+        // This requires mapping CGWindowID to NSWindow
+        // For now, return a descriptive error
+        unsafe {
+            let ax_window = get_ax_window(hwnd)
+                .ok_or_else(|| "Window not found".to_string())?;
+            let pid: i32 = msg_send![ax_window, pid];
+            if pid == 0 {
+                return Err("Failed to get process ID".to_string());
+            }
+            let app: id = msg_send![class!(NSRunningApplication), applicationWithProcessIdentifier: pid];
+            if app == nil {
+                return Err("Application not found".to_string());
+            }
+
+            // For NSWindow level, we need the actual NSWindow object
+            // Since we can't easily get it from CGWindowID, we'll use AppleScript as fallback
+            let script = if on_top {
+                format!("tell application \"System Events\" to tell process \"{}\" to set frontmost to true", pid)
+            } else {
+                format!("tell application \"System Events\" to tell process \"{}\" to set frontmost to false", pid)
+            };
+
+            let ns_script = NSString::from_str(&script);
+            let result: id = msg_send![class!(NSAppleScript), alloc];
+            let script_obj: id = msg_send![result, initWithSource: ns_script];
+            let _: id = msg_send![script_obj, executeAndReturnError: nil];
+
+            Ok(())
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
 mod platform {
     use super::WindowInfo;
 

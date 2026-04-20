@@ -265,10 +265,39 @@ pub fn simulate_mouse_click(x: i32, y: i32) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+#[tauri::command]
+pub fn simulate_mouse_click(x: i32, y: i32) -> Result<(), String> {
+    use core_graphics::event::{CGEvent, CGEventTapLocation, CGEventType, CGPoint};
+    use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
+
+    unsafe {
+        let source = CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
+            .ok_or_else(|| "Failed to create event source".to_string())?;
+
+        let mouse_down = CGEvent::new(source.clone())
+            .ok_or_else(|| "Failed to create mouse event".to_string())?
+            .set_type(CGEventType::LeftMouseDown)
+            .location(CGPoint::new(x as f64, y as f64))
+            .mouse_set_clicked_window_button(1);
+
+        let mouse_up = CGEvent::new(source)
+            .ok_or_else(|| "Failed to create mouse event".to_string())?
+            .set_type(CGEventType::LeftMouseUp)
+            .location(CGPoint::new(x as f64, y as f64))
+            .mouse_set_clicked_window_button(1);
+
+        mouse_down.post(CGEventTapLocation::HID);
+        mouse_up.post(CGEventTapLocation::HID);
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
 #[tauri::command]
 pub fn simulate_mouse_click(_x: i32, _y: i32) -> Result<(), String> {
-    Ok(())
+    Err("Not supported on this platform".to_string())
 }
 
 pub use window_manager::{

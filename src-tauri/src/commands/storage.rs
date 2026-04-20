@@ -288,13 +288,78 @@ fn run_elevated_write(path: &str, content: &str) -> Result<(), String> {
     Ok(())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "macos")]
+#[tauri::command]
+pub fn read_file_elevated(path: String) -> Result<String, String> {
+    // Try direct read first
+    match std::fs::read_to_string(&path) {
+        Ok(content) => Ok(content),
+        Err(_) => {
+            // Use AppleScript to get admin privileges
+            let script = format!(
+                "do shell script \"cat {} 2>/dev/null\" with administrator privileges",
+                path.replace("\"", "\\\"")
+            );
+            run_applescript(&script)
+        }
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn run_applescript(script: &str) -> Result<String, String> {
+    use std::process::Command;
+
+    let output = Command::new("osascript")
+        .args(["-e", script])
+        .output()
+        .map_err(|e| format!("Failed to execute AppleScript: {}", e))?;
+
+    if output.status.success() {
+        Ok(String::from_utf8_lossy(&output.stdout).into_owned())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("AppleScript error: {}", stderr))
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[tauri::command]
+pub fn write_file_elevated(path: String, content: String) -> Result<(), String> {
+    // Try direct write first
+    match std::fs::write(&path, &content) {
+        Ok(_) => Ok(()),
+        Err(_) => {
+            // Use AppleScript to get admin privileges
+            // Write content to temp file first, then use admin privileges to move
+            use std::env;
+            let temp_dir = env::temp_dir();
+            let temp_file = temp_dir.join(format!("spotlight_write_{}", uuid::Uuid::new_v4()));
+
+            std::fs::write(&temp_file, &content)
+                .map_err(|e| format!("Failed to write temp file: {}", e))?;
+
+            let escaped_path = path.replace("\"", "\\\"");
+            let escaped_temp = temp_file.to_string_lossy().replace("\"", "\\\"");
+
+            let script = format!(
+                "do shell script \"cp {} {} && rm {}\" with administrator privileges",
+                escaped_temp, escaped_path, escaped_temp
+            );
+
+            let result = run_applescript(&script);
+            let _ = std::fs::remove_file(&temp_file);
+            result.map(|_| ())
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
 #[tauri::command]
 pub fn read_file_elevated(path: String) -> Result<String, String> {
     std::fs::read_to_string(path).map_err(|e| e.to_string())
 }
 
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
 #[tauri::command]
 pub fn write_file_elevated(path: String, content: String) -> Result<(), String> {
     std::fs::write(path, content).map_err(|e| e.to_string())

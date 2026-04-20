@@ -4475,6 +4475,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "cocoa",
+ "core-graphics 0.25.0",
  "glob",
  "image",
  "objc",
